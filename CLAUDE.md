@@ -57,7 +57,9 @@ each leaves a whole audience without the skill.
 
 1. **Create `<skill-name>/` at the root**, with `SKILL.md`, `recipes.md` and
    `scripts/` as shown above. This is the source of truth — developers read it
-   here and you edit it here.
+   here and you edit it here. It must be self-contained — no API key, no
+   configuration, nothing for the user to set up (see *Dependencies and
+   setup*).
 2. **Symlink it for Claude Code:**
    `ln -sfn ../../<skill-name> .claude/skills/<skill-name>`
    Use a relative target so it survives being cloned anywhere.
@@ -191,9 +193,35 @@ these; verify anyway if you added a new artifact type.
 If you change a skill's scripts, the copy uploaded to claude.ai is now stale.
 Say so — it needs re-uploading by hand.
 
-## Dependencies
+## Dependencies and setup
 
-Python 3 and `requests`. Each `SKILL.md` opens by installing `requests` if it's
-missing. Keep it there; don't add dependencies without a strong reason, and
-vendor nothing — these bundles are downloaded and uploaded by hand, and every
-megabyte is friction.
+**A skill must be self-contained: Python 3, no API keys, no configuration.**
+The README promises users that "on claude.ai there is nothing for you to set
+up", and that promise is per-skill — one skill that needs a key or a config
+file breaks it for the whole repo. Someone who downloads a `.skill`, uploads it
+in Settings → Capabilities → Skills, and asks a question must get an answer,
+with no step in between.
+
+Concretely, a new skill may not:
+
+- require an API key, account, login or token from the user;
+- read configuration from a file, an env var, or a prompt;
+- need a build step, a virtualenv, or anything installed by hand.
+
+If the API behind it needs a key, get the key the way `cineplex-showtimes`
+does — scrape the public one the site's own frontend uses at runtime and cache
+it (`.cineplex_key`) — or pick a different API. A key the user has to supply is
+a reason not to ship the skill, not a setup instruction to add to `SKILL.md`.
+Anything the skill caches is a cache: it must rebuild itself when absent, and
+never be committed or shipped in `dist/`.
+
+The one dependency is `requests`. Each `SKILL.md` opens by installing it if
+it's missing:
+
+```bash
+python3 -c "import requests" 2>/dev/null || python3 -m pip install -q requests
+```
+
+Keep that block; don't add dependencies without a strong reason, and vendor
+nothing — these bundles are downloaded and uploaded by hand, and every megabyte
+is friction.
