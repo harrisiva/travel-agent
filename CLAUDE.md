@@ -9,14 +9,35 @@ stylistic — most of them exist because the alternative already broke something
 ## Layout
 
 ```
-<skill-name>/
-├── SKILL.md          # how Claude drives the tool — the interface contract
-├── recipes.md        # worked end-to-end workflows, loaded on demand
-└── scripts/          # the CLI itself
+travel-agent/
+├── campsite-search/        # one directory per skill, AT THE ROOT
+│   ├── SKILL.md            #   how Claude drives the tool — the interface contract
+│   ├── recipes.md          #   worked end-to-end workflows, loaded on demand
+│   └── scripts/            #   the CLI itself
+├── cineplex-showtimes/
+├── dist/*.skill            # built zips — what non-technical users download
+├── build.sh                # regenerates dist/ from the directories above
+├── README.md               # the front door: what each skill offers
+├── CLAUDE.md               # this file (AGENTS.md symlinks to it)
+└── .claude/skills/         # symlinks to the root directories, for Claude Code
 ```
 
-Skill directories live at the **repo root**. `.claude/skills/` holds symlinks to
-them, so Claude Code discovers them with no second copy on disk.
+Three things exist for three different audiences. Adding a skill means touching
+all three — miss one and the skill is invisible to that audience:
+
+| Path | Who it serves | What they do with it |
+|---|---|---|
+| `<skill-name>/` at the root | **Developers** | Browse and read the full skill — `SKILL.md`, recipes, and every line of the CLI — straight from the repo, with no unzipping and nothing hidden under a dotfile directory. This is also where you edit. |
+| `dist/<skill-name>.skill` | **Non-technical users** | Download one file, upload it in Claude's Settings → Capabilities → Skills. No clone, no Python, no build step. |
+| `README.md` | **Both, first** | Decide whether the skill is worth their time before opening anything else. |
+
+`.claude/skills/` is not a fourth copy — it is symlinks to the root
+directories, so Claude Code discovers every skill in this repo automatically
+while there is still exactly one copy of each file on disk.
+
+Skill directories are at the root, rather than tucked inside `.claude/skills/`,
+because the skills *are* this repo's content. A developer landing on the
+GitHub page should see them immediately.
 
 ### One source of truth, always
 
@@ -31,14 +52,29 @@ wrong direction. Don't create the second copy.
 
 ## Adding a new skill
 
-1. Create `<skill-name>/` at the root with the layout above.
-2. Symlink it: `ln -sfn ../../<skill-name> .claude/skills/<skill-name>`
-3. Write a self-check (see below) and run it.
-4. `./build.sh` to regenerate `dist/`.
-5. Add it to the README table and give it a section.
+All five steps, every time. Steps 4 and 5 are the ones that get forgotten, and
+each leaves a whole audience without the skill.
 
-Commit `dist/` in the same commit as the source change. That's what
-non-technical users download, and it is easy to leave stale.
+1. **Create `<skill-name>/` at the root**, with `SKILL.md`, `recipes.md` and
+   `scripts/` as shown above. This is the source of truth — developers read it
+   here and you edit it here.
+2. **Symlink it for Claude Code:**
+   `ln -sfn ../../<skill-name> .claude/skills/<skill-name>`
+   Use a relative target so it survives being cloned anywhere.
+3. **Write a self-check** (see below) and run it.
+4. **`./build.sh`** to regenerate `dist/`. Without this, the skill exists in the
+   repo but nobody can install it on claude.ai.
+5. **Update `README.md`:** add a row to the table at the top *and* a section
+   documenting the commands — the same shape as the existing two. An
+   undocumented skill in `dist/` is one nobody will download.
+
+Commit `dist/` in the **same commit** as the source change. It is a build
+artifact, but it is the one users actually download, so a stale `dist/` ships
+a stale skill. Same rule when you only *edit* a skill: rebuild and commit
+together, and update the README if the commands changed.
+
+Changing a skill's scripts also makes any copy already uploaded to claude.ai
+stale. Say so when you finish — it needs re-uploading by hand.
 
 ## The pattern that works here
 
