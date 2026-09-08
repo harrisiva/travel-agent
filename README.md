@@ -152,6 +152,12 @@ self-check above, then rebuild the uploadable archives:
 If you change a skill, please rebuild `dist/` in the same commit — that's what
 non-technical users download, and it's easy to leave behind.
 
+[**CLAUDE.md**](CLAUDE.md) documents the conventions for adding a new skill and
+the patterns worth copying from the existing two — CLI shape, exit codes,
+caching policy, what to put in a `SKILL.md`, and the traps these two hit.
+Coding agents pick it up automatically (`AGENTS.md` symlinks to it); it is
+worth reading first if you're adding a skill by hand.
+
 ## License
 
 [Apache 2.0](LICENSE)
