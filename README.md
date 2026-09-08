@@ -1,27 +1,69 @@
 # travel-agent
 
-Collection of skills I personally use to plan short trips (e.g., movies, weekend
-camping) and long trips (week long cross country camping).
+Skills for planning trips with Claude — short ones (what's playing tonight,
+a weekend campsite) and long ones (a week of cross-country camping).
 
-Each skill lives in `.claude/skills/<name>/` and is fully self-contained — the
-Python it needs is bundled alongside it. Claude Code picks them up automatically
-in this repo, and the same directory zips up for upload to claude.ai, so the
-desktop and web copies stay identical.
+Each skill is one directory at the root of this repo. They are self-contained:
+plain Python 3, no `pip install`, no API keys, no configuration.
 
-Requires Python 3. No install step, no third-party packages.
+| Skill | What it does |
+| --- | --- |
+| [**campsite-search**](campsite-search/) | Campsite and cabin availability across nine Canadian park systems |
+| [**cineplex-showtimes**](cineplex-showtimes/) | Cineplex showtimes, theatres, films and live seat availability |
 
 ---
 
-## `campsite-search`
+## Using them on claude.ai
 
-Campsite and cabin availability across the **Camis5** reservation platform,
-which nine Canadian park systems share: Parks Canada, Ontario Parks, BC Parks,
-Grand River Conservation Authority, Manitoba, Nova Scotia, New Brunswick,
-Newfoundland & Labrador, and Yukon.
+You don't need to be a developer, and you don't need to install anything.
+
+1. Download the skill you want from [**dist/**](dist/) — `campsite-search.skill`
+   or `cineplex-showtimes.skill`. (On GitHub: open the file, then **Download raw
+   file**.)
+2. In Claude, open **Settings → Capabilities → Skills** and upload the file.
+3. Just ask. The skill activates on its own when a question matches it:
+
+   > *Are there any campsites left at Bon Echo the last weekend of July?*
+   >
+   > *Is the 7pm IMAX showing of The Odyssey in Waterloo sold out?*
+
+## Using them in Claude Code
+
+Clone the repo and the skills are picked up automatically — `.claude/skills/`
+symlinks to the directories at the root, so there is only ever one copy.
+
+```sh
+git clone <this repo>
+cd travel-agent
+claude
+```
+
+To use them in a *different* project, copy or symlink the directory you want
+into that project's `.claude/skills/`, or into `~/.claude/skills/` to have it
+everywhere.
+
+## Using them as plain command-line tools
+
+Neither skill needs Claude at all — both are ordinary CLIs, and every command
+takes `--json`.
+
+```sh
+cd campsite-search/scripts    && python3 -m campsites --help
+cd cineplex-showtimes/scripts && python3 cineplex_showtimes.py --help
+```
+
+---
+
+## campsite-search
+
+Availability across the **Camis5** reservation platform, shared by nine
+Canadian park systems: Parks Canada, Ontario Parks, BC Parks, Grand River
+Conservation Authority, Manitoba, Nova Scotia, New Brunswick, Newfoundland &
+Labrador, and Yukon.
 
 **Read-only — it never books anything.** Availability is never cached, because a
-stale availability answer is worse than none; reference data (park lists,
-equipment, site metadata) is cached since it changes rarely.
+stale availability answer is worse than none. Reference data (park lists,
+equipment, site metadata) is cached, since it changes rarely.
 
 | Command | What it answers |
 | --- | --- |
@@ -37,18 +79,12 @@ equipment, site metadata) is cached since it changes rarely.
 | `cache-clear` | Empty the on-disk reference cache |
 
 Alberta, Saskatchewan, PEI, Québec and NWT are deliberately **not** supported —
-they run different platforms behind Queue-it waiting rooms or CAPTCHA. Run
+they run different platforms, behind Queue-it waiting rooms or CAPTCHA. Run
 `providers` for the current list and the reason for each.
 
-```sh
-cd .claude/skills/campsite-search/scripts
-python3 -m campsites providers
-python3 -m campsites sweep --help
-```
+Worked end-to-end workflows are in [`campsite-search/recipes.md`](campsite-search/recipes.md).
 
-Worked end-to-end workflows live in `campsite-search/recipes.md`.
-
-## `cineplex-showtimes`
+## cineplex-showtimes
 
 Showtimes, theatres, films and **live seat availability** from Cineplex Canada's
 public theatrical and ticketing APIs.
@@ -61,38 +97,44 @@ public theatrical and ticketing APIs.
 | `movies` | Every film currently listed, with its ID |
 | `locations` | Every theatre, with its ID and distance |
 
-Useful for the sold-out question specifically: `showtimes` reports a seat count
-per screening, and `seats` breaks one screening down row by row.
+For the sold-out question specifically: `showtimes` gives a seat count per
+screening, and `seats` breaks one screening down row by row.
 
-```sh
-cd .claude/skills/cineplex-showtimes/scripts
-python3 cineplex_showtimes.py locations --name Waterloo
-python3 cineplex_showtimes.py showtimes --location 7268
-```
-
-Every subcommand takes `--json` for scripting. Recipes — including watching a
-sold-out screening on a schedule — are in `cineplex-showtimes/recipes.md`.
+Recipes — including watching a sold-out screening on a schedule — are in
+[`cineplex-showtimes/recipes.md`](cineplex-showtimes/recipes.md).
 
 ---
 
 ## Checking a skill still works
 
-The APIs are public and undocumented, so they can move without warning.
+These APIs are public but undocumented, so they can change without warning.
 `campsite-search` ships a self-check; `cineplex-showtimes` is verified by any
 live call.
 
 ```sh
-cd .claude/skills/campsite-search/scripts
+cd campsite-search/scripts
 python3 test_availability.py              # 16 checks, 10 offline + 6 live
 python3 test_availability.py --offline    # logic only, no network
 
-cd .claude/skills/cineplex-showtimes/scripts
+cd cineplex-showtimes/scripts
 python3 cineplex_showtimes.py locations
 ```
 
-## Keeping copies in sync
+A `[network]` failure names the host, so a tenant being down is easy to tell
+apart from the skill being broken.
 
-These skills also exist in their own source repos (`campsite-searcher`,
-`cineplex-scalper`) and as uploads on claude.ai. The bundles here are the
-canonical, verified copies — when editing, change the bundle and propagate
-outward, and re-run the self-check before uploading anywhere.
+## Contributing
+
+The directories at the repo root are the source of truth. Edit those, re-run the
+self-check above, then rebuild the uploadable archives:
+
+```sh
+./build.sh          # regenerates dist/*.skill
+```
+
+If you change a skill, please rebuild `dist/` in the same commit — that's what
+non-technical users download, and it's easy to leave behind.
+
+## License
+
+[Apache 2.0](LICENSE)
