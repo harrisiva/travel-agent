@@ -4,12 +4,29 @@ Skills for planning trips with Claude — short ones (what's playing tonight,
 a weekend campsite) and long ones (a week of cross-country camping).
 
 Each skill is one directory at the root of this repo. They are self-contained:
-plain Python 3, no `pip install`, no API keys, no configuration.
+Python 3, no API keys, no configuration. The one dependency is `requests`, and
+each skill installs it itself if it's missing — on claude.ai there is nothing
+for you to set up.
 
 | Skill | What it does |
 | --- | --- |
 | [**campsite-search**](campsite-search/) | Campsite and cabin availability across nine Canadian park systems |
 | [**cineplex-showtimes**](cineplex-showtimes/) | Cineplex showtimes, theatres, films and live seat availability |
+
+### Where these work
+
+**Claude** — claude.ai, Claude Code, and the desktop and mobile apps. `.skill` is
+Claude's Skills format, and all three routes below are supported.
+
+**Not ChatGPT**, and not only because the format differs. Both skills are thin
+clients over live HTTP APIs — they hold no local data, so every useful command
+makes an outbound request. ChatGPT's Python sandbox has no network access, so
+the scripts would fail on the first call even if pasted in directly. Porting
+them would mean rebuilding on Custom GPT Actions, which do get network but
+can't run this Python.
+
+Outside Claude entirely, both are ordinary CLIs — see
+[plain command-line tools](#using-them-as-plain-command-line-tools) below.
 
 ---
 
