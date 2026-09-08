@@ -16,7 +16,8 @@ for you to set up.
 ### Where these work
 
 **Claude** — claude.ai, Claude Code, and the desktop and mobile apps. `.skill` is
-Claude's Skills format, and all three routes below are supported.
+Claude's Skills format, and in Claude Code installing them is a single sentence
+you paste — see [below](#installing-them--ask-claude-to-do-it).
 
 **Not ChatGPT**, and not only because the format differs. Both skills are thin
 clients over live HTTP APIs — they hold no local data, so every useful command
@@ -30,34 +31,96 @@ Outside Claude entirely, both are ordinary CLIs — see
 
 ---
 
-## Using them on claude.ai
+## Installing them — ask Claude to do it
 
-You don't need to be a developer, and you don't need to install anything.
+If you have **Claude Code** (terminal or the desktop app), don't install these
+by hand. Open it anywhere and paste:
 
-1. Download the skill you want from [**dist/**](dist/) — `campsite-search.skill`
-   or `cineplex-showtimes.skill`. (On GitHub: open the file, then **Download raw
-   file**.)
+> *Install the travel skills from https://github.com/harrisiva/travel-agent for
+> me globally — clone it somewhere sensible, symlink each skill directory into
+> `~/.claude/skills/`, and tell me what you installed.*
+
+That's the whole thing. Global means every project and every conversation, not
+just the folder you happened to be in. Ask it to install just one skill, or to
+put them in a single project's `.claude/skills/` instead, if you'd rather.
+
+To remove them later, ask for that too — *"uninstall the travel skills"*.
+
+### On claude.ai (web and mobile)
+
+This is the one route Claude can't do for you: uploading a skill is a settings
+action in your account, so it takes two clicks.
+
+1. Download the skill you want from [**dist/**](dist/) —
+   `campsite-search.skill` or `cineplex-showtimes.skill`. (On GitHub: open the
+   file, then **Download raw file**.)
 2. In Claude, open **Settings → Capabilities → Skills** and upload the file.
-3. Just ask. The skill activates on its own when a question matches it:
 
-   > *Are there any campsites left at Bon Echo the last weekend of July?*
-   >
-   > *Is the 7pm IMAX showing of The Odyssey in Waterloo sold out?*
+Nothing else — no Python, no clone, no keys.
 
-## Using them in Claude Code
+### Then just ask
 
-Clone the repo and the skills are picked up automatically — `.claude/skills/`
-symlinks to the directories at the root, so there is only ever one copy.
+However you installed it, the skill activates on its own when a question
+matches it — there is no command to remember and nothing to invoke. See
+[sample prompts](#sample-prompts) for what each one can answer.
+
+### Working on the skills themselves
+
+Clone the repo and open Claude Code in it — `.claude/skills/` symlinks to the
+directories at the root, so they're picked up with no install step and there is
+only ever one copy of each file.
 
 ```sh
-git clone <this repo>
+git clone https://github.com/harrisiva/travel-agent.git
 cd travel-agent
 claude
 ```
 
-To use them in a *different* project, copy or symlink the directory you want
-into that project's `.claude/skills/`, or into `~/.claude/skills/` to have it
-everywhere.
+## Sample prompts
+
+Copy one, or ask in your own words — these are just the shapes each skill
+handles well.
+
+### campsite-search
+
+> *Are there any campsites left at Bon Echo the last weekend of July?*
+>
+> *Anything at all open in Algonquin on a Friday or Saturday night between now
+> and the end of September?*
+>
+> *I want an electrical site at Pinery for three nights in August — which ones
+> are free, and are any of them private or barrier-free?*
+>
+> *Find me a cabin, yurt or oTENTik somewhere in Ontario Parks for the October
+> long weekend.*
+>
+> *When do 2027 reservations open for Banff, and how far ahead can I book?*
+>
+> *Site 412 at Sandbanks — show me its calendar for July.*
+>
+> *Bon Echo is sold out for that weekend. Watch it and tell me if anything
+> cancels.*
+>
+> *Any alerts or closures I should know about for Killarney right now?*
+
+### cineplex-showtimes
+
+> *What's playing at the Waterloo Cineplex tonight?*
+>
+> *Is the 7pm IMAX showing of The Odyssey in Waterloo sold out?*
+>
+> *Which theatres near Toronto are showing Dune in 70mm this weekend?*
+>
+> *I want two seats together in the middle of the theatre — which showing this
+> Saturday still has them?*
+>
+> *Anything in Dolby Atmos in Mississauga on Friday after 6pm?*
+>
+> *Book-club night is Thursday — find a showing where eight of us can sit in
+> one row.*
+>
+> *Tickets aren't out yet for the Friday IMAX. Check every morning and tell me
+> when they are.*
 
 ## Using them as plain command-line tools
 

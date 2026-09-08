@@ -66,14 +66,32 @@ each leaves a whole audience without the skill.
 3. **Write a self-check** (see below) and run it.
 4. **`./build.sh`** to regenerate `dist/`. Without this, the skill exists in the
    repo but nobody can install it on claude.ai.
-5. **Update `README.md`:** add a row to the table at the top *and* a section
-   documenting the commands — the same shape as the existing two. An
-   undocumented skill in `dist/` is one nobody will download.
+5. **Update `README.md`** in three places, the same shape as the existing two
+   skills: a row in the table at the top, a section documenting the commands,
+   and a block of **sample prompts** under *Sample prompts*. An undocumented
+   skill in `dist/` is one nobody will download.
+
+### Sample prompts are part of shipping a skill
+
+Every skill gets its own block under *Sample prompts* in `README.md` — six to
+eight questions in a user's own words, not commands. Nobody invokes a skill by
+name; they ask a question and it either fires or it doesn't, so the prompts are
+how a reader works out whether the skill covers what they want. They also
+double as a spec: if you can't phrase a command as a question someone would
+actually ask, that command is shaped wrong (see *Subcommands that map to
+questions, not to endpoints*).
+
+Cover the range — one per command family, including the ones people won't guess
+at (roofed accommodation, attribute filters, booking windows, watches) — and
+keep every prompt answerable. A prompt implying something the CLI can't do
+(a radius search, say, when there is only name matching) reads as a bug report
+the first time someone tries it.
 
 Commit `dist/` in the **same commit** as the source change. It is a build
 artifact, but it is the one users actually download, so a stale `dist/` ships
 a stale skill. Same rule when you only *edit* a skill: rebuild and commit
-together, and update the README if the commands changed.
+together, and update the README — commands *and* sample prompts — if what the
+skill can answer changed.
 
 Changing a skill's scripts also makes any copy already uploaded to claude.ai
 stale. Say so when you finish — it needs re-uploading by hand.
