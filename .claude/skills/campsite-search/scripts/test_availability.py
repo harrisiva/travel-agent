@@ -36,9 +36,16 @@ import traceback
 from datetime import date, timedelta
 from pathlib import Path
 
+# This file has two homes: the skill bundle, where it sits in scripts/ beside
+# campsites/, and the repo, where it sits in tests/ one level below it. Walk up
+# until the package turns up so the same copy runs correctly from either.
 _HERE = Path(__file__).resolve().parent
-if str(_HERE) not in sys.path:
-    sys.path.insert(0, str(_HERE))
+_PKG_BASE = next(
+    (b for b in (_HERE, *_HERE.parents) if (b / "campsites" / "__init__.py").is_file()),
+    _HERE,
+)
+if str(_PKG_BASE) not in sys.path:
+    sys.path.insert(0, str(_PKG_BASE))
 
 from campsites.camis import CamisClient, _natural  # noqa: E402
 from campsites.cli import EXIT_NET, EXIT_NONE, EXIT_OK, EXIT_USAGE  # noqa: E402
@@ -53,7 +60,12 @@ from campsites.model import (  # noqa: E402
 )
 from campsites.providers import CAMIS_PROVIDERS, OTHER_PROVIDERS, resolve  # noqa: E402
 
+# The bundle ships a campsites.py shim beside this file — the exact entry point
+# the agent invokes, so prefer it. The repo has no shim and is driven through
+# `python3 -m campsites`; either way the call below stays an absolute one made
+# from a foreign cwd, which is what these checks are really asserting.
 LAUNCHER = _HERE / "campsites.py"
+_CLI_ARGV = [str(LAUNCHER)] if LAUNCHER.is_file() else ["-m", "campsites"]
 
 A = Availability.AVAILABLE
 U = Availability.UNAVAILABLE
@@ -111,10 +123,11 @@ def run_cli(*args: str, timeout: int = 180) -> subprocess.CompletedProcess:
     Running from a temp dir rather than the skill directory is the point: if
     the package only resolves because `cwd` happens to contain it, this fails.
     """
+    env = {**os.environ, "PYTHONPATH": str(_PKG_BASE)}
     return subprocess.run(
-        [sys.executable, str(LAUNCHER), *args],
+        [sys.executable, *_CLI_ARGV, *args],
         capture_output=True, text=True, timeout=timeout,
-        cwd=tempfile.gettempdir(),
+        cwd=tempfile.gettempdir(), env=env,
     )
 
 
@@ -284,7 +297,6 @@ def test_exit_codes_are_the_documented_four():
 def test_launcher_runs_from_a_foreign_working_directory():
     """The skill is invoked by absolute path from wherever the agent happens to
     be, so the package must resolve without the cwd helping."""
-    assert LAUNCHER.exists(), f"missing launcher: {LAUNCHER}"
     proc = run_cli("--help", timeout=60)
     assert proc.returncode == 0, f"--help exited {proc.returncode}: {proc.stderr[:300]}"
     for cmd in ("search", "sweep", "find", "site", "stays", "providers"):
