@@ -1,0 +1,127 @@
+{
+  "_comment": "SYNTHETIC — built from the RAML spec, not captured from a live API. Re-capture against production before trusting this suite.",
+  "_shape": "CalendarResponse from flights-price-insights-api-iris_affiliate_flights_price_insights_v1.raml, day aggregation. Four rows on purpose: a cached one-way, a predicted one-way (no noStops — the spec says that field is absent on predictions), a round trip whose price hangs off the inbound leg with the cheapest inbound NOT first, and a cached row carrying no price at all.",
+  "origin": {
+    "placeId": 123567,
+    "placeType": "airport",
+    "name": "Boston Logan International Airport"
+  },
+  "destination": {
+    "placeId": 654231,
+    "placeType": "airport",
+    "name": "Los Angeles International Airport"
+  },
+  "results": [
+    {
+      "aggregationKey": "2027-03-02",
+      "outboundLeg": {
+        "origin": "BOS",
+        "destination": "LAX",
+        "departureDate": "2027-03-02",
+        "timestamp": "2027-01-26T19:42:30",
+        "noStops": true,
+        "price": {
+          "price": 214.0,
+          "currency": "USD"
+        },
+        "deeplinkUrl": "https://www.kayak.com/in?a=api-affiliate&url=%2Fflights%2FBOS-LAX%2F2027-03-02&mc=USD"
+      },
+      "inboundLegs": [],
+      "predicted": false,
+      "cabin": "economy"
+    },
+    {
+      "aggregationKey": "2027-03-03",
+      "outboundLeg": {
+        "origin": "BOS",
+        "destination": "LAX",
+        "departureDate": "2027-03-03",
+        "timestamp": "2027-01-26T03:00:00",
+        "price": {
+          "price": 179.0,
+          "currency": "USD"
+        },
+        "deeplinkUrl": "https://www.kayak.com/in?a=api-affiliate&url=%2Fflights%2FBOS-LAX%2F2027-03-03&mc=USD"
+      },
+      "inboundLegs": [],
+      "predicted": true,
+      "cabin": "economy"
+    },
+    {
+      "aggregationKey": "2027-03-04",
+      "outboundLeg": {
+        "origin": "BOS",
+        "destination": "LAX",
+        "departureDate": "2027-03-04",
+        "timestamp": "2027-01-26T19:42:30",
+        "noStops": true
+      },
+      "inboundLegs": [
+        {
+          "origin": "LAX",
+          "destination": "BOS",
+          "departureDate": "2027-03-08",
+          "timestamp": "2027-01-26T19:42:30",
+          "noStops": true,
+          "price": {
+            "price": 512.0,
+            "currency": "USD"
+          },
+          "deeplinkUrl": "https://www.kayak.com/in?a=api-affiliate&url=%2Fflights%2FBOS-LAX%2F2027-03-04%2F2027-03-08&mc=USD"
+        },
+        {
+          "origin": "LAX",
+          "destination": "BOS",
+          "departureDate": "2027-03-11",
+          "timestamp": "2027-01-26T19:42:30",
+          "noStops": false,
+          "price": {
+            "price": 388.0,
+            "currency": "USD"
+          },
+          "deeplinkUrl": "https://www.kayak.com/in?a=api-affiliate&url=%2Fflights%2FBOS-LAX%2F2027-03-04%2F2027-03-11&mc=USD"
+        },
+        {
+          "origin": "LAX",
+          "destination": "BOS",
+          "departureDate": "2027-03-14",
+          "timestamp": "2027-01-26T19:42:30",
+          "noStops": true,
+          "price": {
+            "price": 441.0,
+            "currency": "USD"
+          },
+          "deeplinkUrl": "https://www.kayak.com/in?a=api-affiliate&url=%2Fflights%2FBOS-LAX%2F2027-03-04%2F2027-03-14&mc=USD"
+        }
+      ],
+      "predicted": false,
+      "cabin": "economy"
+    },
+    {
+      "aggregationKey": "2027-03-05",
+      "outboundLeg": {
+        "origin": "BOS",
+        "destination": "LAX",
+        "departureDate": "2027-03-05",
+        "timestamp": "2027-01-26T19:42:30",
+        "noStops": false
+      },
+      "inboundLegs": [],
+      "predicted": false
+    }
+  ],
+  "airports": [
+    {
+      "iataCode": "BOS",
+      "name": "Boston Logan Intl Airport",
+      "cityName": "Boston",
+      "countryName": "United States"
+    },
+    {
+      "iataCode": "LAX",
+      "name": "Los Angeles International Airport",
+      "cityName": "Los Angeles",
+      "countryName": "United States"
+    }
+  ]
+}

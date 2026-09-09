@@ -12,6 +12,7 @@ for you to set up.
 | --- | --- |
 | [**campsite-search**](campsite-search/) | Campsite and cabin availability across nine Canadian park systems |
 | [**cineplex-showtimes**](cineplex-showtimes/) | Cineplex showtimes, theatres, films and live seat availability |
+| [**kayak-browse**](kayak-browse/) | Rental cars, hotels and cheapest flight dates across hundreds of providers via KAYAK's affiliate API (needs an API key) |
 
 ### Where these work
 
@@ -122,6 +123,24 @@ handles well.
 > *Tickets aren't out yet for the Friday IMAX. Check every morning and tell me
 > when they are.*
 
+### kayak-browse
+
+> *What's the cheapest car I can pick up at Toronto Pearson on Dec 20 and drop back on the 23rd?*
+>
+> *I need an SUV big enough to sleep in for a week out of Denver — automatic, unlimited mileage, free cancellation.*
+>
+> *Same car, same city — is it any cheaper if I shift the pickup a day either way?*
+>
+> *Pick up in Vancouver, drop off in Calgary. What does a one-way run me?*
+>
+> *The cheapest one hides the agency until you've paid — is that worth it, or should I take the Hertz one?*
+>
+> *When in March is it cheapest to fly from New York to Lisbon?*
+>
+> *Find me hotels in Austin for the nights of the 14th and 15th.*
+>
+> *What should I search for "Newark" — does KAYAK list a downtown pickup point as well as the airport?*
+
 ## Using them as plain command-line tools
 
 Neither skill needs Claude at all — both are ordinary CLIs, and every command
@@ -185,6 +204,60 @@ Recipes — including watching a sold-out screening on a schedule — are in
 
 ---
 
+## kayak-browse
+
+Rental cars, hotels and cheapest-flight-dates from **KAYAK's affiliate APIs** —
+one search covers hundreds of providers. This exists because the direct
+supplier sites are closed: avis.ca and budget.ca both answer `403` behind
+DataDome on their pricing endpoint, from `curl` and from a real browser alike,
+so an aggregator API is the only way in.
+
+**Read-only — it never books, holds or pays for anything.** Prices are never
+cached; place lookups are cached for days.
+
+| Command | What it answers |
+| --- | --- |
+| `cars` | What can I rent here on these dates, and on what terms? |
+| `sweep` | Which pickup day in this range is cheapest? |
+| `places` | What id does KAYAK use for this airport or city? |
+| `when` | What's the cheapest date to fly this route? |
+| `hotels` | What's available for these nights? |
+| `check` | Is my API key alive? |
+| `login` | Validate and store a key once |
+
+Filters run client-side, so `cars` takes the questions the website won't:
+`--sleepable` (an SUV or van with room for four), `--unlimited-mileage`,
+`--free-cancellation`, `--no-credit-card`, `--exclude-opaque`, `--max-price`,
+and the usual class, seat, bag, transmission and fuel constraints. When a
+filter empties the result, the tool reports *which* one did it.
+
+**This is the one skill in this repo that is not self-contained.** It needs a
+KAYAK affiliate API key, which KAYAK emails to the partner on signup — set
+`KAYAK_API_KEY`, or run `login` once with a key file. Two consequences worth
+knowing before you install it:
+
+- **Sandbox prices are mock data.** The tool refuses to print a price column or
+  rank a sweep against the sandbox host unless you pass `--sandbox-ok`, and
+  every row is marked `priceIsReal: false`. A fabricated price presented as a
+  real quote is the worst thing this skill could do, so the guard is structural
+  rather than a warning in the docs.
+- **Sandbox keys expire every three months.** An expired key exits `4`, which
+  never means "nothing available".
+
+**Not yet verified against the live API.** No key existed when this was built,
+so every test runs against fixtures written from KAYAK's published RAML spec.
+That is a real limitation, not a formality: the worst bug found during
+development was a misspelled request field that silently disabled two critical
+settings, and the test written to catch it asserted the same misspelling.
+Re-recording the fixtures against a production key is the first job once access
+exists. Three things stay open until then — whether sandbox signup is
+self-serve or needs business approval, what production rate limits look like,
+and whether the cars API exposes Canadian inventory usefully (the sandbox is
+US-only).
+
+Worked workflows — sweeps, one-ways, watch loops, `--json` — are in
+[`kayak-browse/recipes.md`](kayak-browse/recipes.md).
+
 ## Checking a skill still works
 
 These APIs are public but undocumented, so they can change without warning.
@@ -198,6 +271,9 @@ python3 test_availability.py --offline    # logic only, no network
 
 cd cineplex-showtimes/scripts
 python3 cineplex_showtimes.py locations
+
+cd kayak-browse/scripts
+python3 test_kayak.py --offline           # 58 checks, no network and no key needed
 ```
 
 A `[network]` failure names the host, so a tenant being down is easy to tell
