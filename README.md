@@ -4,15 +4,19 @@ Skills for planning trips with Claude — short ones (what's playing tonight,
 a weekend campsite) and long ones (a week of cross-country camping).
 
 Each skill is one directory at the root of this repo. They are self-contained:
-Python 3, no API keys, no configuration. The one dependency is `requests`, and
-each skill installs it itself if it's missing — on claude.ai there is nothing
-for you to set up.
+Python 3, no API keys, no configuration. Most need only `requests`, which each
+skill installs itself if it's missing; `google-maps` needs nothing at all
+beyond the standard library. Skills that reach the network need egress enabled
+on claude.ai — see each skill's section.
 
 | Skill | What it does |
 | --- | --- |
 | [**campsite-search**](campsite-search/) | Campsite and cabin availability across nine Canadian park systems |
 | [**cineplex-showtimes**](cineplex-showtimes/) | Cineplex showtimes, theatres, films and live seat availability |
+| [**google-maps**](google-maps/) | Places near a location — live status, full opening hours, and travel time on foot, by car, bike or transit |
+| [**enterprise-rentals**](enterprise-rentals/) | Enterprise rental car prices worldwide — live availability, real make/model, mileage terms and trip totals |
 | [**kayak-browse**](kayak-browse/) | Rental cars, hotels and cheapest flight dates across hundreds of providers via KAYAK's affiliate API — **needs an approved API key; never run live** |
+| [**google-flights**](google-flights/) | Live flight prices and schedules, plus Google's own "is this a good price?" verdict and 60 days of fare history |
 
 ### Where these work
 
@@ -20,7 +24,7 @@ for you to set up.
 Claude's Skills format, and in Claude Code installing them is a single sentence
 you paste — see [below](#installing-them--ask-claude-to-do-it).
 
-**Not ChatGPT**, and not only because the format differs. Both skills are thin
+**Not ChatGPT**, and not only because the format differs. These skills are thin
 clients over live HTTP APIs — they hold no local data, so every useful command
 makes an outbound request. ChatGPT's Python sandbox has no network access, so
 the scripts would fail on the first call even if pasted in directly. Porting
@@ -123,6 +127,48 @@ handles well.
 > *Tickets aren't out yet for the Friday IMAX. Check every morning and tell me
 > when they are.*
 
+### google-flights
+
+> *What does it cost to fly Toronto to Halifax on the 25th and back on the 27th?*
+>
+> *Is that a good price, or should I wait? What's it normally?*
+>
+> *I can leave any day in the next three weeks — which departure date is
+> cheapest for a two-night trip?*
+>
+> *What's the airport code for Toronto, and does London have more than one?*
+>
+> *Nonstop only, leaving after 8am, and I'd rather not connect through
+> Toronto — what's left?*
+>
+> *Which flight to London has the lowest emissions, and which has the most
+> legroom?*
+>
+> *Business class for two adults and a child to Lisbon in March — what's the
+> damage?*
+>
+> *Watch the Toronto–Halifax fare over Christmas and tell me if it drops under
+> $600.*
+
+### google-maps
+
+> *What's open near me right now for dinner, within about a ten minute drive?*
+>
+> *Find me a highly rated ramen place around Kensington Market that's still
+> serving.*
+>
+> *How long does it take to drive from Union Station to Pearson, with traffic?*
+>
+> *What's within a 15 minute walk of my hotel — I don't have a car.*
+>
+> *Can I get to the ROM by transit from here, and how long does it take?*
+>
+> *What are Richmond Station's hours for the whole week?*
+>
+> *Anywhere near Kensington Market still serving at 11pm on Saturday?*
+>
+> *Is that place still open, and what time does it close tonight?*
+
 ### kayak-browse
 
 > *What's the cheapest car I can pick up at Toronto Pearson on Dec 20 and drop back on the 23rd?*
@@ -141,14 +187,39 @@ handles well.
 >
 > *What should I search for "Newark" — does KAYAK list a downtown pickup point as well as the airport?*
 
+### enterprise-rentals
+
+> *I need a car at Halifax airport from Oct 15 to 18 — cheapest thing that
+> fits five people and their luggage?*
+>
+> *Is any week in October cheaper than the others for a rental in Vancouver?*
+>
+> *We're driving Halifax to Moncton one way in November — can I drop it there,
+> and how many fewer cars can I choose from?*
+>
+> *My son is 22 and wants to rent in Denver for a week — how much extra, and
+> are there cars he isn't allowed to take?*
+>
+> *Something I can sleep in for a two-week road trip. AWD, and it has to be
+> unlimited mileage.*
+>
+> *Is it cheaper to pick up at Heathrow or somewhere in central London for the
+> same four days?*
+>
+> *I need an automatic in Frankfurt — half the cheap ones there are manuals.*
+>
+> *If my flight lands at 11pm on the 15th, can I still collect the car — and
+> can I drop it back on Sunday night?*
+
 ## Using them as plain command-line tools
 
-Neither skill needs Claude at all — both are ordinary CLIs, and every command
+None of these needs Claude at all — they are ordinary CLIs, and every command
 takes `--json`.
 
 ```sh
 cd campsite-search/scripts    && python3 -m campsites --help
 cd cineplex-showtimes/scripts && python3 cineplex_showtimes.py --help
+cd enterprise-rentals/scripts && python3 enterprise.py --help
 ```
 
 ---
@@ -201,6 +272,134 @@ screening, and `seats` breaks one screening down row by row.
 
 Recipes — including watching a sold-out screening on a schedule — are in
 [`cineplex-showtimes/recipes.md`](cineplex-showtimes/recipes.md).
+
+---
+
+## google-maps
+
+Places near a location, with **live** open/closed status, the full seven-day
+schedule, and travel time by car, foot, bike or transit — including live
+traffic. Read-only: it never books or contacts anywhere.
+
+Everything comes from Google's own endpoints. No API key, no login, and **no
+dependencies at all** — standard library only.
+
+| Command | What it answers |
+| --- | --- |
+| `nearby` | What's open around here, ranked by how long it takes to get there |
+| `search` | Places matching a query, with hours, rating and address (phone is in `--json`) |
+| `hours` | One place's full week |
+| `travel` | Time and distance to one or more places, in one request |
+| `geocode` | A place name or address to coordinates |
+
+**`--mode` is the flag that matters most.** `walk`, `bike`, `transit` and
+`drive` give genuinely different answers: a place 600 m away is "8 minutes" by
+car and a 7-minute walk, and in a city the walk is usually the real answer.
+Transit returns actual departure and arrival times.
+
+`--open-at "Fri 21:00"` is interpreted in the *place's* local time — what you
+mean when you ask whether somewhere will still be open when you land.
+
+Places that publish no hours are reported as *unknown*, never as closed. Travel
+times say whether they include live traffic. There is no price data on these
+endpoints, and the skill says so rather than guessing.
+
+### On claude.ai, enable network access first
+
+claude.ai's code-execution sandbox blocks all domains except package managers by
+default, so this skill fails until you change that: **Settings → Capabilities →
+Code execution → network access for all domains** (or allowlist
+`www.google.com`), then **start a new chat** — the setting does not apply to the
+conversation you changed it in. Needs a paid plan with code execution. In Claude
+Code it works with no setup. (These claude.ai instructions are derived
+from Anthropic's documentation and have not been tested inside that sandbox.)
+
+### Known gaps
+
+No **search-along-a-route** command — the "where can we stop on the way?"
+question is answered by interpolating waypoints and searching around each
+(recipe 5, tested, with its caveats). No automatic radius widening when nothing
+is open; retry at a larger `--span`. **No price data** exists on these
+endpoints, so the skill says so rather than guessing. Reviews, photos, busyness,
+accessibility and reservation links are not surfaced.
+
+These are Google's own internal endpoints rather than a supported API, so they
+can change without notice; a shape change exits `3`, never "nothing found".
+
+Recipes — walking vs driving, the along-a-route workaround, watching for an
+opening — are in [`google-maps/recipes.md`](google-maps/recipes.md).
+
+---
+
+## enterprise-rentals
+
+Live rental car prices from Enterprise, anywhere Enterprise operates.
+Read-only — it quotes and compares, and has no code path that can book.
+
+Verified live in **nine countries on four continents** — Canada, the US, the
+UK, Germany, France, Spain, Ireland, New Zealand and Japan — each priced in the
+branch's own currency. Vehicle labels come back translated (`Mietwagen`,
+`Kleinbusse`); filters match the API's numeric facet codes instead, so
+`--class van` finds a German minibus.
+
+One request returns the **whole fleet** for a branch and date pair, so a quote
+carries the real make and model, seats, luggage capacity, drivetrain, fuel
+type, transmission, mileage terms, the trip total and the Enterprise Plus
+points price — all at once.
+
+**The `PER DAY` column is the trip total divided by the rental days**, not
+Enterprise's own rate line, and the footer says so. Enterprise quotes some
+classes at a weekly rate, which read as a daily price would understate a week
+several times over; `--json` keeps the raw figure (`api_rate`,
+`api_rate_period`) and the derived one (`per_day_effective`) apart.
+
+| Command | What it answers |
+| --- | --- |
+| `locations` | Which branch do you mean, and what is its id |
+| `quote` | What can I rent here on these dates, and what does it cost |
+| `sweep` | Is a different week cheaper |
+| `compare` | Airport or downtown; this city or that one |
+| `watch` | Tell me when a sold-out class frees up |
+| `branch` | Counter hours and after-hours drop-off, for any date |
+| `doctor` | Why did that fail — environment and transport check |
+| `cache` | Show or clear the cached branch lookups |
+
+**Prices are what the branch charges.** `--currency` adds a labelled estimate
+(`436.00 CAD (~315.10 USD est.)`) but never replaces the billed figure, because
+quoting a converted number as the price is the worst mistake this skill could
+make.
+
+**Age is not cosmetic.** Under-25 renters pay more *and* cannot rent every
+class — at Halifax, 20 bookable classes at 25 becomes 13 at 21. Pass
+`--age 21 --age 25` to price both at once and see the classes that disappear.
+
+**Sold-out classes stay visible in the count**, never silently dropped: the
+footer reads `20 of 59 classes bookable` with a per-category breakdown, because
+"every minivan is gone" is sometimes the answer. The API reports age-restricted
+classes as sold out too, so for an under-25 renter the two are indistinguishable
+— the skill says so rather than sending you hunting for better dates.
+
+**Commercial terms are not in this API.** Deposit, insurance, fuel policy,
+cancellation and additional-driver fees are not available from any command; the
+skill says it cannot tell you rather than guessing.
+
+Branch names are ambiguous — `Halifax` matches the airport, the train station
+and two **Exotic** branches with a different fleet at much higher prices. The
+tool refuses to guess and lists the candidates.
+
+**`--country` is a search hint, not a filter** — asking for Australia returns
+Sydney, *Nova Scotia*, and `--country BO` returns La Paz, *Mexico*. Every
+listing carries a `CTRY` column, and a resolved branch outside the country you
+asked for triggers a loud warning before it is priced.
+
+Cross-border one-way rentals are refused by Enterprise using the *same* message
+as a genuine sell-out. The skill exits with a usage error and says the route is
+probably not permitted, rather than sending you hunting for dates that will
+never work.
+
+Recipes — cheapest-week sweeps, young-driver pricing, road-trip vehicles,
+points-vs-cash — are in
+[`enterprise-rentals/recipes.md`](enterprise-rentals/recipes.md).
 
 ---
 
@@ -258,22 +457,92 @@ US-only).
 Worked workflows — sweeps, one-ways, watch loops, `--json` — are in
 [`kayak-browse/recipes.md`](kayak-browse/recipes.md).
 
+## google-flights
+
+Live search against **Google Flights**, which server-renders its whole result
+set into the page — so there is no JSON endpoint to call, no API key, and no
+browser needed. The client parses that payload directly.
+
+| Command | What it answers |
+| --- | --- |
+| `airports` | What's the airport code for Toronto? Does London have several? |
+| `search` | What flies this route on these dates? |
+| `price-check` | Is this fare good, or is it worth waiting? |
+| `cheapest` | Which departure date in a window is cheapest? |
+| `route` | Who flies this route, and what can I filter on? |
+| `watch` | Has the fare dropped under my threshold yet? |
+
+```sh
+cd google-flights/scripts
+python3 flights.py airports Toronto
+python3 flights.py search YYZ YHZ --depart 2026-09-25 --return 2026-09-27
+python3 flights.py price-check YYZ YHZ --depart 2026-09-25 --return 2026-09-27
+python3 flights.py cheapest YYZ YHZ --depart +7 --return +9 --days 21
+```
+
+Dates are `YYYY-MM-DD` or `+N` days from today. Filters that Google applies
+server-side (`--max-stops`) change what is searched; the rest — `--max-price`,
+`--airlines`, `--avoid-layovers`, `--depart-after`, `--max-co2` and friends —
+are applied to the results and cost no extra requests.
+
+`price-check` is the one worth knowing about. Google publishes its own verdict
+on a route's current fare along with about 60 days of history, so the tool can
+answer *"is $231 good?"* with **"typical — against a usual $228, in a
+$190–$345 range"**, which no listing scraper can do.
+
+Three things to keep straight. On a round trip the price is the **whole trip**
+but the legs shown are the **outbound only** — every itinerary says which via
+`price_covers`. Prices cover the **whole party**, so `--adults 2` roughly
+doubles them. And on `cheapest`, `--return` sets the trip *length* rather than
+a fixed return date, so the sweep slides both ends together — each row reports
+the return it actually priced.
+
+Fares are never cached — a stale "cheap" answer is the one that costs the user
+money. Exit `1` means the query worked and nothing matched; exit `2` means the
+question as asked cannot be answered, and the tool says why rather than
+returning an empty list (a past date, a `--max-price` below the route's
+cheapest fare, an airline that does not fly it, a metro code that already
+contains the destination, or a currency Google did not actually price in); exit
+`3` means the check itself failed, including Google serving a captcha instead
+of results. Only `1` is safe for a watch loop to keep polling on.
+
+Request fan-out is capped: 5 requests for a single search, 40 at the absolute
+most. `cheapest` sets its own budget of one request per date it will visit, so
+a 21-day sweep runs without raising anything by hand.
+
+Worked workflows — flexible-date hunts, watch cron jobs, emissions and layover
+filters — are in [`google-flights/recipes.md`](google-flights/recipes.md). The
+reverse-engineering behind it is in
+[`google-flights/NOTES.md`](google-flights/NOTES.md).
+
 ## Checking a skill still works
 
 These APIs are public but undocumented, so they can change without warning.
-`campsite-search` ships a self-check; `cineplex-showtimes` is verified by any
-live call.
+`campsite-search`, `enterprise-rentals`, `google-flights` and `google-maps`
+ship self-checks; `cineplex-showtimes` is verified by any live call.
 
 ```sh
 cd campsite-search/scripts
 python3 test_availability.py              # 16 checks, 10 offline + 6 live
 python3 test_availability.py --offline    # logic only, no network
 
+cd enterprise-rentals/scripts
+python3 test_availability.py              # 138 checks, 132 offline + 6 live
+python3 test_availability.py --offline    # logic only, no network
+python3 enterprise.py doctor              # environment + transport check
+
 cd cineplex-showtimes/scripts
 python3 cineplex_showtimes.py locations
 
 cd kayak-browse/scripts
 python3 test_kayak.py --offline           # 60 checks, no network and no key needed
+
+cd google-maps/scripts
+python3 test_gmaps.py --offline           # 77 checks, no network needed
+
+cd google-flights/scripts
+python3 test_flights.py --offline         # logic only, against a saved payload
+python3 test_flights.py                   # adds a live group against www.google.com
 ```
 
 A `[network]` failure names the host, so a tenant being down is easy to tell
