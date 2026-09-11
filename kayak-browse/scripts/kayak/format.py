@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import Any, Iterable, Sequence
+from typing import Iterable, Sequence
 
 SCHEMA_VERSION = 1
 

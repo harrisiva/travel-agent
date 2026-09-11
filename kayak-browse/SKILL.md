@@ -1,9 +1,23 @@
 ---
 name: kayak-browse
-description: Search rental cars, hotels and cheapest-flight-dates through KAYAK's affiliate APIs, comparing hundreds of providers at once. Use when the user wants to price or compare a rental car, find a vehicle they can sleep in for a road trip, check whether shifting the dates is cheaper, price a one-way rental, find hotels for a date range, or work out the cheapest date to fly a route. Needs a KAYAK affiliate API key. Read-only — it never books, holds or pays for anything.
+description: Search rental cars, hotels and cheapest-flight-dates through KAYAK's affiliate APIs, comparing hundreds of providers at once. Use when the user wants to price or compare a rental car, find a vehicle they can sleep in for a road trip, check whether shifting the dates is cheaper, price a one-way rental, find hotels for a date range, or work out the cheapest date to fly a route. REQUIRES a KAYAK affiliate API key, which KAYAK issues only to approved partners — without one every command exits 4 and answers nothing. Never verified against the live API. Read-only — it never books, holds or pays for anything.
 ---
 
 # kayak-browse
+
+> **Status: requires an API key, and has never run against the live API.**
+>
+> **Key required.** KAYAK issues affiliate keys only to approved partners, by
+> email, after a business application. Without one, every command exits `4`
+> and this skill can answer nothing. There is no keyless mode and no demo
+> mode — see *Why there is no keyless path* at the end of this file.
+>
+> **Unverified.** Not one request has ever been sent to KAYAK from this code.
+> The 60 checks in the self-check run against fixtures written from KAYAK's
+> published RAML specification, so they prove the tool is consistent with the
+> spec — not that the spec was read correctly. Treat every behaviour here as
+> untested until someone runs it with a real key, and re-record the fixtures
+> against live responses as the first task when that happens.
 
 A read-only client for KAYAK's affiliate search APIs: cars, hotels, place
 lookup and cheapest-date flight insights. One search covers hundreds of
@@ -252,3 +266,32 @@ spec rather than captured from the live API, because no key existed when this
 was written. They prove the parser handles the shapes we anticipated, not the
 ones we did not. Re-capturing them against a real key is the first thing worth
 doing once access exists.
+
+## Why there is no keyless path
+
+Asked and answered, so nobody re-runs the investigation:
+
+- **KAYAK's website is not an alternative.** `robots.txt` says
+  `Disallow: /cars/` for `User-agent: *`. KAYAK separately whitelists
+  `/i/api/search/v1/hotels/poll` by name — a poll endpoint of exactly the same
+  shape, for a different vertical — with no cars equivalent anywhere in the
+  file. That is a deliberate line, not an oversight.
+- **The allowed hotels endpoint is unreachable anyway.** Its session credential
+  comes from `/s/run/fpc/context` (`Disallow: /s/`) and its `searchId` from a
+  `/hotels/<query>` results page (`Disallow: /hotels/`). The two `Allow`s
+  cannot be closed from allowed paths alone.
+- **A browser does not change this.** Driving a real browser with Playwright
+  reaches the data, but `robots.txt` governs automated access rather than
+  transport; the request is the same request. It also cannot run on claude.ai.
+- **No other source has it either.** Sixteen hosts were probed with an honest
+  plain client — aggregators, suppliers, regional operators. Every one was
+  robots-disallowed, WAF-blocked, or an empty JavaScript shell. The only clean
+  keyless JSON found anywhere was Enterprise's branch catalogue, which carries
+  no prices.
+- **There is no official KAYAK AI integration.** No MCP server, no Claude
+  skill; `/.well-known/mcp.json` and `/.well-known/ai-plugin.json` both 404.
+  Apparent hits on `mcp.kayak.com` are wildcard DNS — a nonsense subdomain
+  answers 200 too.
+
+The affiliate API is the only sanctioned route to this data. That is why this
+skill takes a key, and why it is the one skill in this repo that does.

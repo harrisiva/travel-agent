@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from typing import Callable, Iterable, NamedTuple
 
-from .model import CAVEATED_AGENCY_TYPES, Offer, SLEEPABLE_GROUPS
+from .model import Offer, SLEEPABLE_GROUPS
 
 Predicate = Callable[[Offer], bool]
 

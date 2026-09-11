@@ -12,7 +12,7 @@ for you to set up.
 | --- | --- |
 | [**campsite-search**](campsite-search/) | Campsite and cabin availability across nine Canadian park systems |
 | [**cineplex-showtimes**](cineplex-showtimes/) | Cineplex showtimes, theatres, films and live seat availability |
-| [**kayak-browse**](kayak-browse/) | Rental cars, hotels and cheapest flight dates across hundreds of providers via KAYAK's affiliate API (needs an API key) |
+| [**kayak-browse**](kayak-browse/) | Rental cars, hotels and cheapest flight dates across hundreds of providers via KAYAK's affiliate API — **needs an approved API key; never run live** |
 
 ### Where these work
 
@@ -273,7 +273,7 @@ cd cineplex-showtimes/scripts
 python3 cineplex_showtimes.py locations
 
 cd kayak-browse/scripts
-python3 test_kayak.py --offline           # 58 checks, no network and no key needed
+python3 test_kayak.py --offline           # 60 checks, no network and no key needed
 ```
 
 A `[network]` failure names the host, so a tenant being down is easy to tell

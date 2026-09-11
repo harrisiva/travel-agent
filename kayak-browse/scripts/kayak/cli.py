@@ -29,7 +29,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from . import filters as filter_mod
 from . import format as fmt
@@ -472,10 +472,26 @@ def cmd_sweep(args) -> int:
                          best.car.name, best.agency_label,
                          "" if search.complete else f"({search.status})"])
 
+    # Rank the days by what the command was asked: which pickup day is
+    # cheapest. Appending in calendar order and then trimming to --limit would
+    # return the first N days rather than the best N, hiding a cheaper day
+    # later in the range — the same defect that let --limit hide the cheapest
+    # car, in a third place. Days with no priced offer sort last.
+    def _day_key(entry: dict) -> tuple[int, float]:
+        cheapest = entry.get("cheapest") or {}
+        total = ((cheapest.get("price") or {}).get("total")
+                 if isinstance(cheapest.get("price"), dict) else None)
+        return (1, 0.0) if total is None else (0, float(total))
+
+    results.sort(key=_day_key)
+    rows.sort(key=lambda r: _day_key(
+        next((e for e in results if e["date"] == r[0]), {})))
+
     if not args.json:
         if rows:
             print(fmt.SANDBOX_BANNER + "\n" if client.sandbox else "", end="")
-            print(fmt.table(rows, ["pickup", "price", "car", "agency", "note"]))
+            print(fmt.table(rows[: args.limit],
+                            ["pickup", "price", "car", "agency", "note"]))
         else:
             print("no priced offers on any day in that range")
     found = any(r.get("cheapest") for r in results)
@@ -486,7 +502,10 @@ def cmd_sweep(args) -> int:
                  meta={"sandbox": client.sandbox,
                        "prices_are_mocked": client.sandbox,
                        "requests": client.requests_made,
-                       "days_scanned": len(days)})
+                       "days_scanned": len(days),
+                       "ranked_by": "price",
+                       "returned": len(results),
+                       "truncated": len(results) < len(days)})
 
 
 def _render_hotels(args, client, search) -> tuple[list[dict], dict]:

@@ -89,8 +89,13 @@ class FakeTransport:
     which is how `pageSize: 500` and `priceMode: "total"` are verified.
     """
 
-    def __init__(self, responses: list[Response]):
-        self.responses = list(responses)
+    def __init__(self, responses):
+        # `responses` is either a queue drained in order, or a callable used
+        # for every request. The callable form exists because a sweep runs its
+        # searches on four threads: a queue cannot express "this answer belongs
+        # to that date" when the draw order is nondeterministic.
+        self.responder = responses if callable(responses) else None
+        self.responses = [] if self.responder else list(responses)
         self.sent: list[dict] = []
         self.requests_made = 0
 
@@ -98,6 +103,8 @@ class FakeTransport:
         self.requests_made += 1
         self.sent.append({"method": method, "path": path,
                           "params": params or {}, "body": body})
+        if self.responder is not None:
+            return self.responder(method, path, params or {}, body)
         if not self.responses:
             raise AssertionError("FakeTransport ran out of queued responses")
         return self.responses.pop(0)
@@ -351,7 +358,8 @@ def run_cli(argv: list[str], key: str | None = SENTINEL_KEY,
 
     def fake_client(*args, **kwargs):
         clock = VirtualClock()
-        transport = FakeTransport(list(responses or []))
+        transport = FakeTransport(
+            responses if callable(responses) else list(responses or []))
         if transports is not None:
             transports.append(transport)
         kwargs["transport"] = transport
@@ -537,6 +545,69 @@ def t_full_returns_raw_rows():
         "--full rows should be the API's own results[] entries"
     for key in ("agencies", "providers", "carLocations"):
         assert key in full["meta"]["maps"], f"--full must expose the {key} map"
+
+
+def t_key_file_outranks_ambient_env():
+    """An explicitly passed --key-file must beat a stale environment variable.
+
+    Both are deliberate, but the flag was typed for THIS run while the export
+    may be left over from another shell. Preferring the ambient value silently
+    authenticates the user as somebody else.
+    """
+    import tempfile
+    from kayak.auth import resolve_key
+
+    path = Path(tempfile.mkdtemp()) / "key.txt"
+    path.write_text("file-key-EXPLICIT\n")
+    previous = os.environ.get("KAYAK_API_KEY")
+    os.environ["KAYAK_API_KEY"] = "env-key-STALE"
+    try:
+        assert resolve_key(None, str(path), Cache(enabled=False)) == "file-key-EXPLICIT"
+        assert resolve_key(None, None, Cache(enabled=False)) == "env-key-STALE"
+        assert resolve_key("flag", str(path), Cache(enabled=False)) == "flag"
+    finally:
+        if previous is None:
+            os.environ.pop("KAYAK_API_KEY", None)
+        else:
+            os.environ["KAYAK_API_KEY"] = previous
+
+
+def t_sweep_ranks_days_by_price():
+    """`sweep` must return the cheapest days, not the first days.
+
+    The command exists to answer "which pickup day is cheapest", so appending
+    in calendar order and trimming to --limit would hide a cheaper day later
+    in the range — the same defect that let --limit hide the cheapest car.
+    """
+    dear = fixture("cars_complete")
+    cheap = json.loads(json.dumps(dear))
+    for result in cheap["results"]:
+        for option in result.get("bookingOptions", []):
+            if isinstance(option.get("price"), dict):
+                option["price"]["price"] = 5.0
+                option["price"]["displayPrice"] = "$5"
+
+    CHEAP_DAY = "2026-12-22"          # the LAST day in the swept range
+
+    def responder(method, path, params, body):
+        """Price one specific pickup date cheaply, whatever order threads run."""
+        start = (body or {}).get("searchStartParameters") or {}
+        date_asked = ((start.get("pickup") or {}).get("date")
+                      if isinstance(start.get("pickup"), dict) else None)
+        return ok(cheap if date_asked == CHEAP_DAY else dear)
+
+    code, out, _ = run_cli(
+        ["sweep", "--pickup", "YYZ", "--from", "2026-12-20", "--to", CHEAP_DAY,
+         "--nights", "3", "--sandbox-ok", "--limit", "1", "--json"],
+        responses=responder)
+    data = json.loads(out)
+    assert data["meta"]["ranked_by"] == "price", "sweep must say how it ordered days"
+    assert data["results"], "expected at least one day"
+    top = data["results"][0]
+    assert top["date"] == CHEAP_DAY, (
+        f"--limit 1 returned {top['date']} but {CHEAP_DAY} was cheaper; "
+        f"sweep trimmed in calendar order instead of ranking by price")
+    assert top["cheapest"]["price"]["total"] <= 20
 
 
 # 9. No key material in output.
@@ -1228,6 +1299,8 @@ OFFLINE = [
     ("--sleepable picks SUVs and vans with room", t_sleepable_sugar),
     ("--limit trims the JSON array too", t_limit_trims_json_not_just_the_table),
     ("--full returns raw rows plus the maps", t_full_returns_raw_rows),
+    ("--key-file outranks a stale env var", t_key_file_outranks_ambient_env),
+    ("sweep ranks days by price, not calendar order", t_sweep_ranks_days_by_price),
     ("no key material reaches output", t_key_never_leaks),
     ("launcher runs from a foreign cwd", t_launcher_absolute_path),
     ("sandbox hides the price column by default", t_sandbox_suppresses_price_column),

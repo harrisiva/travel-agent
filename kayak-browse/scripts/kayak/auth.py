@@ -140,11 +140,16 @@ def resolve_key(
     """
     if explicit:
         return explicit.strip()
+    # An explicitly passed --key-file outranks the environment. Both are
+    # deliberate, but the flag was typed for THIS run while the variable may
+    # be a stale export from another shell; silently preferring the ambient
+    # value means a user who passes a key file can be authenticated as
+    # somebody else and never be told.
+    if key_file:
+        return read_key_file(key_file)
     env = os.environ.get(ENV_API_KEY)
     if env and env.strip():
         return env.strip()
-    if key_file:
-        return read_key_file(key_file)
     stored = load_stored_key(cache or Cache())
     if stored:
         return stored

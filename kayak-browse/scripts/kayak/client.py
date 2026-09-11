@@ -29,7 +29,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import replace
 from datetime import date, timedelta
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any, Callable
 
 from .auth import mint_user_track_id
 from .cache import Cache, HOURLY_LIMITS, key_for
@@ -42,16 +42,7 @@ from .errors import (
     UsageError,
 )
 from .http import Transport
-from .model import (
-    CalendarDay,
-    CalendarSearch,
-    CarSearch,
-    Hotel,
-    HotelSearch,
-    Maps,
-    Offer,
-    Place,
-)
+from .model import CalendarSearch, CarSearch, HotelSearch, Place
 
 #: The sandbox host. Production is a different tenant and a different key; the
 #: CLI decides which by `--base-url` / KAYAK_BASE_URL, and everything
