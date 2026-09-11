@@ -507,8 +507,9 @@ contains the destination, or a currency Google did not actually price in); exit
 of results. Only `1` is safe for a watch loop to keep polling on.
 
 Request fan-out is capped: 5 requests for a single search, 40 at the absolute
-most. `cheapest` sets its own budget of one request per date it will visit, so
-a 21-day sweep runs without raising anything by hand.
+most. `cheapest` sets its own budget — one request per date it will visit, plus
+a few spare for retries — so a 21-day sweep runs without raising anything by
+hand.
 
 Worked workflows — flexible-date hunts, watch cron jobs, emissions and layover
 filters — are in [`google-flights/recipes.md`](google-flights/recipes.md). The
