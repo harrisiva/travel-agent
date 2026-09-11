@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from gmaps import hours as hours_mod
 from gmaps import routing
 from gmaps.errors import UsageError
+from gmaps import fanout
 from gmaps.fanout import check_budget
 from gmaps.http import Session
 from gmaps.model import UNKNOWN, haversine_km
@@ -154,6 +155,11 @@ def run(session: Session, spec: QuerySpec) -> QueryResult:
     # at the same time rather than one after the other. Measured: 4.1 s -> 2.7 s
     # on a ten-result query, for no extra requests.
     want_hours = spec.want_hours or bool(spec.open_at)
+    # Parse --open-at now, not after enrichment. It was first reached inside
+    # _filter_open_at, so a typo like "Fri 8" spent a full round of embed
+    # requests against Google before exiting 2.
+    if spec.open_at:
+        hours_mod.parse_when(spec.open_at)
 
     # Refuse an oversized plan rather than quietly answering a smaller
     # question — the house rule, and the reason `campsites find` has a ceiling.
@@ -161,7 +167,15 @@ def run(session: Session, spec: QuerySpec) -> QueryResult:
     # independent budgets of N let a documented ceiling of 25 spend 50.
     if want_hours or spec.want_travel:
         per_place = (1 if want_hours else 0) + (1 if spec.want_travel else 0)
-        check_budget(len(rows) * per_place, spec.max_place_requests,
+        # +1 when routing runs: the star pass is one request on top of the
+        # per-place calls. Charging it here, once, keeps this check and
+        # routing.annotate agreeing about the same ceiling — they disagreed by
+        # exactly one, which surfaced as a place silently skipped.
+        # +1 when routing runs: annotate spends one request on the star pass
+        # before any per-place call, so a ceiling that charged only per-place
+        # left the last place unpriced. The two must agree on the same number.
+        planned = len(rows) * per_place + (1 if spec.want_travel else 0)
+        check_budget(planned, spec.max_place_requests,
                      f"enriching {len(rows)} places")
 
     # Computed BEFORE the closures below capture it. Late binding made the
@@ -182,8 +196,18 @@ def run(session: Session, spec: QuerySpec) -> QueryResult:
     if len(stages) == 1:
         stages[0]()
     elif stages:
-        with ThreadPoolExecutor(max_workers=len(stages)) as pool:
-            list(pool.map(lambda fn: fn(), stages))
+        # Stages run together, so each must take a SHARE of the courtesy
+        # ceiling rather than the whole of it — two stages each opening a
+        # 12-worker pool put 24 simultaneous requests on one host while the
+        # flag and the docs both said 12.
+        per_stage = max(1, fanout.DEFAULT_WORKERS // len(stages))
+        previous = fanout.DEFAULT_WORKERS
+        fanout.DEFAULT_WORKERS = per_stage
+        try:
+            with ThreadPoolExecutor(max_workers=len(stages)) as pool:
+                list(pool.map(lambda fn: fn(), stages))
+        finally:
+            fanout.DEFAULT_WORKERS = previous
 
     # Count failures on the ENRICHED list, before any filter removes them —
     # the filters drop exactly the places whose lookups failed, so counting

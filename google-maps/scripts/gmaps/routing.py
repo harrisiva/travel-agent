@@ -102,6 +102,14 @@ def _traffic(route: list, route_free_flow_s: float | None = None) -> dict | None
     if free_flow is not None and in_traffic < free_flow * 0.98:
         return None
 
+    # The 2% window exists so ordinary rounding does not discard a good block —
+    # but it must not let the inversion through to the payload. Clamping here
+    # keeps the reported pair coherent: --full ships both numbers, and
+    # "29.5 in traffic, 30.0 free-flow" states that congestion saved 30
+    # seconds, which is the incoherence this whole guard exists to prevent.
+    if free_flow is not None:
+        in_traffic = max(in_traffic, free_flow)
+
     return {
         "minutes": round(in_traffic, 1),
         "text": block[0][1],
@@ -266,13 +274,28 @@ def star_legs(session: Session, origin: tuple[float, float],
             f"asked for {mode} and Google answered with "
             f"{MODE_NAMES.get(echoed, echoed)!r}; discarding the star pass")
 
+    # The chain is O,D0,O,D1,...,D_last — 2n waypoints minus the omitted trip
+    # home, so exactly 2n-1 legs. Checking the COUNT is what actually catches a
+    # dropped or inserted leg.
+    #
+    # A distance check cannot: in a star chain an odd-numbered shift maps every
+    # destination onto its own RETURN leg (Di->O instead of O->Di), which has
+    # the same two endpoints and therefore the same distance. Verified against
+    # a three-destination fixture — a haversine floor rejected 0 of 3
+    # misattributed legs. It is kept below only as an honest sanity floor on a
+    # leg that is impossibly short, and claims nothing about alignment.
+    expected_legs = 2 * len(dests) - 1
+    if len(legs) != expected_legs:
+        raise NetworkError(
+            f"directions returned {len(legs)} legs for {len(dests)} "
+            f"destinations, expected {expected_legs} — the chain is "
+            "misaligned, so every distance would belong to the wrong place")
+
     out: list[dict | None] = []
     for i in range(len(dests)):
         leg = legs[i * 2] if len(legs) > i * 2 else None
-        # A dropped or inserted leg shifts every destination's numbers onto its
-        # neighbour — a plausible wrong value, never an exception. A road route
-        # cannot be shorter than the straight line between the same two points,
-        # so that is a free consistency check on the mapping.
+        # Sanity floor only: a road route shorter than the straight line is
+        # impossible. This does NOT detect misalignment — see above.
         if leg is not None:
             try:
                 straight = _haversine_km(origin, dests[i])
@@ -315,6 +338,10 @@ def annotate(session: Session, origin: tuple[float, float], places: list[dict],
     # The star call is itself a request, so it comes out of the same budget.
     # Charging only the re-pricing let a documented ceiling of 20 issue 21 when
     # the star pass failed and every place had to be priced individually.
+    # `budget` is TOTAL requests for this stage, and the star call is one of
+    # them — hence the -1. The places this leaves unpriced are marked skipped,
+    # and `cli._outcome` treats "we never looked" as distinct from "nothing
+    # matched" so they cannot silently become exit 1.
     remaining = max(0, budget - 1)
 
     try:
@@ -351,10 +378,6 @@ def annotate(session: Session, origin: tuple[float, float], places: list[dict],
         if id(place) not in attempted:
             place["travel_skipped"] = "over the request budget"
 
-    for place in places[budget:]:
-        place["travel_minutes"] = None
-        place["travel_km"] = None
-        place["travel_skipped"] = "over the request budget"
     return len(targets)
 
 

@@ -80,8 +80,14 @@ def _footnotes(rows: list[dict], result) -> None:
             notes.append(
                 f"{result.skipped} were not looked up (per-place ceiling) — "
                 "raise --max-place-requests to include them")
+        # Only claim --limit cut them when --limit actually did. This count is
+        # taken before the hours and travel filters run, so after an --open-at
+        # or --within pass the difference is mostly places that were filtered
+        # out — blaming --limit sends the user to raise a number that will
+        # change nothing.
+        limit = getattr(getattr(result, "spec", None), "limit", None)
         more = getattr(result, "matched_before_limit", 0) - len(rows)
-        if more > 0:
+        if more > 0 and limit is not None and len(rows) >= limit:
             notes.append(f"{more} more matched but were cut by --limit")
         if getattr(result, "travel_unknown", 0):
             notes.append(f"{result.travel_unknown} could not be routed")

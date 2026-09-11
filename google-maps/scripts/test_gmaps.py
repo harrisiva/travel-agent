@@ -38,7 +38,7 @@ from gmaps.http import new_session
 from gmaps import model as model_mod
 from gmaps.model import CLOSED, OPEN, UNKNOWN, haversine_km, place_from_blob
 from gmaps.parse import ParseError, decode, result_blobs, search_center
-from gmaps.places import filter_open, geocode, search
+from gmaps.places import geocode, search
 from gmaps.query import QueryResult, QuerySpec, _filter_open_at, _sort
 from gmaps.routing import MODES, routes
 
@@ -333,14 +333,35 @@ def t_missing_hours_is_unknown_not_closed():
             "unknown hours reported as closed")
 
 
-def t_filter_open_counts_unknowns():
-    rows = [{"status": OPEN}, {"status": CLOSED}, {"status": UNKNOWN}]
-    kept, unknown = filter_open(rows, want_open=True)
-    assert_(len(kept) == 1, f"--open-now kept {len(kept)} rows, expected 1")
-    assert_(unknown == 1, f"unknown count was {unknown}, expected 1")
-    kept, unknown = filter_open(rows, want_open=False)
-    assert_(len(kept) == 3, "unfiltered call dropped rows")
-    assert_(unknown == 1, "unknowns went uncounted on an unfiltered call")
+def t_open_now_filter_counts_unknowns():
+    """--open-now keeps only OPEN, and counts UNKNOWN rather than hiding it.
+
+    This used to test `places.filter_open`, which nothing in the package calls:
+    `query.run` does the filtering inline, so the test passed while the real
+    path went uncovered. A place with no published hours must not be quietly
+    dropped — `hours_unknown` is what lets a caller say "4 open, plus 3 whose
+    hours aren't listed" instead of implying those three are shut.
+    """
+    def rows():
+        return [{"name": "o", "status": OPEN, "business_status": "operating",
+                 "lat": 43.6, "lng": -79.4, "rating": 4.0},
+                {"name": "c", "status": CLOSED, "business_status": "operating",
+                 "lat": 43.6, "lng": -79.4, "rating": 4.0},
+                {"name": "u", "status": UNKNOWN, "business_status": "operating",
+                 "lat": 43.6, "lng": -79.4, "rating": 4.0}]
+
+    with patched(query_mod, "search", lambda *a, **k: rows()), \
+         patched(query_mod, "geocode", lambda *a, **k: (43.6, -79.4, "x")):
+        strict = query_mod.run(None, QuerySpec(near="43.6,-79.4", open_now=True))
+        loose = query_mod.run(None, QuerySpec(near="43.6,-79.4", open_now=False))
+
+    assert_([p["name"] for p in strict.places] == ["o"],
+            f"--open-now kept {[p['name'] for p in strict.places]}, expected ['o']")
+    assert_(strict.hours_unknown == 1,
+            f"hours_unknown was {strict.hours_unknown}, expected 1 — an unknown "
+            "was dropped without being counted")
+    assert_(len(loose.places) == 3, "the unfiltered call dropped rows")
+    assert_(loose.hours_unknown == 1, "unknowns went uncounted when unfiltered")
 
 
 def t_search_center():
@@ -1736,6 +1757,289 @@ def t_star_leg_shorter_than_the_crow_flies_is_rejected():
     assert_(got == [None],
             f"an impossibly short leg was accepted: {got} — a misaligned star "
             "chain would pass straight through")
+
+
+def t_traffic_never_reports_a_faster_than_free_flow_pair():
+    """The 2% rounding window must not let an inversion reach the payload.
+
+    The mixed-source case was fixed earlier; the tolerance itself still let a
+    29.5-minute in-traffic figure ship beside a 30.0-minute free-flow one.
+    `--full` carries both, so the payload stated that congestion saved the
+    driver thirty seconds.
+    """
+    block = [[1770, "29.5 min"], None, 2, [1800, "30 min"],
+             [1700, 2000, "28-33 min"]]
+    inner = [None] * 11
+    inner[10] = block
+    route = [[0, "Rd", [9000, "9 km"], [1800, "30 min"]], [[inner]]]
+    got = routing._traffic(route)
+    assert_(got is not None, "a within-tolerance block was discarded entirely")
+    assert_(got["minutes"] >= got["free_flow_minutes"],
+            f"traffic {got['minutes']} reported faster than free-flow "
+            f"{got['free_flow_minutes']}")
+
+
+def t_skipped_places_do_not_become_nothing_matched():
+    """An empty list because we never looked is NOT exit 1.
+
+    Exit 1 tells a watch loop to keep waiting and tells a person the search was
+    exhaustive. Neither is true when a per-place ceiling stopped us short, so
+    this must land on the usage code that names the flag which fixes it.
+    """
+    result = QueryResult(origin={}, spec=QuerySpec(near="x"))
+    result.places = []
+    result.skipped = 1
+    assert_(cli._outcome(result) == USAGE,
+            "places skipped for budget were reported as 'nothing matched'")
+    result.skipped = 0
+    assert_(cli._outcome(result) == EMPTY,
+            "a genuinely empty result stopped being exit 1")
+
+
+def t_bad_open_at_is_refused_before_spending_requests():
+    """A typo must not cost a full round of enrichment calls first.
+
+    parse_when was first reached inside _filter_open_at, after hours.annotate
+    had already run — so `--open-at "Fri 8"` made up to 25 embed requests to
+    Google and then exited 2.
+    """
+    calls = []
+
+    def counting(self, url, *a, **k):
+        calls.append(url)
+        return fixture("search_page1_toronto.txt")
+
+    with patched(http_mod.Session, "get_text", counting):
+        code, _ = run_cli(["search", "--near", "43.6532,-79.3832",
+                           "--open-at", "Fri 8", "--limit", "8"])
+    assert_(code == USAGE, f"an ambiguous --open-at exited {code}, expected 2")
+    assert_(len(calls) <= 1,
+            f"{len(calls)} requests were issued before rejecting a bad flag")
+
+
+def t_as_coordinates_round_trips_and_range_checks():
+    """`--near 43.65,-79.38` must not become (-79.38, 43.65).
+
+    A swap here searches the Antarctic ocean and NOTHING downstream re-checks
+    it — every coordinate query in the package flows through this one function.
+    Its sibling `search_center` has a range test; this did not.
+    """
+    assert_(query_mod.as_coordinates("43.65,-79.38") == (43.65, -79.38),
+            "lat/lng came back swapped or altered")
+    assert_(query_mod.as_coordinates("-33.87,151.21") == (-33.87, 151.21),
+            "a southern-hemisphere pair was mangled")
+    for bad in ("200,300", "91,0", "0,181", "-91,0", "abc,def", "43.65", ""):
+        assert_(query_mod.as_coordinates(bad) is None,
+                f"{bad!r} was accepted as a coordinate pair")
+
+
+def t_geocode_refuses_an_unresolvable_name():
+    """An unresolvable name must raise, not quietly become (0, 0).
+
+    Returning a default would answer from the Gulf of Guinea at exit 0 — a
+    confident result for a place that does not exist.
+    """
+    header = [None] * 11          # a slot with no place blob at [14]
+    empty = json.dumps({"c": 0, "d": ")]}'\n" + json.dumps([[None, [header]]])})
+    raises(UsageError,
+           lambda: geocode(FakeSession(lambda url: empty), "qqzzxx nowhere"),
+           "an unresolvable place name did not raise UsageError")
+
+
+def t_star_chain_alternates_origin_and_destination():
+    """The chain must be `O,D0,O,D1,O,D2` — every EVEN leg an outbound route.
+
+    Drop the origin between stops and the chain becomes O,D0,D1,D2, so
+    `legs[i*2]` hands dests[1] the D1->D2 leg: a real distance for the wrong
+    pair. The haversine guard cannot catch it, because it compares against
+    O->D1 and a neighbouring leg is usually plausible against that.
+    """
+    seen = []
+    session = FakeSession(lambda url: seen.append(url) or _star_body(
+        [(9000, 300), (999000, 99999), (12000, 600),
+         (999000, 99999), (18000, 900)]))
+    routing.star_legs(session, (43.65, -79.38),
+                      [(43.6, -79.3), (43.7, -79.4), (43.8, -79.5)])
+    pb = seen[0]
+    expected = "".join(routing._waypoint(p) for p in
+                       [(43.65, -79.38), (43.6, -79.3), (43.65, -79.38),
+                        (43.7, -79.4), (43.65, -79.38), (43.8, -79.5)])
+    assert_(expected in pb,
+            "the waypoint chain is not O,D0,O,D1,O,D2 — every destination "
+            "after the first would be given another pair's leg")
+
+
+def t_search_pb_page_and_offset_are_not_swapped():
+    """`7i` is page size and `8i` is offset. Swapped, paging breaks silently."""
+    first = pb.search_pb(43.65, -79.38, 10000, 20, 0)
+    second = pb.search_pb(43.65, -79.38, 10000, 20, 20)
+    assert_("!7i20!8i0" in first, f"page 1 pb is wrong: {first}")
+    assert_("!7i20!8i20" in second, f"page 2 pb is wrong: {second}")
+
+
+def t_search_returns_the_whole_page_not_the_limit():
+    """Asserted on places.search ITSELF.
+
+    The existing limit-vs-filter test patches query_mod.search, so this line
+    never runs in it — the bug it is named for could come back untouched.
+    """
+    body = fixture("search_page1_toronto.txt")
+    got = search(FakeSession(lambda url: body), "restaurants", 43.65, -79.38,
+                 limit=3)
+    assert_(len(got) == 20,
+            f"search() returned {len(got)} places for limit=3; it must return "
+            "the whole page so the caller's filters see every candidate")
+
+
+def t_min_rating_and_within_boundaries():
+    """Inclusive thresholds, and unrated/unrouted places never sneak through."""
+    rows = [{"name": "exact", "rating": 4.5, "status": OPEN, "lat": 43.6,
+             "lng": -79.4, "business_status": "operating"},
+            {"name": "under", "rating": 4.4, "status": OPEN, "lat": 43.6,
+             "lng": -79.4, "business_status": "operating"},
+            {"name": "unrated", "rating": None, "status": OPEN, "lat": 43.6,
+             "lng": -79.4, "business_status": "operating"}]
+    with patched(query_mod, "search", lambda *a, **k: [dict(r) for r in rows]), \
+         patched(query_mod, "geocode", lambda *a, **k: (43.6, -79.4, "x")):
+        res = query_mod.run(None, QuerySpec(near="43.6,-79.4", min_rating=4.5))
+    names = [p["name"] for p in res.places]
+    assert_(names == ["exact"],
+            f"--min-rating 4.5 kept {names}; 4.5 is inclusive and an unrated "
+            "place must not pass a rating filter")
+
+
+def t_nearby_routes_and_search_does_not():
+    """The two commands differ by exactly this, and nothing asserted it.
+
+    With routing switched off, `nearby` still sorts by travel time — on a field
+    that is never populated.
+    """
+    rows = [{"name": "a", "rating": 4.0, "status": OPEN, "lat": 43.6,
+             "lng": -79.4, "business_status": "operating"}]
+    calls = {"routing": 0}
+
+    def fake_routing(*a, **k):
+        calls["routing"] += 1
+        return 0
+
+    with patched(query_mod, "search", lambda *a, **k: [dict(r) for r in rows]), \
+         patched(query_mod, "geocode", lambda *a, **k: (43.6, -79.4, "x")), \
+         patched(query_mod.routing, "annotate", fake_routing):
+        run_cli(["nearby", "--near", "43.6,-79.4", "--limit", "1"])
+        assert_(calls["routing"] == 1, "nearby did not route its results")
+        calls["routing"] = 0
+        run_cli(["search", "--near", "43.6,-79.4", "--limit", "1"])
+        assert_(calls["routing"] == 0, "search routed its results; it must not")
+
+
+def t_every_validation_guard_is_a_usage_error():
+    """All of _validate, not just the ceiling flags.
+
+    A bad flag that answers oddly or returns empty at exit 1 breaks the
+    contract: exit 1 means the query worked and matched nothing.
+    """
+    for flag, value in (("--span", "0"), ("--span", "-100"),
+                        ("--limit", "0"), ("--limit", "-3"),
+                        ("--min-rating", "9"), ("--min-rating", "-1"),
+                        ("--within", "-5"), ("--within", "0"),
+                        ("--query", "   ")):
+        argv = ["nearby", "--near", "43.65,-79.38", flag, value]
+        code, _ = run_cli(argv)
+        assert_(code == USAGE,
+                f"{flag} {value} exited {code}, expected 2 — a bad flag must "
+                "never look like 'nothing matched'")
+
+
+def t_open_at_implies_fetching_hours():
+    """`--open-at` must turn hours on by itself.
+
+    Drop the `or bool(spec.open_at)` and no hours are fetched, so every place
+    fails the filter and the command answers "nothing" at exit 1 — forever, for
+    every query, while telling a watch loop to keep waiting.
+    """
+    rows = [{"name": "a", "rating": 4.0, "status": OPEN, "lat": 43.6,
+             "lng": -79.4, "business_status": "operating"}]
+    fetched = {"n": 0}
+
+    def fake_hours(session, places, budget=25):
+        fetched["n"] += 1
+        for place in places:
+            place["hours_week_days"] = _week_open_always()
+        return len(places)
+
+    with patched(query_mod, "search", lambda *a, **k: [dict(r) for r in rows]), \
+         patched(query_mod, "geocode", lambda *a, **k: (43.6, -79.4, "x")), \
+         patched(query_mod.hours_mod, "annotate", fake_hours):
+        res = query_mod.run(None, QuerySpec(near="43.6,-79.4",
+                                            open_at="Fri 20:00"))
+    assert_(fetched["n"] == 1,
+            "--open-at did not trigger an hours lookup, so its filter had "
+            "nothing to read and would drop every place")
+    assert_(len(res.places) == 1, f"--open-at dropped an open place: {res.places}")
+
+
+def _week_open_always():
+    return [{"day": d, "display": ["always"], "spans": [(0, 1440)],
+             "closed": False}
+            for d in ("Monday", "Tuesday", "Wednesday", "Thursday",
+                      "Friday", "Saturday", "Sunday")]
+
+
+def t_network_errors_counter_is_populated():
+    """_outcome's branch was fixed; its INPUT was still unguarded.
+
+    If run() stops counting, an outage-emptied list is exit 1 again — the same
+    contract breach, one layer down.
+    """
+    rows = [{"name": "a", "rating": 4.0, "status": OPEN, "lat": 43.6,
+             "lng": -79.4, "business_status": "operating"}]
+
+    def failing_hours(session, places, budget=25):
+        for place in places:
+            place["hours_error"] = "NetworkError: embed down"
+            place["hours_week_days"] = None
+        return len(places)
+
+    with patched(query_mod, "search", lambda *a, **k: [dict(r) for r in rows]), \
+         patched(query_mod, "geocode", lambda *a, **k: (43.6, -79.4, "x")), \
+         patched(query_mod.hours_mod, "annotate", failing_hours):
+        res = query_mod.run(None, QuerySpec(near="43.6,-79.4", want_hours=True))
+    assert_(res.network_errors == 1,
+            f"network_errors was {res.network_errors} after every hours lookup "
+            "failed — _outcome would report the outage as 'nothing matched'")
+
+
+def t_parse_when_matches_whole_weekday_names():
+    """"Summer 8pm" must not mean Sunday.
+
+    A two-letter prefix compare makes it Sunday and answers confidently about
+    the wrong day.
+    """
+    for bogus in ("Summer 8pm", "Month 9pm", "Satellite 7pm", "Weds 8pm"):
+        try:
+            hours_mod.parse_when(bogus)
+        except UsageError:
+            continue
+        raise AssertionError(
+            f"parse_when({bogus!r}) resolved to a weekday instead of refusing")
+    assert_(hours_mod.parse_when("Sun 8pm")[0] == 6, "Sunday stopped parsing")
+    assert_(hours_mod.parse_when("Sat 8pm")[0] == 5, "Saturday stopped parsing")
+
+
+def t_star_legs_reject_a_misaligned_chain():
+    """Leg COUNT is what catches a dropped or inserted leg.
+
+    A distance check cannot: an odd shift maps each destination onto its own
+    return leg, which has the same endpoints and therefore the same distance.
+    Measured — a haversine floor rejected 0 of 3 misattributed legs.
+    """
+    dests = [(43.6481, -79.3831), (43.7615, -79.4111), (43.6544, -79.4021)]
+    short = _star_body([(9000, 300), (999000, 99999), (12000, 600),
+                        (999000, 99999)])          # 4 legs, 5 expected
+    raises(NetworkError,
+           lambda: routing.star_legs(FakeSession(lambda url: short),
+                                     (43.6532, -79.3832), dests),
+           "a chain with a dropped leg was mapped onto the destinations anyway")
 
 
 # ---------------------------------------------------------------- [network]

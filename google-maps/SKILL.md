@@ -176,20 +176,18 @@ container is per-session, so a cache would never be warm. The tool writes
 nothing to disk at all — verified: the package opens no file for writing.
 
 **JSON is trimmed by default.** The payload carries what a decision needs; add
-`--full` for coordinates, ids, URLs and structured hour spans. `place_id`,
-`ftid`, `lat`/`lng`, `timezone`, `categories`, `city_region`, `website`,
-`maps_url`, `straight_km`, `route_via`, `free_flow_minutes`, `traffic_range`,
-`transit`, `hours_week_source` and `hours_week_days` are all `--full`-only; if
-you plan to dedupe or chain on an id, ask for `--full`. Per-place failure markers (`hours_error`, `matched_query`)
-deliberately ride in the trimmed payload, because a consumer that cannot see
-"this lookup failed" reads a missing schedule as "no hours published". Fields
-that are null are dropped from the trimmed form entirely, so a missing key
-means "no value", not "wrong command".
+`--full` for coordinates, ids, URLs and structured hour spans. `place_id`, `ftid`, `lat`/`lng`, `timezone`, `categories`, `city_region`,
+`website`, `maps_url`, `hours_week_source` and `hours_week_days` are
+`--full`-only **in `search` and `nearby`**. `travel` is not trimmed and has
+no `--full` flag at all — it always returns `lat`/`lng`, `straight_km`,
+`route_via`, `free_flow_minutes`, `traffic_range` and, for transit,
+`transit`. Passing `--full` to `travel` is a usage error.
 
 An oversized result sheds whole rows and sets `shown` / `matched` /
 `output_truncated` rather than emitting JSON your output cap would corrupt into
 something unparseable. Verified: a 60-result `--with-hours --full` search came
-back as 7 rows with `matched: 60`, `output_truncated: true`.
+back as about 8 rows with `matched: 60`, `output_truncated: true`. The row
+count drifts with live data; the flags are what to read.
 
 **`--json` shapes are not uniform.** `search`, `nearby` and `travel` return an
 envelope — `{"from", "mode", "count", "results": [...]}` — while `geocode`
@@ -245,9 +243,9 @@ recording "this place publishes nothing".
 Only `1` means "keep waiting" — a network outage, a blocked sandbox and a
 Google schema change all return `3`, never `1`. Under `--json` a failure writes
 `{"ok": false, "exit_code": N, "error": ...}` to stdout as well as stderr.
-Exit `1` is not a failure and keeps the normal envelope — `hours` included: a
-name that matches nothing writes `{"ok": false, "exit_code": 1, "error": ...}`
-to stdout like any other non-zero outcome.
+Exit `1` is not a failure: `search` and `nearby` keep the normal envelope
+with `count: 0`. **`hours` is the exception** — a name matching nothing
+writes `{"ok": false, "exit_code": 1, "error": ...}` instead of an envelope.
 
 ## Reporting back
 

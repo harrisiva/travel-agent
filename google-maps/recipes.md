@@ -133,7 +133,8 @@ done < /tmp/waypoints.txt
 ```
 
 Verified Toronto to Kingston, re-run 2026-09-08: the three points landed in
-Oshawa (on the 401), Alnwick/Haldimand near Grafton (on the 401), and Picton —
+Oshawa (on the 401), the Brighton/Stirling area (roughly 8 km south of the
+401), and Picton —
 which is deep in Prince Edward County, well south of the highway and reached by
 a half-hour detour. Two out of three. That third point is the caveat below
 happening in practice, not a hypothetical.

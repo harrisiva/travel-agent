@@ -142,6 +142,12 @@ def _outcome(result) -> int:
         return FOUND
     if result.network_errors:
         return NETWORK
+    if result.skipped:
+        # An empty list where places were never looked up is not "nothing
+        # matched". Exit 1 tells a watch loop to keep waiting and tells a
+        # person the search was exhaustive; neither is true when a ceiling
+        # stopped us short. Exit 2 points at the flag that fixes it.
+        return USAGE
     return EMPTY
 
 

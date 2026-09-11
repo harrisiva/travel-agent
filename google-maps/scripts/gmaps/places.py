@@ -100,18 +100,3 @@ def search(session: Session, query: str, lat: float, lng: float,
     # qualifying ones were sitting in the response we already had.
     # The caller truncates after filtering.
     return out
-
-
-def filter_open(places: list[dict], want_open: bool) -> tuple[list[dict], int]:
-    """Split on live status, counting — never discarding silently — the unknowns.
-
-    Absent hours are common (verified in Tokyo). Reporting them as closed is a
-    false negative, so they are excluded from an ``--open-now`` result *and*
-    counted, so the caller can say "3 more, hours unknown" rather than pretend
-    they do not exist.
-    """
-    if not want_open:
-        return places, sum(1 for p in places if p["status"] == UNKNOWN)
-    kept = [p for p in places if p["status"] == "open"]
-    unknown = sum(1 for p in places if p["status"] == UNKNOWN)
-    return kept, unknown
