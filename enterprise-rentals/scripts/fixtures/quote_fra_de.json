@@ -1,0 +1,1063 @@
+{
+ "session": {
+  "gbo": {
+   "reservation": {
+    "car_classes": [
+     {
+      "code": "SVMR",
+      "name": "Standard Minivan",
+      "make_model_or_similar_text": "Ford S-Max",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "26",
+        "filter_description": "Schaltgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Benzinfahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "400"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "null"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 2,
+      "large_luggage_capacity": 4,
+      "luggage_capacity": 5,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "400",
+       "name": "Kleinbusse",
+       "weight": "500"
+      },
+      "sub_category": {
+       "code": "403",
+       "name": "Kleinbusse",
+       "name_en": "Standard Minivan",
+       "weight": "120"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "PREPAY": {
+        "charge_type": "PREPAY",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "538.84",
+         "symbol": "\u20ac",
+         "format": "538,84 \u20ac",
+         "formatted_amount": "538,84",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "538.84",
+         "symbol": "\u20ac",
+         "format": "538,84 \u20ac",
+         "formatted_amount": "538,84",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "134.71",
+           "symbol": "\u20ac",
+           "format": "134,71 \u20ac",
+           "formatted_amount": "134,71",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "134.71",
+           "symbol": "\u20ac",
+           "format": "134,71 \u20ac",
+           "formatted_amount": "134,71",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 4.0
+         }
+        ],
+        "product_code": "ED4DE"
+       },
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "2450",
+         "symbol": "Pts",
+         "format": "2.450",
+         "formatted_amount": "2.450",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "2450",
+         "symbol": "Pts",
+         "format": "2.450",
+         "formatted_amount": "2.450",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "2450",
+           "symbol": "Pts",
+           "format": "2.450",
+           "formatted_amount": "2.450",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "2450",
+           "symbol": "Pts",
+           "format": "2.450",
+           "formatted_amount": "2.450",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "603.52",
+         "symbol": "\u20ac",
+         "format": "603,52 \u20ac",
+         "formatted_amount": "603,52",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "603.52",
+         "symbol": "\u20ac",
+         "format": "603,52 \u20ac",
+         "formatted_amount": "603,52",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "150.88",
+           "symbol": "\u20ac",
+           "format": "150,88 \u20ac",
+           "formatted_amount": "150,88",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "150.88",
+           "symbol": "\u20ac",
+           "format": "150,88 \u20ac",
+           "formatted_amount": "150,88",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 4.0
+         }
+        ],
+        "product_code": "ED4DE"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "2450",
+      "loyalty_max_redemption_days": 0,
+      "price_differences": [
+       {
+        "difference_type": "PREPAY",
+        "difference_amount_view": {
+         "code": "EUR",
+         "amount": "-64.68",
+         "symbol": "\u20ac",
+         "format": "-64,68 \u20ac",
+         "formatted_amount": "-64,68",
+         "decimal_separator": ","
+        },
+        "difference_amount_payment": {
+         "code": "EUR",
+         "amount": "-64.68",
+         "symbol": "\u20ac",
+         "format": "-64,68 \u20ac",
+         "formatted_amount": "-64,68",
+         "decimal_separator": ","
+        }
+       }
+      ],
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "CKAE",
+      "name": "Kleintransporter Elektro m. Automatik 4\u00a0m\u00b3",
+      "make_model_or_similar_text": "Citroen e-berlingo 4m\u00b3",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatikgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "170",
+        "filter_description": "Elektrofahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "500"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "3"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "null"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "people_capacity": 3,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "500",
+       "name": "Transporter",
+       "weight": "0"
+      },
+      "sub_category": {},
+      "mileage_info": {},
+      "status": "SOLD_OUT",
+      "call_for_availability_phone_number": "069-69715290",
+      "previously_selected": false,
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "PDAR",
+      "name": "Premium m. Automatik",
+      "make_model_or_similar_text": "Audi A6",
+      "two_or_four_door_text": "4",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatikgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Benzinfahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "100"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "null"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 1,
+      "large_luggage_capacity": 3,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "100",
+       "name": "Mietwagen",
+       "weight": "100"
+      },
+      "sub_category": {
+       "code": "109",
+       "name": "Premiumklasse",
+       "name_en": "Premium m. Automatik",
+       "weight": "180"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "vehicle_attribute": "top",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "PREPAY": {
+        "charge_type": "PREPAY",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "430.80",
+         "symbol": "\u20ac",
+         "format": "430,80 \u20ac",
+         "formatted_amount": "430,80",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "430.80",
+         "symbol": "\u20ac",
+         "format": "430,80 \u20ac",
+         "formatted_amount": "430,80",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "107.70",
+           "symbol": "\u20ac",
+           "format": "107,70 \u20ac",
+           "formatted_amount": "107,70",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "107.70",
+           "symbol": "\u20ac",
+           "format": "107,70 \u20ac",
+           "formatted_amount": "107,70",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 4.0
+         }
+        ],
+        "product_code": "ED4DE"
+       },
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "1950",
+         "symbol": "Pts",
+         "format": "1.950",
+         "formatted_amount": "1.950",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "1950",
+         "symbol": "Pts",
+         "format": "1.950",
+         "formatted_amount": "1.950",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "1950",
+           "symbol": "Pts",
+           "format": "1.950",
+           "formatted_amount": "1.950",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "1950",
+           "symbol": "Pts",
+           "format": "1.950",
+           "formatted_amount": "1.950",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "482.48",
+         "symbol": "\u20ac",
+         "format": "482,48 \u20ac",
+         "formatted_amount": "482,48",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "482.48",
+         "symbol": "\u20ac",
+         "format": "482,48 \u20ac",
+         "formatted_amount": "482,48",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "120.62",
+           "symbol": "\u20ac",
+           "format": "120,62 \u20ac",
+           "formatted_amount": "120,62",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "120.62",
+           "symbol": "\u20ac",
+           "format": "120,62 \u20ac",
+           "formatted_amount": "120,62",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 4.0
+         }
+        ],
+        "product_code": "ED4DE"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "1950",
+      "loyalty_max_redemption_days": 0,
+      "price_differences": [
+       {
+        "difference_type": "PREPAY",
+        "difference_amount_view": {
+         "code": "EUR",
+         "amount": "-51.68",
+         "symbol": "\u20ac",
+         "format": "-51,68 \u20ac",
+         "formatted_amount": "-51,68",
+         "decimal_separator": ","
+        },
+        "difference_amount_payment": {
+         "code": "EUR",
+         "amount": "-51.68",
+         "symbol": "\u20ac",
+         "format": "-51,68 \u20ac",
+         "formatted_amount": "-51,68",
+         "decimal_separator": ","
+        }
+       }
+      ],
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "PFAR",
+      "name": "Premium-SUV m. Automatik",
+      "make_model_or_similar_text": "Volkswagen Touareg",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatikgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Benzinfahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "59",
+        "filter_description": "Vierrad- oder Allradantrieb"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 1,
+      "large_luggage_capacity": 3,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "200"
+      },
+      "sub_category": {
+       "code": "308",
+       "name": "Premium- und Luxusklasse-SUV",
+       "name_en": "Premium-SUV m. Automatik",
+       "weight": "150"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "PREPAY": {
+        "charge_type": "PREPAY",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "544.80",
+         "symbol": "\u20ac",
+         "format": "544,80 \u20ac",
+         "formatted_amount": "544,80",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "544.80",
+         "symbol": "\u20ac",
+         "format": "544,80 \u20ac",
+         "formatted_amount": "544,80",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "136.20",
+           "symbol": "\u20ac",
+           "format": "136,20 \u20ac",
+           "formatted_amount": "136,20",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "136.20",
+           "symbol": "\u20ac",
+           "format": "136,20 \u20ac",
+           "formatted_amount": "136,20",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 4.0
+         }
+        ],
+        "product_code": "ED4DE"
+       },
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "2450",
+         "symbol": "Pts",
+         "format": "2.450",
+         "formatted_amount": "2.450",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "2450",
+         "symbol": "Pts",
+         "format": "2.450",
+         "formatted_amount": "2.450",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "2450",
+           "symbol": "Pts",
+           "format": "2.450",
+           "formatted_amount": "2.450",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "2450",
+           "symbol": "Pts",
+           "format": "2.450",
+           "formatted_amount": "2.450",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "610.16",
+         "symbol": "\u20ac",
+         "format": "610,16 \u20ac",
+         "formatted_amount": "610,16",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "610.16",
+         "symbol": "\u20ac",
+         "format": "610,16 \u20ac",
+         "formatted_amount": "610,16",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "152.54",
+           "symbol": "\u20ac",
+           "format": "152,54 \u20ac",
+           "formatted_amount": "152,54",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "152.54",
+           "symbol": "\u20ac",
+           "format": "152,54 \u20ac",
+           "formatted_amount": "152,54",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 4.0
+         }
+        ],
+        "product_code": "ED4DE"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "2450",
+      "loyalty_max_redemption_days": 0,
+      "price_differences": [
+       {
+        "difference_type": "PREPAY",
+        "difference_amount_view": {
+         "code": "EUR",
+         "amount": "-65.36",
+         "symbol": "\u20ac",
+         "format": "-65,36 \u20ac",
+         "formatted_amount": "-65,36",
+         "decimal_separator": ","
+        },
+        "difference_amount_payment": {
+         "code": "EUR",
+         "amount": "-65.36",
+         "symbol": "\u20ac",
+         "format": "-65,36 \u20ac",
+         "formatted_amount": "-65,36",
+         "decimal_separator": ","
+        }
+       }
+      ],
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "IFMR",
+      "name": "Mittelklasse SUV",
+      "make_model_or_similar_text": "Nissan Qashqai",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "26",
+        "filter_description": "Schaltgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Benzinfahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "null"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 3,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "200"
+      },
+      "sub_category": {
+       "code": "306",
+       "name": "Mittelklasse-SUV",
+       "name_en": "Mittelklasse SUV",
+       "weight": "120"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "vehicle_attribute": "top",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "PREPAY": {
+        "charge_type": "PREPAY",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "389.64",
+         "symbol": "\u20ac",
+         "format": "389,64 \u20ac",
+         "formatted_amount": "389,64",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "389.64",
+         "symbol": "\u20ac",
+         "format": "389,64 \u20ac",
+         "formatted_amount": "389,64",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "97.41",
+           "symbol": "\u20ac",
+           "format": "97,41 \u20ac",
+           "formatted_amount": "97,41",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "97.41",
+           "symbol": "\u20ac",
+           "format": "97,41 \u20ac",
+           "formatted_amount": "97,41",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 4.0
+         }
+        ],
+        "product_code": "ED4DE"
+       },
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "1750",
+         "symbol": "Pts",
+         "format": "1.750",
+         "formatted_amount": "1.750",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "1750",
+         "symbol": "Pts",
+         "format": "1.750",
+         "formatted_amount": "1.750",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "1750",
+           "symbol": "Pts",
+           "format": "1.750",
+           "formatted_amount": "1.750",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "1750",
+           "symbol": "Pts",
+           "format": "1.750",
+           "formatted_amount": "1.750",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "436.40",
+         "symbol": "\u20ac",
+         "format": "436,40 \u20ac",
+         "formatted_amount": "436,40",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "436.40",
+         "symbol": "\u20ac",
+         "format": "436,40 \u20ac",
+         "formatted_amount": "436,40",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "109.10",
+           "symbol": "\u20ac",
+           "format": "109,10 \u20ac",
+           "formatted_amount": "109,10",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "109.10",
+           "symbol": "\u20ac",
+           "format": "109,10 \u20ac",
+           "formatted_amount": "109,10",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 4.0
+         }
+        ],
+        "product_code": "ED4DE"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "1750",
+      "loyalty_max_redemption_days": 0,
+      "price_differences": [
+       {
+        "difference_type": "PREPAY",
+        "difference_amount_view": {
+         "code": "EUR",
+         "amount": "-46.76",
+         "symbol": "\u20ac",
+         "format": "-46,76 \u20ac",
+         "formatted_amount": "-46,76",
+         "decimal_separator": ","
+        },
+        "difference_amount_payment": {
+         "code": "EUR",
+         "amount": "-46.76",
+         "symbol": "\u20ac",
+         "format": "-46,76 \u20ac",
+         "formatted_amount": "-46,76",
+         "decimal_separator": ","
+        }
+       }
+      ],
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "ITMN",
+      "name": "Mittelklasse-Cabrio",
+      "make_model_or_similar_text": "Volkswagen T-Roc Cabriolet",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "26",
+        "filter_description": "Schaltgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Benzinfahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "4"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "null"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "small_luggage_capacity": 1,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 2,
+      "people_capacity": 4,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "100"
+      },
+      "sub_category": {
+       "code": "102",
+       "name": "Cabrio",
+       "name_en": "Mittelklasse-Cabrio",
+       "weight": "160"
+      },
+      "mileage_info": {},
+      "status": "SOLD_OUT",
+      "call_for_availability_phone_number": "069-69715290",
+      "previously_selected": false,
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     }
+    ],
+    "car_classes_filters": [
+     {
+      "filter_description": "Fahrzeugklasse",
+      "filter_code": "CLASS",
+      "filter_values": [
+       {
+        "code": "400",
+        "description": "Kleinbusse"
+       },
+       {
+        "code": "500",
+        "description": "Transporter"
+       },
+       {
+        "code": "300",
+        "description": "SUVs"
+       },
+       {
+        "code": "100",
+        "description": "Mietwagen"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "Kraftstoff",
+      "filter_code": "FUEL",
+      "filter_values": [
+       {
+        "code": "169",
+        "description": "Benzinfahrzeug"
+       },
+       {
+        "code": "168",
+        "description": "Hybridfahrzeug"
+       },
+       {
+        "code": "102",
+        "description": "Dieselfahrzeug"
+       },
+       {
+        "code": "170",
+        "description": "Elektrofahrzeug"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "Drive",
+      "filter_code": "DRIVE",
+      "filter_values": [
+       {
+        "code": "59",
+        "description": "Vierrad- oder Allradantrieb"
+       },
+       {
+        "code": "null",
+        "description": "null"
+       }
+      ],
+      "last_modified": "2023-05-31T12:48:37 +0000"
+     },
+     {
+      "filter_description": "Passagiere",
+      "filter_code": "PASSENGERS",
+      "filter_values": [
+       {
+        "code": "4",
+        "description": "4"
+       },
+       {
+        "code": "7",
+        "description": "7"
+       },
+       {
+        "code": "5",
+        "description": "5"
+       },
+       {
+        "code": "3",
+        "description": "3"
+       },
+       {
+        "code": "9",
+        "description": "9"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "\u00dcbertragung",
+      "filter_code": "TRANSMISSION",
+      "filter_values": [
+       {
+        "code": "25",
+        "description": "Automatikgetriebe"
+       },
+       {
+        "code": "26",
+        "description": "Schaltgetriebe"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     }
+    ],
+    "policies": [
+     {
+      "code": "URG",
+      "description": "Wichtige Informationen zur Filiale",
+      "mandatory": false,
+      "policy_description": "Frankfort Airport 3/27/26",
+      "policy_text": "<p><span style=\"white-space: pre-wrap;\">Der Flughafen Frankfurt ist ein Standort mit mehreren Terminals. Um sicherzustellen, dass Ihr Fahrzeug am richtigen Terminal vorbereitet und bereitgestellt wird. </span><b><strong style=\"white-space: pre-wrap;\">Ben\u00f6tigen wir zum Zeitpunkt der Reservierung entweder Ihre Flugnummer oder Angaben zur Fluggesellschaft</strong></b><span style=\"white-space: pre-wrap;\">. Bitte stellen Sie sicher, dass diese Informationen w\u00e4hrend des Buchungsvorgangs angegeben werden.</span></p><p><b><strong style=\"white-space: pre-wrap;\">Hinweis zur Fahrzeugabholung am Terminal</strong></b></p><ul><li><span style=\"white-space: pre-wrap;\">Ankunft Terminal 1: Bitte folgen Sie der Beschilderung zum Mietwagenzentrum (Car Rental Centre).</span></li><li><span style=\"white-space: pre-wrap;\">Ankunft Terminal 3: Bitte folgen Sie der Beschilderung zur Mietwagenstation (Car Rental / Mietwagen) innerhalb des Terminals 3.</span></li></ul>",
+      "modal_display": true,
+      "key_facts_included": false
+     }
+    ]
+   }
+  },
+  "gma": {
+   "reservation": {
+    "pickup_location_with_detail": {
+     "name": "Frankfurt Airport"
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,101 @@
+{
+ "peopleSoftId": "1019286",
+ "data": {
+  "2026-10-01": {
+   "STANDARD": {
+    "hours": [
+     {
+      "open": "00:00",
+      "close": "02:00"
+     },
+     {
+      "open": "06:30",
+      "close": "23:59"
+     }
+    ],
+    "open24Hours": false,
+    "closed": false
+   },
+   "DROP": {
+    "hours": [],
+    "open24Hours": true,
+    "closed": false
+   }
+  },
+  "2026-10-02": {
+   "STANDARD": {
+    "hours": [
+     {
+      "open": "00:00",
+      "close": "02:00"
+     },
+     {
+      "open": "06:30",
+      "close": "23:59"
+     }
+    ],
+    "open24Hours": false,
+    "closed": false
+   },
+   "DROP": {
+    "hours": [],
+    "open24Hours": true,
+    "closed": false
+   }
+  },
+  "2026-10-03": {
+   "STANDARD": {
+    "hours": [
+     {
+      "open": "00:00",
+      "close": "02:00"
+     },
+     {
+      "open": "06:30",
+      "close": "23:59"
+     }
+    ],
+    "open24Hours": false,
+    "closed": false
+   },
+   "DROP": {
+    "hours": [],
+    "open24Hours": true,
+    "closed": false
+   }
+  },
+  "2026-10-04": {
+   "STANDARD": {
+    "hours": [
+     {
+      "open": "00:00",
+      "close": "02:00"
+     },
+     {
+      "open": "06:30",
+      "close": "23:59"
+     }
+    ],
+    "open24Hours": false,
+    "closed": false
+   },
+   "DROP": {
+    "hours": [],
+    "open24Hours": true,
+    "closed": false
+   }
+  },
+  "2026-12-25": {
+   "STANDARD": {
+    "hours": [],
+    "open24Hours": false,
+    "closed": true
+   },
+   "DROP": {
+    "hours": [],
+    "open24Hours": false,
+    "closed": true
+   }
+  }
+ }
+}

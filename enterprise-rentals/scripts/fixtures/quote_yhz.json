@@ -1,0 +1,996 @@
+{
+ "session": {
+  "gbo": {
+   "reservation": {
+    "car_classes": [
+     {
+      "code": "CFDR",
+      "name": "Compact SUV AWD",
+      "make_model_or_similar_text": "Volkswagen Taos",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatic"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Gasoline Vehicle"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "59",
+        "filter_description": "4 Wheel Drive or All Wheel Drive"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 1,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "200"
+      },
+      "sub_category": {
+       "code": "301",
+       "name": "Compact SUV",
+       "name_en": "Compact SUV AWD",
+       "weight": "110"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "fuel_efficiency": "12.20",
+      "fuel_consumption": "8.2",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "2400",
+         "symbol": "Pts",
+         "format": "2,400",
+         "formatted_amount": "2,400",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "2400",
+         "symbol": "Pts",
+         "format": "2,400",
+         "formatted_amount": "2,400",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "2400",
+           "symbol": "Pts",
+           "format": "2,400",
+           "formatted_amount": "2,400",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "2400",
+           "symbol": "Pts",
+           "format": "2,400",
+           "formatted_amount": "2,400",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "USD",
+         "amount": "459.26",
+         "symbol": "$",
+         "format": "$ 459.26",
+         "formatted_amount": "459.26",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "CAD",
+         "amount": "635.48",
+         "symbol": "CAD",
+         "format": "CAD 635.48",
+         "formatted_amount": "635.48",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "USD",
+           "amount": "114.19",
+           "symbol": "$",
+           "format": "$ 114.19",
+           "formatted_amount": "114.19",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "CAD",
+           "amount": "158.01",
+           "symbol": "CAD",
+           "format": "CAD 158.01",
+           "formatted_amount": "158.01",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 3.0
+         }
+        ],
+        "product_code": "EW3ECA"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "2400",
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "UDAR",
+      "name": "Midsize Luxury SUV",
+      "make_model_or_similar_text": "Mercedes GLE, Land Rover Defender",
+      "two_or_four_door_text": "4",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatic"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Gasoline Vehicle"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5",
+        "filter_description": "2 Wheel Drive or 4 Wheel Drive"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "112"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 4,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 4,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "200"
+      },
+      "sub_category": {
+       "code": "308",
+       "name": "Premium & Luxury SUV",
+       "name_en": "Midsize Luxury SUV",
+       "weight": "150"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "fuel_efficiency": "8.78",
+      "fuel_consumption": "11.4",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "2150",
+         "symbol": "Pts",
+         "format": "2,150",
+         "formatted_amount": "2,150",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "2150",
+         "symbol": "Pts",
+         "format": "2,150",
+         "formatted_amount": "2,150",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "2150",
+           "symbol": "Pts",
+           "format": "2,150",
+           "formatted_amount": "2,150",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "2150",
+           "symbol": "Pts",
+           "format": "2,150",
+           "formatted_amount": "2,150",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "USD",
+         "amount": "412.95",
+         "symbol": "$",
+         "format": "$ 412.95",
+         "formatted_amount": "412.95",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "CAD",
+         "amount": "571.40",
+         "symbol": "CAD",
+         "format": "CAD 571.40",
+         "formatted_amount": "571.40",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "USD",
+           "amount": "102.62",
+           "symbol": "$",
+           "format": "$ 102.62",
+           "formatted_amount": "102.62",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "CAD",
+           "amount": "141.99",
+           "symbol": "CAD",
+           "format": "CAD 141.99",
+           "formatted_amount": "141.99",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 3.0
+         }
+        ],
+        "product_code": "EW3ECA"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "2150",
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "XCAR",
+      "name": "Intermediate Car with Winter Tires",
+      "make_model_or_similar_text": "Hyundai Elantra with Winter Tires",
+      "two_or_four_door_text": "2-4",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatic"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Gasoline Vehicle"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "100"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "112",
+        "filter_description": "2 Wheel Drive"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "small_luggage_capacity": 2,
+      "large_luggage_capacity": 1,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "100",
+       "name": "Cars",
+       "weight": "100"
+      },
+      "sub_category": {
+       "code": "107",
+       "name": "Intermediate Car",
+       "name_en": "Intermediate Car with Winter Tires",
+       "weight": "130"
+      },
+      "mileage_info": {},
+      "fuel_efficiency": "14.29",
+      "fuel_consumption": "7",
+      "status": "SOLD_OUT",
+      "call_for_availability_phone_number": "9028734700",
+      "previously_selected": false,
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "PPAR",
+      "name": "1/2 Ton Pickup",
+      "make_model_or_similar_text": "Ram 1500",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatic"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Gasoline Vehicle"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "200"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "112",
+        "filter_description": "2 Wheel Drive"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 2,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 4,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "200",
+       "name": "Trucks",
+       "weight": "400"
+      },
+      "sub_category": {
+       "code": "201",
+       "name": "Full Size Pickup",
+       "name_en": "1/2 Ton Pickup",
+       "weight": "120"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "fuel_efficiency": "7.76",
+      "fuel_consumption": "12.9",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "1650",
+         "symbol": "Pts",
+         "format": "1,650",
+         "formatted_amount": "1,650",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "1650",
+         "symbol": "Pts",
+         "format": "1,650",
+         "formatted_amount": "1,650",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "1650",
+           "symbol": "Pts",
+           "format": "1,650",
+           "formatted_amount": "1,650",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "1650",
+           "symbol": "Pts",
+           "format": "1,650",
+           "formatted_amount": "1,650",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "USD",
+         "amount": "315.10",
+         "symbol": "$",
+         "format": "$ 315.10",
+         "formatted_amount": "315.10",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "CAD",
+         "amount": "436.00",
+         "symbol": "CAD",
+         "format": "CAD 436.00",
+         "formatted_amount": "436.00",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "USD",
+           "amount": "78.27",
+           "symbol": "$",
+           "format": "$ 78.27",
+           "formatted_amount": "78.27",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "CAD",
+           "amount": "108.30",
+           "symbol": "CAD",
+           "format": "CAD 108.30",
+           "formatted_amount": "108.30",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 3.0
+         }
+        ],
+        "product_code": "EW3ECA"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "1650",
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "ZZRS",
+      "name": "Compact SUV AWD",
+      "make_model_or_similar_text": "Restricted class fixture",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatic"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Gasoline Vehicle"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "59",
+        "filter_description": "4 Wheel Drive or All Wheel Drive"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 1,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "200"
+      },
+      "sub_category": {
+       "code": "301",
+       "name": "Compact SUV",
+       "name_en": "Compact SUV AWD",
+       "weight": "110"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "fuel_efficiency": "12.20",
+      "fuel_consumption": "8.2",
+      "status": "RESTRICTED_AT_RETAIL_RATE",
+      "previously_selected": false,
+      "redemption_points": "2400",
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "ZZCM",
+      "name": "Compact SUV AWD",
+      "make_model_or_similar_text": "Capped mileage fixture",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatic"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Gasoline Vehicle"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "59",
+        "filter_description": "4 Wheel Drive or All Wheel Drive"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 1,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "200"
+      },
+      "sub_category": {
+       "code": "301",
+       "name": "Compact SUV",
+       "name_en": "Compact SUV AWD",
+       "weight": "110"
+      },
+      "mileage_info": {
+       "unlimited_mileage": false
+      },
+      "fuel_efficiency": "12.20",
+      "fuel_consumption": "8.2",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "2400",
+         "symbol": "Pts",
+         "format": "2,400",
+         "formatted_amount": "2,400",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "2400",
+         "symbol": "Pts",
+         "format": "2,400",
+         "formatted_amount": "2,400",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "2400",
+           "symbol": "Pts",
+           "format": "2,400",
+           "formatted_amount": "2,400",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "2400",
+           "symbol": "Pts",
+           "format": "2,400",
+           "formatted_amount": "2,400",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "USD",
+         "amount": "459.26",
+         "symbol": "$",
+         "format": "$ 459.26",
+         "formatted_amount": "459.26",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "CAD",
+         "amount": "635.48",
+         "symbol": "CAD",
+         "format": "CAD 635.48",
+         "formatted_amount": "635.48",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "USD",
+           "amount": "114.19",
+           "symbol": "$",
+           "format": "$ 114.19",
+           "formatted_amount": "114.19",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "CAD",
+           "amount": "158.01",
+           "symbol": "CAD",
+           "format": "CAD 158.01",
+           "formatted_amount": "158.01",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 3.0
+         }
+        ],
+        "product_code": "EW3ECA"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "2400",
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "ZZND",
+      "name": "Compact SUV AWD",
+      "make_model_or_similar_text": "No drive facet fixture",
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "25",
+        "filter_description": "Automatic"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Gasoline Vehicle"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 1,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "200"
+      },
+      "sub_category": {
+       "code": "301",
+       "name": "Compact SUV",
+       "name_en": "Compact SUV AWD",
+       "weight": "110"
+      },
+      "mileage_info": {
+       "unlimited_mileage": true
+      },
+      "fuel_efficiency": "12.20",
+      "fuel_consumption": "8.2",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "2400",
+         "symbol": "Pts",
+         "format": "2,400",
+         "formatted_amount": "2,400",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "2400",
+         "symbol": "Pts",
+         "format": "2,400",
+         "formatted_amount": "2,400",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "2400",
+           "symbol": "Pts",
+           "format": "2,400",
+           "formatted_amount": "2,400",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "2400",
+           "symbol": "Pts",
+           "format": "2,400",
+           "formatted_amount": "2,400",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "USD",
+         "amount": "459.26",
+         "symbol": "$",
+         "format": "$ 459.26",
+         "formatted_amount": "459.26",
+         "decimal_separator": "."
+        },
+        "total_price_payment": {
+         "code": "CAD",
+         "amount": "635.48",
+         "symbol": "CAD",
+         "format": "CAD 635.48",
+         "formatted_amount": "635.48",
+         "decimal_separator": "."
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "USD",
+           "amount": "114.19",
+           "symbol": "$",
+           "format": "$ 114.19",
+           "formatted_amount": "114.19",
+           "decimal_separator": "."
+          },
+          "unit_amount_payment": {
+           "code": "CAD",
+           "amount": "158.01",
+           "symbol": "CAD",
+           "format": "CAD 158.01",
+           "formatted_amount": "158.01",
+           "decimal_separator": "."
+          },
+          "unit_rate_type": "DAILY",
+          "unit_rate_type_quantity": 3.0
+         }
+        ],
+        "product_code": "EW3ECA"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "2400",
+      "loyalty_max_redemption_days": 0,
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     }
+    ],
+    "car_classes_filters": [
+     {
+      "filter_description": "Vehicle Class",
+      "filter_code": "CLASS",
+      "filter_values": [
+       {
+        "code": "300",
+        "description": "SUVs"
+       },
+       {
+        "code": "500",
+        "description": "Vans"
+       },
+       {
+        "code": "100",
+        "description": "Cars"
+       },
+       {
+        "code": "200",
+        "description": "Trucks"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "Fuel",
+      "filter_code": "FUEL",
+      "filter_values": [
+       {
+        "code": "168",
+        "description": "Hybrid Vehicle"
+       },
+       {
+        "code": "169",
+        "description": "Gasoline Vehicle"
+       },
+       {
+        "code": "170",
+        "description": "Electric Vehicle"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "Drive",
+      "filter_code": "DRIVE",
+      "filter_values": [
+       {
+        "code": "112",
+        "description": "2 Wheel Drive"
+       },
+       {
+        "code": "null",
+        "description": "null"
+       },
+       {
+        "code": "59",
+        "description": "4 Wheel Drive or All Wheel Drive"
+       }
+      ],
+      "last_modified": "2015-04-13T07:38:29 -0500"
+     },
+     {
+      "filter_description": "Passengers",
+      "filter_code": "PASSENGERS",
+      "filter_values": [
+       {
+        "code": "4",
+        "description": "4"
+       },
+       {
+        "code": "10",
+        "description": "10"
+       },
+       {
+        "code": "7",
+        "description": "7"
+       },
+       {
+        "code": "2",
+        "description": "2"
+       },
+       {
+        "code": "5",
+        "description": "5"
+       },
+       {
+        "code": "8",
+        "description": "8"
+       },
+       {
+        "code": "6",
+        "description": "6"
+       },
+       {
+        "code": "12",
+        "description": "12"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "Transmission",
+      "filter_code": "TRANSMISSION",
+      "filter_values": [
+       {
+        "code": "25",
+        "description": "Automatic"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     }
+    ],
+    "policies": [
+     {
+      "code": "REQ1",
+      "description": "Renter Requirements ",
+      "mandatory": false,
+      "policy_description": "Airport - Canada, 21-24,$20,PU Ok,$400-850 082724",
+      "policy_text": "<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">RENTER REQUIREMENTS AND FORMS OF PAYMENT POLICIES&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">RENTER REQUIREMENTS POLICY&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">All renters and additional drivers must be 21 or older.&nbsp;&nbsp;All renters must have a valid driver&rsquo;s license and a major credit card or debit card in their name. Individuals with learners&rsquo; or instructional permits are not eligible to rent. This is only a summary. For additional details, please reference the Driver&rsquo;s License Information Policy.&nbsp;<br />\n&nbsp;<br />\nAGE&nbsp;<br />\n&nbsp;<br />\nThe underage surcharge for drivers between the ages of 21 and 24 is $20 per day. Renters between the ages of 21 and 24 may rent the following vehicle classes: Economy through Full Size cars, Cargo and Minivans, Pickup Trucks, and Compact, Small and Standard SUVs with seating up to 5 passengers.&nbsp;</span><br />\n&nbsp;</p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">DEBIT CARD&nbsp;&nbsp;</span></p>\n\n<ul>\n\t<li>\n\t<p><span style=\"font-size:14px\">Only US and International Debit cards are accepted. Canadian Debit cards are not accepted at the time of rental.&nbsp;</span></p>\n\t</li>\n</ul>\n\n<ul>\n\t<li>\n\t<p><span style=\"font-size:14px\">At airport locations, US and International debit cards are only accepted at the time of rental if accompanied by a ticketed return travel itinerary.&nbsp;&nbsp; The name and address shown on the renter&rsquo;s driver&rsquo;s license must match their current home address.&nbsp;&nbsp;&nbsp;</span></p>\n\t</li>\n</ul>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">Other than the renter&rsquo;s spouse or domestic partner, no other additional drivers are allowed.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">If using a debit card for any amounts owed, the available funds in the account associated with Renter&rsquo;s debit card will be reduced by those amounts.&nbsp; Additionally, Renter is responsible for any overdraft fees incurred.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">Please read the Forms of Payment policy (see below) for additional details pertaining to the use of debit cards at this location.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">INSURANCE VERIFICATION&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">At the time of rental, Renters without a ticketed return travel itinerary must provide evidence of a transferrable auto collision, comprehensive and liability policy for the following vehicle classes: Full Size Luxury Sedan, Premium Luxury Sedan, Midsize Sport Luxury Sedan, Electric Luxury Sedan, Premium Luxury SUV, Extended Luxury SUV, Electric Luxury SUV, Limo Van, and Corvette..</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">FORMS OF PAYMENT POLICY&nbsp;&nbsp;&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">The following forms of payment are accepted for the rental.&nbsp;&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">VISA&reg;&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">MasterCard&reg;&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">American Express&reg;&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">Debit Card&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">The Estimated Total for the rental on the Review &amp; Reserve screen and/or in the email reservation confirmation will be charged to the form of payment provided by Renter.&nbsp; If the rental as reserved is modified, the estimated total amount for the rental may change and would still be charged to the form of payment provided by Renter.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">At the time of the rental, Renter will sign a rental contract (the &ldquo;Contract&rdquo;) which applies to the rental and includes a Rental Agreement Summary and the Additional Terms and Conditions.&nbsp; </span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">DEPOSIT AMOUNT</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">To account for Renter potentially incurring additional amounts owed under the Contract, renters without a ticketed return travel itinerary will be required to provide a deposit of $400, or $850 for the following vehicles classes: Performance Sport, Full Size Luxury SUV, Electric Luxury SUV, Full Size Elite Electric Sedan, Midsize Sport Luxury Sedan, Full Size Luxury Sedan, Premium Luxury Sedan, Electric Luxury Sedan, Premium Luxury SUV, Extended Luxury SUV, Limo Van, and Corvette.&nbsp; </span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">ADDITIONAL INFORMATION</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">US or International debit cards are only accepted at the time of rental if accompanied by a ticketed return travel itinerary.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">Renter must use an above listed form of payment for the deposit amount.&nbsp; The deposit amount will not be available for use by Renter and/or refunded to Renter until after the vehicle has been returned.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">If Renter incurs additional amounts owed under the Contract, those additional amounts may be deducted from Renter&rsquo;s deposit amount, if applicable.&nbsp; If those additional amounts are not deducted from the deposit amount, if applicable, they will be charged to the form of payment provided by Renter at the time of rental unless Renter provides a different above listed form of payment to be charged.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">If using a US or International debit card for any of the above amounts, the available funds in the account associated with Renter&rsquo;s debit card will be reduced by those amounts.&nbsp; Additionally, Renter is responsible for any overdraft fees incurred.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">Money orders and prepaid cards are not acceptable forms of payment at the time of rental, including for the deposit amount, but may be used to pay any amounts due at the end of the rental after the vehicle has been returned. Cash is not accepted.</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">In addition to one of the above listed forms of payment, credit cards with sufficient available credit which are listed on Renter&#39;s Profile or Loyalty Account (Emerald Club, E Club, etc.) will be accepted as payment for all amounts owed under the Contract.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">All amounts owed by Renter under the Contract will be submitted (a) as an authorization to be a hold against and ultimately charged to Renter&rsquo;s credit card or debit card, or (b) to be charged to Renter&rsquo;s debit card.&nbsp;</span></p>\n\n<p style=\"margin-right: 0px; margin-left: 0px;\"><span style=\"font-size:14px\">Please read the Renter Requirements policy (see above) for additional details pertaining to the use of debit cards and general rental requirements at this location.&nbsp;</span></p>\n",
+      "modal_display": false,
+      "key_facts_included": false
+     },
+     {
+      "code": "LRQ",
+      "description": "Driver's License Information",
+      "mandatory": false,
+      "policy_description": "USA & Canada License Requirements  07/31/2024",
+      "policy_text": "<p><span style=\"font-size:14px\"><strong>Customers who reside in the United States, U.S. Territories, or Canada</strong></span></p>\n\n<p><span style=\"font-size:14px\">Customers who reside in the U.S., U.S. Territories, or Canada must present a valid, unexpired government-issued Driver&rsquo;s license which includes a photograph of the customer.&nbsp; Digital licenses are not accepted.&nbsp; The driver&#39;s license must be valid for the entire rental period.</span></p>\n\n<p><span style=\"font-size:14px\">Members of the United States Armed Forces who are on active duty may present an expired home state license under the following conditions:</span></p>\n\n<ul>\n\t<li>\n\t<p><span style=\"font-size:14px\">They also present an Active Military ID, and</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">They are in compliance with their military extension policy of the state which issued the license.&nbsp; These policies vary by state and customers are encouraged to check with the appropriate department of motor vehicles for more information.</span></p>\n\t</li>\n</ul>\n\n<p><span style=\"font-size:14px\">Customers renting in Florida and presenting a Connecticut or Delaware license: As of July 1, 2023, certain, but not all, licenses issued by the foregoing states are considered invalid under Florida law and will not be accepted.&nbsp; Please check with the Florida Department of Highway Safety and Motor Vehicles to determine if your license is valid under Florida law.&nbsp; As of August 14, 2023, information regarding license validity was able to be located at the following webpage on the Florida Department of Highway Safety and Motor Vehicles website - https://www.flhsmv.gov/driver-licenses-id-cards/visiting-florida-faqs/</span></p>\n\n<p><span style=\"font-size:14px\"><strong>Customers travelling to the U.S. and Canada from other countries</strong></span></p>\n\n<p><span style=\"font-size:14px\">It is important that customers check with the appropriate Department of Motor Vehicles in the States or Provinces in which they intend to travel to ensure compliance with their various licensing laws. Digital&nbsp;licenses are not accepted. The following practices are used to ensure the customer is presenting a facially valid license at the time of rental.&nbsp;</span></p>\n\n<p><span style=\"font-size:14px\">Customers traveling to the United States and Canada from another country must present the following:</span></p>\n\n<ul>\n\t<li>\n\t<p><span style=\"font-size:14px\">Their home country driver&rsquo;s license that is valid, unexpired and includes a photograph, and</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">If the home country license is in a language other than English (or French, for rentals in Canada) and the letters are English (i.e. German, Spanish, etc.) an International Driver&rsquo;s Permit is recommended, but not required, for translation purposes in addition to the home country license.&nbsp;&nbsp;</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">If the home country license is in a language other than English and the letters are not English (i.e.alphabet&nbsp;is not an extended Latin-based alphabet like German or Spanish but is Russian, Japanese, Arabic, etc.) an International Driver&rsquo;s Permit is required.&nbsp;</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">If an International Driver&rsquo;s permit cannot be obtained in the home country, another professional, type-written translation may be substituted.&nbsp; In either case the home country license must also be presented.</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">Customers may not rent a vehicle solely with the International Driver&rsquo;s Permit.&nbsp; The International Driver&rsquo;s Permit is a translation of the individual&rsquo;s home country license and is not considered a license nor is it considered valid identification.</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">In some US and Canadian locations, customers not holding a US/Canadian driver&rsquo;s license may be asked to provide additional, valid government-issued documentation.&nbsp; Examples of this may include a valid passport.</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">Customers with a driver&#39;s license from Mexico may be required to present a valid voter registration card from Mexico. In addition, inbound and outbound travel documentation may be required.</span></p>\n\t</li>\n</ul>\n\n<p><span style=\"font-size:14px\"><strong>Other requirements</strong></span></p>\n\n<ul>\n\t<li>\n\t<p><span style=\"font-size:14px\">Photocopies of Driver&rsquo;s Licenses are not accepted</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">&ldquo;Learner&rsquo;s Permits&rdquo; are not accepted.</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">Any license which, on its face, restricts the licensee to the use and operation of a vehicle equipped with a form of a breathalyzer apparatus is not accepted.</span></p>\n\t</li>\n\t<li>\n\t<p><span style=\"font-size:14px\">Temporary Driver&rsquo;s Licenses may be refused if the renting location is unable to otherwise verify the customer&rsquo;s identity or verify the authenticity of the temporary license.&nbsp; Additional Government-issued identification may be required.</span></p>\n\t</li>\n</ul>\n",
+      "modal_display": false,
+      "key_facts_included": false
+     }
+    ]
+   }
+  },
+  "gma": {
+   "reservation": {
+    "pickup_location_with_detail": {
+     "name": "Halifax International Airport"
+    }
+   }
+  }
+ }
+}
