@@ -72,9 +72,16 @@ do results in a booking.
 | Clear or locate the branch cache | `cache` |
 
 **Always resolve the branch first.** Names are ambiguous: `Halifax` matches
-the airport, the train station, *and* two Exotic branches with a different
-fleet at much higher prices. `quote` refuses to guess and lists the
-candidates; pass the numeric id to disambiguate.
+the airport, the train station, *and* an Exotic branch at the same airport
+(`YHZ`, id 1054600) with a different fleet at much higher prices. `quote`
+refuses to guess and lists the candidates; pass the numeric id to
+disambiguate.
+
+`locations` also lists **`city` rows** (`Halifax, GB`, `Halifax, VA, US`) -
+geocoder place names, not branches. They have no code or currency, cannot be
+quoted, and are skipped by name resolution; ignore them when choosing a
+branch. The out-of-country warning counts bookable rows only, so a list of
+foreign `city` rows alone does not trigger it.
 
 ## The filter flags
 
@@ -164,8 +171,11 @@ cross-border section below.
 - **`sweep` and `compare` refuse before sending** if the plan exceeds
   `--max-requests` (default 40). They print the plan first.
 - **A fan-out where every request was refused exits 2, not 1.** If every date
-  in a sweep is refused (age, booking horizon, refused route), no date in that
-  range can work - do not retry it.
+  in a sweep (or every branch in a `compare`) is refused (age, booking
+  horizon, refused route), no date in that range can work - do not retry it.
+  If nothing priced but the failures are a *mix* of refusals and network/API
+  errors, it exits 3 instead, and the message counts each kind: the failed
+  requests say nothing about whether those dates would work.
 
 ## Coverage is worldwide
 
@@ -192,11 +202,13 @@ The tool guards this in three places, but only the first is silent-proof:
 - `locations` prints a **`CTRY`** column next to `CUR`, a footer note telling
   you to check it before quoting, and a loud warning when any match falls
   outside `--country`.
-- `quote`, `sweep` and `compare` print a `WARNING` **to stderr** when the
-  resolved branch's country differs from `--country`. Under `--json` that
-  warning is still on stderr, **and** the payload carries `country_requested`
-  and `country_mismatch` on `quote`, `sweep` and `compare`, so a machine
-  consumer can detect it without parsing stderr.
+- `quote`, `sweep`, `compare`, `watch` and `branch` print a `WARNING` **to
+  stderr** when the resolved branch's country differs from `--country`. Under
+  `--json` that warning is still on stderr, **and** the payload carries
+  `country_requested` and `country_mismatch` on `quote`, `sweep` and
+  `compare`, so a machine consumer can detect it without parsing stderr.
+  `watch` and `branch` do **not** carry those fields under `--json` - read
+  stderr for them.
 - The `quote` header names the branch's city and country.
 
 Read the `CTRY` column on the row you are about to quote, every time.
@@ -275,13 +287,16 @@ do, keep `--max-requests` low, and do not loop `watch` tightly.
 | Code | Meaning |
 |---|---|
 | `0` | found bookable vehicles |
-| `1` | query worked, nothing bookable - **the only code that means keep waiting** |
-| `2` | usage error, ambiguous branch, age refusal, refused route, ceiling exceeded |
-| `3` | network or API failure, including a TLS block |
+| `1` | query worked, but nothing bookable matched (after filters and, for `watch`, `--below`) - **the only code that means keep waiting** |
+| `2` | usage error, ambiguous or unknown branch, age refusal, refused route, ceiling exceeded, or every request in a fan-out refused |
+| `3` | network or API failure, including a TLS block - and a fan-out where nothing priced and at least one failure was not a refusal |
 
-Codes are identical under `--json`, which emits an error object rather than
-writing to stderr. A `2` is never worth retrying: the query as asked can never
-succeed.
+Codes are identical under `--json`, where errors the tool raises come back as
+a JSON object (`error`, `exit_code`) on stdout. **Argument-parsing errors are
+the exception:** a missing required flag or a non-numeric `--age` is rejected
+by argparse before `--json` takes effect, so it exits 2 with a plain-text
+usage message on **stderr** and nothing on stdout. A `2` is never worth
+retrying: the query as asked can never succeed.
 
 ## Output shapes
 
@@ -312,7 +327,11 @@ available during the selected dates". The two cannot be told apart from
 outside.
 
 The tool therefore exits **2** with an explicit warning when a cross-border
-one-way comes back empty, and `watch` refuses such a route outright. Report it
+one-way comes back empty, and `watch` refuses such a route outright. **A
+one-way where either branch's country is unknown is treated as cross-border**
+(the resolver could not confirm both ends are in one country), so it gets the
+same exit 2 and the same `watch` refusal; resolve both ends with `locations`
+and check `CTRY` if that seems wrong. Report it
 as a probable route restriction, **not** as "no cars available" - otherwise
 the user hunts for dates that will never work.
 
@@ -368,8 +387,9 @@ Lead with the answer, not the table.
 
 ## Caching
 
-Branch lookups, hours and age rules cache for days. **Prices and availability
-are never cached at any TTL** - a stale "available" is worse than no answer.
+Branch lookups cache for 7 days, branch hours for 1 day (holiday hours move),
+and age rules for 30 days. **Prices and availability are never cached at any
+TTL** - a stale "available" is worse than no answer.
 `--no-cache` bypasses the branch cache; it does not change pricing behaviour
 because pricing is never cached.
 

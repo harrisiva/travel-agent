@@ -13,8 +13,11 @@ Note the deliberate split in flag semantics, which SKILL.md documents:
 
 * `--seats` / `--bags` / `--max-price` are **thresholds** (at least this many
   seats, at most this much money).
-* `--class` / `--fuel` / `--drive` are **substring matches** on the API's own
-  descriptions.
+* `--class` / `--fuel` / `--drive` / `--transmission` match the API's
+  locale-independent facet
+  **codes** when the word is one we know. An unrecognised word falls back to a
+  case-insensitive substring match on the API's (translated) text - see
+  `_by_code`, `_category` and `_text_match` below.
 """
 
 from __future__ import annotations

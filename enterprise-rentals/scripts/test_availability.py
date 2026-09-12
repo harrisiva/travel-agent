@@ -85,8 +85,8 @@ def _request(**kw) -> QuoteRequest:
 
 
 
-def _fanout_code(exc: Exception) -> int:
-    """Run `sweep` with every quote raising `exc`, and return the exit code."""
+def _fanout_code(exc: Exception, command: str = "sweep") -> int:
+    """Run `sweep` or `compare` with every quote raising `exc`; return the exit code."""
     import contextlib
     import io
 
@@ -110,15 +110,166 @@ def _fanout_code(exc: Exception) -> int:
 
         with contextlib.redirect_stdout(io.StringIO()), \
                 contextlib.redirect_stderr(io.StringIO()):
-            return main([
-                "sweep", "YHZ", "--start", "2026-10-01",
-                "--end", "2026-10-08", "--nights", "3",
-            ])
+            return main(
+                ["sweep", "YHZ", "--start", "2026-10-01",
+                 "--end", "2026-10-08", "--nights", "3"]
+                if command == "sweep" else
+                ["compare", "YHZ", "YQM", "--pickup-time", "2026-10-01",
+                 "--return-time", "2026-10-04"]
+            )
     finally:
         locations_mod.LocationClient.resolve = original_resolve
         rentals_mod.RentalClient.quote = original_quote
 
 
+
+
+def _mixed_fanout_code(command: str) -> tuple[int, str]:
+    """Run sweep or compare where ONE request is refused and the rest fail on
+    the network. Return (exit code, error text).
+
+    A single refusal among outages says nothing about the other dates, so
+    this must exit 3 ("retry later"), not 2 ("no date can ever work").
+    """
+    import contextlib
+    import io
+
+    import enterprise.locations as locations_mod
+    import enterprise.rentals as rentals_mod
+
+    def branch(i: str) -> Location:
+        return Location(
+            id=i, name=f"Branch {i}", kind="airport", location_type="BRANCH",
+            airport_code=None, city="x", country="CA", currency="CAD",
+            latitude=0.0, longitude=0.0,
+        )
+
+    original_resolve = locations_mod.LocationClient.resolve
+    original_quote = rentals_mod.RentalClient.quote
+    locations_mod.LocationClient.resolve = lambda self, q: branch(q)
+
+    def quote(self, request):
+        if request.pickup.id == "1" and request.pickup_time.startswith("2026-10-01"):
+            raise UsageError("age refused")
+        raise TransportError("connection reset")
+
+    rentals_mod.RentalClient.quote = quote
+    argv = (
+        ["sweep", "1", "--start", "2026-10-01", "--end", "2026-10-08",
+         "--nights", "3", "--json"]
+        if command == "sweep" else
+        ["compare", "1", "2", "3", "--pickup-time", "2026-10-01",
+         "--return-time", "2026-10-04", "--json"]
+    )
+    try:
+        from enterprise.cli import main
+
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), \
+                contextlib.redirect_stderr(io.StringIO()):
+            code = main(argv)
+        return code, out.getvalue()
+    finally:
+        locations_mod.LocationClient.resolve = original_resolve
+        rentals_mod.RentalClient.quote = original_quote
+
+
+LONG_MODEL = "Chevrolet Traverse Premium Edition Seven Seat"
+#: Column width of the VEHICLE cell in each command's table.
+MODEL_WIDTH = {"quote": 34, "sweep": 30, "compare": 30}
+
+
+def _long_model_tables() -> dict[str, str]:
+    """Human output of quote, sweep and compare when every model name is too
+    long for its column and not guaranteed. Proves each table call site clips
+    at a word, within its width, and keeps "or sim."."""
+    import contextlib
+    import io
+    from dataclasses import replace
+
+    import enterprise.cli as cli_mod
+    import enterprise.locations as locations_mod
+    import enterprise.rentals as rentals_mod
+
+    raw = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    originals = (locations_mod.LocationClient.resolve,
+                 rentals_mod.RentalClient.quote)
+    locations_mod.LocationClient.resolve = lambda self, q: _branch(id_=q)
+
+    def quote(self, request):
+        q = parse_quote(raw, request)
+        return replace(q, vehicles=tuple(
+            replace(v, model=LONG_MODEL, guaranteed=False) for v in q.vehicles))
+
+    rentals_mod.RentalClient.quote = quote
+    dates = ["--pickup-time", "2026-10-15", "--return-time", "2026-10-18"]
+    runs = {
+        "quote": ["quote", "1", *dates, "--limit", "3"],
+        "sweep": ["sweep", "1", "--start", "2026-10-15", "--end", "2026-10-19",
+                  "--nights", "3"],
+        "compare": ["compare", "1", "2", *dates],
+    }
+    outputs = {}
+    try:
+        for name, argv in runs.items():
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                cli_mod.main(argv)
+            outputs[name] = out.getvalue()
+    finally:
+        (locations_mod.LocationClient.resolve,
+         rentals_mod.RentalClient.quote) = originals
+    return outputs
+
+
+def _bad_model_cells(output: str, width: int) -> list[str]:
+    """Every VEHICLE cell in `output` that is cut mid-word, overflows `width`
+    display columns, or has lost "or sim.". Empty means clean."""
+    from enterprise.cli import _width
+
+    words = set(LONG_MODEL.split())
+    bad = []
+    for line in output.splitlines():
+        if "Chevrolet" not in line:
+            continue
+        cell = line[line.index("Chevrolet"):].split("  ")[0]
+        name = cell[: -len(" or sim.")] if cell.endswith(" or sim.") else None
+        if (name is None or not name.endswith("…")
+                or name.rstrip("…").split()[-1] not in words
+                or _width(cell) > width):
+            bad.append(cell)
+    return bad
+
+
+def _locations_output(rows: list[Location], country: str, *extra: str) -> str:
+    """Run `locations` over a stubbed search; return stdout."""
+    import contextlib
+    import io
+
+    import enterprise.locations as locations_mod
+
+    original = locations_mod.LocationClient.search
+    locations_mod.LocationClient.search = lambda self, q: list(rows)
+    try:
+        from enterprise.cli import main
+
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), \
+                contextlib.redirect_stderr(io.StringIO()):
+            main(["locations", "x", "--country", country, *extra])
+        return out.getvalue()
+    finally:
+        locations_mod.LocationClient.search = original
+
+
+def _place(name: str, kind: str, country: str, code: str | None = None) -> Location:
+    return Location(
+        id=str(abs(hash(name)) % 10**7), name=name, kind=kind,
+        location_type="BRANCH" if kind != "city" else "CITY",
+        airport_code=code, city=None, country=country,
+        currency="CAD" if kind != "city" else None, latitude=0.0, longitude=0.0,
+    )
 
 
 def _multi_age_quote(ages: list[str] | None = None) -> tuple[str, int]:
@@ -948,6 +1099,101 @@ def offline() -> None:
     # was refused must not return 1 either - that would poll forever.
     check(g, "fan-out where every window is refused exits 2, not 1",
           _fanout_code(UsageError("age refused")) == 2)
+    # One refusal beside nine outages is not "no date can work" - exit 2 would
+    # tell a polling caller to give up on dates that were never checked.
+    for command in ("sweep", "compare"):
+        code, text = _mixed_fanout_code(command)
+        check(g, f"{command}: refusal mixed with network failures exits 3",
+              code == 3, f"exit {code}")
+        check(g, f"{command}: the mixed-failure message counts both kinds",
+              "refused" in text and "network" in text, text[:120])
+
+    # -- the out-of-country warning counts bookable rows only ---------------
+    halifax = [
+        _place("Halifax International Airport", "airport", "CA", "YHZ"),
+        _place("Halifax Train Station", "rail", "CA"),
+        _place("Halifax, GB", "city", "GB"),
+        _place("Halifax, VA, US", "city", "US"),
+    ]
+    check(g, "foreign city pseudo-rows do not trigger the country warning",
+          "WARNING" not in _locations_output(halifax, "CA"))
+    check(g, "the Sydney trap (a CA airport under --country AU) still warns",
+          "WARNING" in _locations_output(
+              [_place("Sydney Airport", "airport", "CA", "YQY")], "AU"))
+    # A foreign branch past --limit still warns, but must say where it is:
+    # every visible row reads CA, so otherwise the warning points at nothing.
+    past_limit = [_place("A Airport", "airport", "CA", "AAA"),
+                  _place("A Rail", "rail", "CA"),
+                  _place("B Airport", "airport", "AU", "BBB")]
+    hidden = _locations_output(past_limit, "CA", "--limit", "2")
+    check(g, "a foreign branch hidden by --limit warns and names --limit",
+          "WARNING" in hidden and "beyond --limit" in hidden, hidden[-160:])
+    check(g, "a visible foreign branch warns without the --limit hint",
+          "beyond --limit" not in _locations_output(past_limit, "CA"))
+
+    # -- --age is validated before any branch lookup ------------------------
+    for argv in (
+        ["sweep", "YHZ", "--start", "2026-10-01", "--end", "2026-10-05",
+         "--nights", "3", "--age", "5"],
+        ["compare", "YHZ", "YQM", "--pickup-time", "2026-10-15",
+         "--return-time", "2026-10-18", "--age", "5"],
+        ["watch", "YHZ", "--pickup-time", "2026-10-15",
+         "--return-time", "2026-10-18", "--age", "21", "--age", "25"],
+        ["quote", "YHZ", "--pickup-time", "2026-10-15",
+         "--return-time", "2026-10-18", "--age", "150"],
+    ):
+        check(g, f"{argv[0]} rejects a bad --age without a lookup",
+              _no_network_exit(argv) == (2, 0))
+    from enterprise.cli import build_parser as _bp
+    _sub = next(a for a in _bp()._actions if hasattr(a, "choices") and a.choices)
+    def _age_help(cmd: str) -> str:
+        return next(a.help for a in _sub.choices[cmd]._actions
+                    if "--age" in a.option_strings) or ""
+    check(g, "--age help offers 'repeat' on quote", "Repeat" in _age_help("quote"))
+    check(g, "--age help does not offer 'repeat' on watch, which refuses it",
+          "Repeat" not in _age_help("watch"))
+
+    # -- model names are clipped at a word boundary --------------------------
+    from enterprise.cli import _clip
+    clipped = _clip("Chevrolet Traverse or sim.", 16)
+    check(g, "a long model name is clipped at a word, not mid-word",
+          clipped == "Chevrolet…", clipped)
+    check(g, "a short model name is untouched",
+          _clip("Nissan Kicks", 30) == "Nissan Kicks")
+    check(g, "a name exactly the column width is untouched",
+          _clip("x" * 30, 30) == "x" * 30)
+    # _table pads by display width, so a CJK name clipped by len() overflowed.
+    from enterprise.cli import _width
+    cjk = _clip("トヨタ アルファード エグゼクティブラウンジ または同等", 20)
+    check(g, "a CJK name is clipped to its display width",
+          _width(cjk) <= 20 and cjk.endswith("…"), f"{cjk!r} = {_width(cjk)} cols")
+    # 15 characters but 30 columns, with no space to break at: a len()-based
+    # clip sees it as fitting in 20 and returns it whole, overflowing by 10.
+    solid = _clip("エグゼクティブラウンジ仕様車両", 20)
+    check(g, "a spaceless CJK name that fits by len() is still clipped by width",
+          _width(solid) <= 20 and solid.endswith("…"),
+          f"{solid!r} = {_width(solid)} cols")
+    for command, output in _long_model_tables().items():
+        bad = _bad_model_cells(output, MODEL_WIDTH[command])
+        check(g, f"{command} table clips model names at a word, in width, "
+                 f"keeping 'or sim.'",
+              "Chevrolet" in output and not bad, str(bad[:2]) or "no rows")
+
+    # Clipping the whole "<name> or sim." string cut the suffix off first, so
+    # a model Enterprise does not promise read as a guaranteed one.
+    from dataclasses import replace as _replace
+    from enterprise.cli import _model
+    _v = _german_fleet()[0]
+    merc = _model(_replace(_v, model="Mercedes-Benz GLE 350 4MATIC",
+                           guaranteed=False), 30)
+    check(g, "a clipped non-guaranteed model keeps 'or sim.'",
+          merc.endswith(" or sim.") and _width(merc) <= 30, repr(merc))
+    check(g, "a guaranteed model gets no 'or sim.'",
+          _model(_replace(_v, model="Nissan Kicks", guaranteed=True), 30)
+          == "Nissan Kicks")
+
+    check(g, "compare where every branch is refused exits 2",
+          _fanout_code(UsageError("age refused"), "compare") == 2)
 
 
 # --------------------------------------------------------------------------

@@ -52,10 +52,39 @@ def _mileage(vehicle: Vehicle) -> str:
     return "unlimited" if vehicle.unlimited_mileage else "CAPPED"
 
 
-def _model(vehicle: Vehicle) -> str:
-    """'or sim.' whenever the exact model is not guaranteed."""
+def _model(vehicle: Vehicle, width: int | None = None) -> str:
+    """'or sim.' whenever the exact model is not guaranteed.
+
+    With `width`, only the name is clipped and the suffix always survives:
+    clipping the whole string cut "or sim." off first, so a model Enterprise
+    does not promise read as a named, guaranteed one.
+    """
     name = vehicle.model or vehicle.sub_category or vehicle.code
-    return name if vehicle.guaranteed else f"{name} or sim."
+    suffix = "" if vehicle.guaranteed else " or sim."
+    if width is not None:
+        name = _clip(name, width - _width(suffix))
+    return name + suffix
+
+
+def _clip(text: str, width: int) -> str:
+    """Shorten to `width` at a word boundary, marking the cut with an ellipsis.
+
+    Slicing mid-word turned "Chevrolet Traverse or sim." into "Chevrolet
+    Travers" - a plausible-looking model that does not exist.
+
+    Measured in display columns (`_width`), not characters, because `_table`
+    pads that way: a CJK name clipped by `len()` still overflowed its column.
+    Text with no space to break at (typical of CJK) is cut hard.
+    """
+    if _width(text) <= width:
+        return text
+    cut = text
+    while cut and _width(cut) + 1 > width:
+        cut = cut[:-1]
+    if text[len(cut)] != " " and " " in cut:
+        # The cut landed inside a word: drop back to the previous one.
+        cut = cut.rsplit(" ", 1)[0]
+    return cut.rstrip(" ,-") + "…"
 
 
 def _no_match_reason(bookable: int) -> str:
@@ -81,7 +110,7 @@ def _vehicle_row(vehicle: Vehicle, days: int) -> tuple[str, ...]:
     per_day = vehicle.per_day(days)
     return (
         vehicle.code,
-        _model(vehicle)[:34],
+        _model(vehicle, 34),
         str(vehicle.seats or "-"),
         str(vehicle.bags or "-"),
         _drive_label(vehicle.drive, vehicle.drive_code),
@@ -469,12 +498,25 @@ def cmd_locations(args) -> int:
         notes.append(f"showing {len(shown)} (--limit)")
     notes.append("check the CTRY column before quoting")
     wanted = (args.country or "").upper()
-    if wanted and any((c.country or "").upper() != wanted for c in shown):
+    # Bookable rows only: `city` rows are geocoder pseudo-rows (Halifax, GB;
+    # Halifax, VA, US) that cannot be quoted, and counting them fired the
+    # warning on nearly every city search until it meant nothing.
+    # Every match is scanned, not just the shown ones - a foreign branch past
+    # --limit is still one a name might resolve to - but then say so, or the
+    # warning points at a row nobody can see.
+    foreign = [
+        c for c in found
+        if c.bookable and (c.country or "").upper() != wanted
+    ]
+    if wanted and foreign:
         # --country is a search hint, not a filter: the service happily returns
         # branches elsewhere, which is how "Sydney AU" resolves to Canada.
+        shown_ids = {c.id for c in shown}
+        hidden = not any(c.id in shown_ids for c in foreign)
         notes.append(
             f"WARNING: some matches are not in {wanted} - --country is a search "
             f"hint, not a filter"
+            + (" (beyond --limit - raise --limit to see it)" if hidden else "")
         )
     human = _table(
         ("ID", "CODE", "NAME", "KIND", "CITY", "CTRY", "CUR"), rows
@@ -489,11 +531,11 @@ def cmd_locations(args) -> int:
 def cmd_quote(args) -> int:
     _validated_window(args)
     _require_priceable_brand(args)
+    ages = _ages(args, multi=True)  # before any HTTP: resolve() is a request
     locations, rentals = _clients(args)
     pickup = locations.resolve(args.pickup)
     dropoff = locations.resolve(args.dropoff) if args.dropoff else pickup
     _warn_country(locations, pickup, dropoff)
-    ages = _ages(args, multi=True)
 
     blocks: list[str] = []
     payload: list[dict] = []
@@ -595,6 +637,7 @@ def cmd_sweep(args) -> int:
         check_dates(parse_when(f"{start}T{args.time}"),
                     parse_when(f"{end}T{args.time}"))
     _require_priceable_brand(args)
+    age = _ages(args)[0]  # before any HTTP: resolve() is a request
     locations, rentals = _clients(args)
     pickup = locations.resolve(args.pickup)
     dropoff = locations.resolve(args.dropoff) if args.dropoff else pickup
@@ -604,7 +647,6 @@ def cmd_sweep(args) -> int:
     plan.check(args.max_requests)
     print(f"  plan: {plan.describe()}", file=sys.stderr)
 
-    age = _ages(args)[0]
     predicates = vfilters.build(args)
     results: list[tuple[str, str, Vehicle | None, int]] = []
     problems: list[tuple[str, str]] = []
@@ -640,7 +682,7 @@ def cmd_sweep(args) -> int:
 
     shown = priced[: args.limit]
     rows = [
-        (start, end, v.code, _model(v)[:30], _mileage(v), format_price(v.total))
+        (start, end, v.code, _model(v, 30), _mileage(v), format_price(v.total))
         for start, end, v, _ in shown
     ]
     # Name the branch: a sweep of an Exotic id returns a very different fleet,
@@ -658,8 +700,10 @@ def cmd_sweep(args) -> int:
     # waiting, so distinguish the two reasons it can happen:
     #   a refusal (age, booking horizon, refused route) can NEVER succeed -> 2
     #   an outage might succeed later, but is still not "no cars"        -> 3
+    # Exit 2 only when EVERY problem was a refusal: one refused window beside
+    # nine network failures says nothing about the other nine dates.
     if not results and problems:
-        if refusals:
+        if len(refusals) == len(problems):
             return _fail(
                 args, EXIT_USAGE,
                 f"every window was refused, so no date in this range can "
@@ -667,8 +711,10 @@ def cmd_sweep(args) -> int:
             )
         return _fail(
             args, EXIT_NET,
-            f"all {len(problems)} window(s) failed; first: "
-            f"{problems[0][0]}: {problems[0][1]}",
+            f"all {len(problems)} window(s) failed"
+            + (f" ({len(refusals)} refused, {len(problems) - len(refusals)} "
+               f"network/API failures - retry later)" if refusals else "")
+            + f"; first: {problems[0][0]}: {problems[0][1]}",
         )
 
     footer = [f"{len(priced)} of {len(windows)} window(s) had a match"]
@@ -746,6 +792,7 @@ def cmd_sweep(args) -> int:
 def cmd_compare(args) -> int:
     _validated_window(args)
     _require_priceable_brand(args)
+    age = _ages(args)[0]  # before any HTTP: resolve() is a request
     locations, rentals = _clients(args)
     branches = [locations.resolve(q) for q in args.pickups]
     _warn_country(locations, *branches)
@@ -755,7 +802,6 @@ def cmd_compare(args) -> int:
     plan.check(args.max_requests)
     print(f"  plan: {plan.describe()}", file=sys.stderr)
 
-    age = _ages(args)[0]
     predicates = vfilters.build(args)
     rows: list[tuple[Location, Vehicle | None, int, str | None]] = []
     compare_refusals: list[str] = []
@@ -781,10 +827,17 @@ def cmd_compare(args) -> int:
     rentals.map_quotes(requests, on_result=collect, workers=args.workers)
 
     if rows and all(note is not None for _, _, _, note in rows):
-        code = EXIT_USAGE if compare_refusals else EXIT_NET
+        # Same rule as sweep: 2 only if every branch was refused. A mix with
+        # network failures might still succeed on retry.
+        every_refused = len(compare_refusals) == len(rows)
+        detail = (
+            f" ({len(compare_refusals)} refused, "
+            f"{len(rows) - len(compare_refusals)} network/API failures - "
+            f"retry later)" if compare_refusals and not every_refused else ""
+        )
         return _fail(
-            args, code,
-            f"all {len(rows)} branch(es) failed; first: {rows[0][3]}",
+            args, EXIT_USAGE if every_refused else EXIT_NET,
+            f"all {len(rows)} branch(es) failed{detail}; first: {rows[0][3]}",
         )
 
     currencies = {
@@ -810,7 +863,7 @@ def cmd_compare(args) -> int:
             branch.name[:26],
             branch.country or "?",
             vehicle.code if vehicle else "-",
-            _model(vehicle)[:24] if vehicle
+            _model(vehicle, 30) if vehicle
             else (note or _no_match_reason(count)),
             f"{vehicle.seats}/{vehicle.bags}" if vehicle else "-",
             _mileage(vehicle) if vehicle else "-",
@@ -890,11 +943,12 @@ def cmd_compare(args) -> int:
 def cmd_watch(args) -> int:
     _validated_window(args)
     _require_priceable_brand(args)
+    age = _ages(args)[0]  # before any HTTP: resolve() is a request
     locations, rentals = _clients(args)
     pickup = locations.resolve(args.pickup)
     dropoff = locations.resolve(args.dropoff) if args.dropoff else pickup
     _warn_country(locations, pickup, dropoff)
-    request = _build_request(args, pickup, dropoff, _ages(args)[0])
+    request = _build_request(args, pickup, dropoff, age)
 
     if request.maybe_cross_border:
         # Cross-border one-way is usually refused outright; polling it would
@@ -1124,12 +1178,15 @@ def _add_geo(parser) -> None:
     group.add_argument("--brand", default="ENTERPRISE", metavar="BRAND")
 
 
-def _add_rental(parser, *, dates: bool = True) -> None:
+def _add_rental(parser, *, dates: bool = True, multi_age: bool = False) -> None:
     parser.add_argument("pickup", help="branch name, airport code, or numeric id")
     parser.add_argument("--dropoff", metavar="LOC",
                         help="return to a different branch (one-way)")
+    # Only `quote` accepts a repeated --age; saying "repeat" elsewhere invites
+    # a usage error.
     parser.add_argument("--age", type=int, action="append", metavar="N",
-                        help="renter age (default 25). Repeat to compare ages.")
+                        help="renter age (default 25)"
+                        + (". Repeat to compare ages." if multi_age else ""))
     if dates:
         parser.add_argument("--pickup-time", required=True, metavar="WHEN",
                             help="YYYY-MM-DD or YYYY-MM-DDTHH:MM")
@@ -1167,7 +1224,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_locations)
 
     p = sub.add_parser("quote", help="priced fleet for one branch and date pair")
-    _add_rental(p); _add_geo(p); vfilters.add_filter_flags(p); _add_output(p)
+    _add_rental(p, multi_age=True); _add_geo(p); vfilters.add_filter_flags(p)
+    _add_output(p)
     p.set_defaults(func=cmd_quote)
 
     p = sub.add_parser("sweep", help="cheapest dates across a range")
@@ -1206,7 +1264,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_geo(p); vfilters.add_filter_flags(p); _add_output(p)
     p.set_defaults(func=cmd_watch)
 
-    p = sub.add_parser("branch", help="hours, age rules and terms for one branch")
+    p = sub.add_parser("branch", help="hours and age rules for one branch")
     p.add_argument("pickup", help="branch name, airport code, or numeric id")
     p.add_argument("--date", metavar="DATE", help="hours from this date (default today)")
     _add_geo(p); _add_output(p)

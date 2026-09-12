@@ -1,8 +1,10 @@
 # Enterprise rentals - worked workflows
 
 End-to-end examples. `SKILL.md` has the interface contract; this file has the
-sequences. `E=` below stands in for
-`python3 <path-to-this-skill>/scripts/enterprise.py`.
+sequences. **`E` below is shorthand, not a runnable variable** - substitute the
+full command, `python3 <path-to-this-skill>/scripts/enterprise.py`, each time.
+(Setting `E=...` and running `$E locations ...` fails in zsh, which does not
+word-split an unquoted variable.)
 
 ---
 
@@ -19,7 +21,14 @@ ID        CODE  NAME                            KIND     CITY     CTRY  CUR
 1019286   YHZ   Halifax International Airport   airport  Enfield  CA    CAD
 1054600   YHZ   Halifax Airport Exotic [EXOTIC] airport  Enfield  CA    CAD
 1030356   -     Halifax Train Station           rail     Halifax  CA    CAD
+6324729   -     Halifax, NS, CA                 city     -        CA    -
+2647632   -     Halifax, GB                     city     -        GB    -
+...
 ```
+
+Three real branches - one of them Exotic - then a tail of `city` rows. Those
+are geocoder place names, not branches: no code, no currency, never quoted,
+and skipped when a name is resolved. Ignore them.
 
 Check `CTRY` before anything else - `--country` is a hint, not a filter, so a
 same-named branch in another country sits in this list looking perfectly
