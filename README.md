@@ -22,8 +22,8 @@ or pays for anything.
 | [**kayak-browse**](#kayak-browse) | Cars, hotels and cheapest flight dates across hundreds of providers | 🔑 **key** |
 
 **[Quick start](#quick-start)** · **[Sample prompts](#sample-prompts)** ·
-**[Skill reference](#skill-reference)** · **[Self-checks](#self-checks)** ·
-**[Contributing](#contributing)**
+**[Contributing](#contributing)** · **[Skill reference](#skill-reference)** ·
+**[Self-checks](#self-checks)**
 
 > [!IMPORTANT]
 > **On claude.ai, turn on network access first.** The code sandbox blocks every
@@ -267,6 +267,26 @@ Copy one, or ask in your own words.
 > *What should I search for "Newark" — does KAYAK list a downtown pickup point as well as the airport?*
 
 </details>
+
+---
+
+## Contributing
+
+The directories at the repo root are the source of truth — edit those, re-run
+that skill's [self-check](#self-checks), then rebuild the uploadable archives:
+
+```sh
+./build.sh          # regenerates dist/*.skill
+```
+
+> [!NOTE]
+> Rebuild `dist/` **in the same commit** as the source change. It's what
+> non-technical users download, and it's easy to leave behind.
+
+[**CLAUDE.md**](CLAUDE.md) documents the conventions for adding a skill and the
+patterns worth copying — CLI shape, exit codes, caching policy, what belongs in a
+`SKILL.md`, and the traps these hit. Coding agents pick it up automatically
+(`AGENTS.md` symlinks to it).
 
 ---
 
@@ -614,24 +634,6 @@ being down is easy to tell apart from the skill being broken.
 
 Add `--offline` to any of them to skip the network group.
 `python3 enterprise.py doctor` also reports the environment and transport in use.
-
-## Contributing
-
-The directories at the repo root are the source of truth — edit those, re-run
-the self-check, then rebuild the uploadable archives:
-
-```sh
-./build.sh          # regenerates dist/*.skill
-```
-
-> [!NOTE]
-> Rebuild `dist/` **in the same commit** as the source change. It's what
-> non-technical users download, and it's easy to leave behind.
-
-[**CLAUDE.md**](CLAUDE.md) documents the conventions for adding a skill and the
-patterns worth copying — CLI shape, exit codes, caching policy, what belongs in a
-`SKILL.md`, and the traps these hit. Coding agents pick it up automatically
-(`AGENTS.md` symlinks to it).
 
 ## License
 
