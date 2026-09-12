@@ -47,6 +47,20 @@ def _as_date(value: date | str) -> date:
     return value if isinstance(value, date) else date.fromisoformat(value)
 
 
+def check_span(start: date | str, end: date | str) -> int:
+    """The span in days, or raise if the API would mis-answer it."""
+    start_d, end_d = _as_date(start), _as_date(end)
+    if end_d <= start_d:
+        raise ValueError(f"end ({end_d}) must be after start ({start_d})")
+    span = (end_d - start_d).days
+    if span > MAX_SPAN_DAYS:
+        raise SpanTooLongError(
+            f"span of {span} days exceeds the API maximum of {MAX_SPAN_DAYS}; "
+            f"the server returns an empty body rather than an error. Split the range."
+        )
+    return span
+
+
 class CamisClient:
     """Read-only client for one Camis5 tenant."""
 
@@ -349,14 +363,7 @@ class CamisClient:
             equipment = self.find_equipment(equipment)
         category_id = self.find_booking_category(booking_category)
         start_d, end_d = _as_date(start), _as_date(end)
-        if end_d <= start_d:
-            raise ValueError(f"end ({end_d}) must be after start ({start_d})")
-        span = (end_d - start_d).days
-        if span > MAX_SPAN_DAYS:
-            raise SpanTooLongError(
-                f"span of {span} days exceeds the API maximum of {MAX_SPAN_DAYS}; "
-                f"the server returns an empty body rather than an error. Split the range."
-            )
+        span = check_span(start_d, end_d)
 
         maps = self.maps(park.id)
         if maps_filter:
@@ -547,9 +554,10 @@ class CamisClient:
     ) -> tuple[dict[int, list[Opening]], dict[int, str]]:
         """Sweep several parks. Returns (openings by park id, errors by park id).
 
-        A park that fails — no maps, equipment not offered, backcountry-only —
-        is recorded and skipped rather than aborting the whole search, because
-        a 17-park group like Algonquin always contains a few oddities.
+        A park whose availability data fails to parse (API drift) is recorded
+        and skipped rather than aborting the search. Input that is wrong for
+        every park is rejected up front by `validate_query`, and a park with no
+        maps simply yields no openings.
         """
         found: dict[int, list[Opening]] = {}
         errors: dict[int, str] = {}
@@ -565,11 +573,31 @@ class CamisClient:
                 )
                 if openings:
                     found[park.id] = openings
+            except SpanTooLongError:
+                raise  # the same for every park — skipping would read as "none"
             except (LookupError, ValueError) as e:
                 errors[park.id] = str(e)
             except RuntimeError:
                 raise  # request ceiling — must stop, not silently under-report
         return found, errors
+
+    def validate_query(
+        self,
+        start: date | str,
+        end: date | str,
+        equipment: Equipment | str = "tent",
+        booking_category: int | str = 0,
+    ) -> None:
+        """Raise on input that is wrong for every park, before any park is tried.
+
+        `sweep_many` skips a park that raises, so a bad span or equipment name
+        checked only per park would skip them all and report "nothing
+        available" — which a watch loop reads as "keep waiting", forever.
+        """
+        check_span(start, end)
+        if isinstance(equipment, str):
+            self.find_equipment(equipment)
+        self.find_booking_category(booking_category)
 
     def plan_requests(self, parks: Sequence[Park]) -> int:
         """How many availability requests a multi-park sweep will cost."""

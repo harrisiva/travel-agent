@@ -32,8 +32,10 @@ from typing import Any
 
 DEFAULT_TTL = 7 * 24 * 60 * 60
 
-#: Per-dataset lifetimes. Availability is deliberately absent — it is never
-#: cached, because a stale availability answer is worse than no answer.
+#: Per-dataset lifetimes; anything unlisted (resourcecategory) gets DEFAULT_TTL.
+#: Availability, date schedules (`window`, goLiveDate) and alerts are
+#: deliberately absent — they are never cached, because a stale answer about
+#: them is worse than no answer.
 TTLS: dict[str, int] = {
     "parks": 7 * 24 * 60 * 60,          # parks appear about once a year
     "equipment": 30 * 24 * 60 * 60,     # tenant config, effectively static
@@ -41,7 +43,6 @@ TTLS: dict[str, int] = {
     "attributes": 30 * 24 * 60 * 60,
     "maps": 7 * 24 * 60 * 60,
     "resources": 7 * 24 * 60 * 60,      # ~500KB on Ontario; the biggest win
-    "schedule": 6 * 60 * 60,            # goLiveDate can move
 }
 
 #: Point this at a writable path (e.g. /tmp/campsites) in a locked-down

@@ -191,15 +191,21 @@ def cmd_horizon(args) -> int:
         args.park, equipment=args.equipment, party_size=args.party,
         booking_category=args.booking_category,
     )
+    found = bool(data.get("last_date_in_booking_window"))
     if args.json:
-        return _emit(args, data, bool(data.get("last_date_in_booking_window")))
+        return _emit(args, data, found)
     print(f"{data['park']}  (probed: {', '.join(data.get('probed_maps') or ['—'])})")
+    if "error" in data:
+        # Same exit as --json (1): the query ran but no probed map answered.
+        print(f"  no availability data returned by any probed map — the equipment "
+              f"or booking category probably doesn't apply here (see `stays`)")
+        return EXIT_NONE
     print(f"  booking window reaches : {data['last_date_in_booking_window']} "
-          f"({data['days_out']} days out)" if data["days_out"] else "  booking window: none detected")
+          f"({data['days_out']} days out)" if found else "  booking window: none detected")
     print(f"  last date with a free site: {data['last_date_with_availability'] or '—'}")
     for w in data.get("booking_windows", []):
         print(f"    season {w['start']} .. {w['end']}   opens: {w['go_live'] or '—'}")
-    return EXIT_OK if data.get("last_date_in_booking_window") else EXIT_NONE
+    return EXIT_OK if found else EXIT_NONE
 
 
 def cmd_site(args) -> int:
@@ -293,8 +299,9 @@ def cmd_search(args) -> int:
 def cmd_sweep(args) -> int:
     client = _client(args)
     weekdays = [WEEKDAYS[d] for d in args.weekday] if args.weekday else None
+    park = client.find_park(args.park)
     openings = client.sweep(
-        args.park, args.start, args.end, nights=args.nights,
+        park, args.start, args.end, nights=args.nights,
         equipment=args.equipment, party_size=args.party,
         booking_category=args.booking_category, maps_filter=args.map,
         attrs=dict(args.attr or []), types=args.types,
@@ -308,7 +315,7 @@ def cmd_sweep(args) -> int:
         return _emit(
             args,
             {
-                "provider": client.host, "park": args.park,
+                "provider": client.host, "park": park.name,
                 "window": {"start": str(args.start), "end": str(args.end)},
                 "nights": args.nights, "requests": client.requests,
                 "dates": [
@@ -331,7 +338,7 @@ def cmd_sweep(args) -> int:
     label = f"{args.nights}-night stays"
     if args.weekends:
         label += " covering a Fri/Sat night"
-    print(f"{args.park} — {label} between {args.start} and {args.end}")
+    print(f"{park.name} — {label} checking in {args.start} to {args.end} inclusive")
     if not openings:
         print("\nNothing available.")
         return EXIT_NONE
@@ -351,6 +358,7 @@ def cmd_sweep(args) -> int:
 def cmd_find(args) -> int:
     """Sweep every park matching a pattern — "anything in Algonquin"."""
     client = _client(args)
+    client.validate_query(args.start, args.end, args.equipment, args.booking_category)
     parks = client.find_parks(args.park)
     weekdays = [WEEKDAYS[d] for d in args.weekday] if args.weekday else None
 
@@ -374,6 +382,14 @@ def cmd_find(args) -> int:
     )
     by_park = {p.id: p for p in parks}
     ranked = sorted(found.items(), key=lambda kv: -len(kv[1]))
+
+    # Nothing was actually searched, so "nothing available" would be a lie. A
+    # network failure never lands here — it propagates and exits 3.
+    if not found and parks and len(errors) == len(parks):
+        reasons = "; ".join(sorted({r.splitlines()[0][:120] for r in errors.values()}))
+        return _fail(args, EXIT_USAGE,
+            f"all {len(parks)} parks matching {args.park!r} were skipped, so "
+            f"nothing was searched: {reasons}")
 
     if args.json:
         return _emit(args, {
@@ -494,8 +510,11 @@ def cmd_alerts(args) -> int:
 
 
 def cmd_cache(args) -> int:
-    n = Cache().clear()
-    print(f"cleared {n} cached files from {Cache().dir}")
+    cache = Cache()
+    n = cache.clear()
+    if args.json:
+        return _emit(args, {"cleared": n, "dir": str(cache.dir) if cache.dir else None}, True)
+    print(f"cleared {n} cached files from {cache.dir}")
     return EXIT_OK
 
 
@@ -528,12 +547,18 @@ def _print_grouped(sites, limit: int) -> None:
 # ---------- argument wiring ----------
 
 
-def _add_common(p, dates: bool = True) -> None:
+#: `--end` is the departure date for `search` but the last night considered,
+#: inclusive, everywhere else — see SKILL.md.
+END_HELP_DEPARTURE = "departure (check-out) YYYY-MM-DD; that night is NOT searched"
+END_HELP_INCLUSIVE = "last night considered, INCLUSIVE, YYYY-MM-DD"
+
+
+def _add_common(p, dates: bool = True, end_help: str = END_HELP_INCLUSIVE) -> None:
     p.add_argument("provider")
     p.add_argument("park")
     if dates:
-        p.add_argument("--start", required=True, type=_date, help="arrival YYYY-MM-DD")
-        p.add_argument("--end", required=True, type=_date, help="departure YYYY-MM-DD")
+        p.add_argument("--start", required=True, type=_date, help="first night YYYY-MM-DD")
+        p.add_argument("--end", required=True, type=_date, help=end_help)
     p.add_argument("--equipment", default="tent", help="equipment name substring (see `equipment`)")
     p.add_argument("--party", type=int, default=2, help="party size (default 2)")
     p.add_argument("--booking-category", default=0,
@@ -588,7 +613,7 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_horizon)
 
     p = sub.add_parser("search", help="check availability for exact dates")
-    _add_common(p)
+    _add_common(p, end_help=END_HELP_DEPARTURE)
     p.add_argument("--map", action="append", help="restrict to matching areas")
     p.add_argument("--attr", action="append", type=_attr, metavar="NAME=VALUE",
                    help="filter by site attribute (see `attrs`); repeatable")

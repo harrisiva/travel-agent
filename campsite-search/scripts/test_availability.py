@@ -11,8 +11,9 @@ gate an install: `python3 .../test_availability.py || echo "skill is broken"`.
 Two groups, honestly labelled:
 
   [offline]  pure logic — the availability model, natural sort, the provider
-             table, the exit codes, and that the launcher imports from a
-             foreign working directory. No sockets. Also collectable by pytest,
+             table, the exit codes, that the launcher imports from a foreign
+             working directory, and the CLI's exit codes on bad input, run
+             against in-memory reference data. No sockets. Also collectable by pytest,
              since these are the only `test_*` functions in the file.
 
   [network]  live calls to the nine Camis5 tenants. These can fail for reasons
@@ -318,6 +319,228 @@ def test_unknown_provider_is_a_usage_error_not_a_crash():
     proc = run_cli("parks", "quebec", timeout=60)
     assert proc.returncode == EXIT_USAGE
     assert "sepaq" in proc.stderr.lower() or "Camis5" in proc.stderr
+
+
+def _offline_client() -> CamisClient:
+    """A real CamisClient whose reference data is pre-seeded in memory, so
+    lookups, validation and the CLI wiring run with no socket. Anything that
+    would reach /api/availability must be stubbed by the caller."""
+    def lv(**kw):
+        return [{"cultureName": "en-CA", **kw}]
+
+    client = CamisClient("grca", use_cache=False)
+    client._mem.update({
+        "parks": [
+            {"resourceLocationId": -1, "localizedValues": lv(fullName="Pinery Provincial Park")},
+            {"resourceLocationId": -2, "localizedValues": lv(fullName="Pinery Group Area")},
+        ],
+        "equipment": [{
+            "equipmentCategoryId": -10, "localizedValues": lv(name="Camping"),
+            "subEquipmentCategories": [
+                {"subEquipmentCategoryId": -11, "localizedValues": lv(name="Single Tent")}],
+        }],
+        "bookingcategories": [{"bookingCategoryId": 0, "localizedValues": lv(name="Campsite")}],
+        "maps:-1": [{"mapId": -5, "mapResources": [{"resourceId": 1}]}],
+        "maps:-2": [{"mapId": -6, "mapResources": [{"resourceId": 2}]}],
+    })
+    return client
+
+
+def _run_main(client: CamisClient, *argv: str) -> tuple[int, str, str]:
+    """Run the CLI in-process against `client`; returns (exit, stdout, stderr)."""
+    import contextlib
+    import io
+
+    from campsites import cli
+
+    out, err = io.StringIO(), io.StringIO()
+    saved = cli._client
+    cli._client = lambda args: client
+    try:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = cli.main(list(argv))
+    finally:
+        cli._client = saved
+    return code, out.getvalue(), err.getvalue()
+
+
+_D0 = (TODAY + timedelta(days=30)).isoformat()
+_D3 = (TODAY + timedelta(days=33)).isoformat()
+_D400 = (TODAY + timedelta(days=430)).isoformat()
+
+
+@offline
+def test_find_rejects_bad_input_up_front_not_as_nothing_available():
+    """Regression: `find` skipped each park on a ValueError/LookupError, so a
+    too-long span or a typo'd --equipment exited 1 and a watch polled forever.
+    Input that is wrong for every park must exit 2 before any park is tried."""
+    cases = {
+        "span over 367 days": ["--start", _D0, "--end", _D400],
+        "end before start": ["--start", _D3, "--end", _D0],
+        "unknown equipment": ["--start", _D0, "--end", _D3, "--equipment", "zzz"],
+        "unknown category": ["--start", _D0, "--end", _D3, "--booking-category", "zzz"],
+    }
+    for label, extra in cases.items():
+        for as_json in (False, True):
+            client = _offline_client()
+
+            def never(*a, **k):
+                raise AssertionError(f"{label}: sweep_many ran — not validated up front")
+            client.sweep_many = never
+            argv = ["find", "grca", "Pinery", *extra] + (["--json"] if as_json else [])
+            code, out, _ = _run_main(client, *argv)
+            assert code == EXIT_USAGE, f"{label} (json={as_json}) exited {code}, want 2"
+            if as_json:
+                data = json.loads(out)
+                assert data["ok"] is False and data["exit_code"] == EXIT_USAGE
+
+
+@offline
+def test_check_span_boundaries():
+    """Exactly MAX_SPAN_DAYS is the API's limit and must pass; one more day is
+    the silent-empty-body case; a zero-night span is never a valid query."""
+    from campsites.camis import SpanTooLongError, check_span
+    from campsites.model import MAX_SPAN_DAYS
+
+    d = date(2026, 1, 1)
+    assert check_span(d, d + timedelta(days=MAX_SPAN_DAYS)) == MAX_SPAN_DAYS
+    assert check_span(d, d + timedelta(days=1)) == 1
+    try:
+        check_span(d, d + timedelta(days=MAX_SPAN_DAYS + 1))
+    except SpanTooLongError:
+        pass
+    else:
+        raise AssertionError(f"{MAX_SPAN_DAYS + 1}-day span was accepted")
+    for end in (d, d - timedelta(days=1)):
+        try:
+            check_span(d, end)
+        except SpanTooLongError:
+            raise AssertionError(f"end {end} misreported as too long")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"end {end} <= start {d} was accepted")
+
+
+@offline
+def test_cache_clear_json_is_an_object():
+    """--json must parse on every command, cache-clear included."""
+    from campsites import cache as cache_mod
+
+    with tempfile.TemporaryDirectory() as tmp:
+        saved = os.environ.get(cache_mod.ENV_CACHE_DIR)
+        os.environ[cache_mod.ENV_CACHE_DIR] = tmp
+        try:
+            cache_mod.Cache().set("h", "parks", [1])
+            code, out, _ = _run_main(_offline_client(), "cache-clear", "--json")
+        finally:
+            if saved is None:
+                os.environ.pop(cache_mod.ENV_CACHE_DIR, None)
+            else:
+                os.environ[cache_mod.ENV_CACHE_DIR] = saved
+    data = json.loads(out)
+    assert code == EXIT_OK and data["ok"] is True and data["schema_version"] == 1
+    assert data["cleared"] == 1 and data["dir"] == tmp, data
+
+
+@offline
+def test_sweep_many_reraises_span_too_long():
+    """The span is the same for every park, so skipping it per park would
+    silently turn a bad request into "nothing available"."""
+    from campsites.camis import SpanTooLongError
+
+    client = _offline_client()
+    parks = client.find_parks("Pinery")
+    try:
+        client.sweep_many(parks, TODAY, TODAY + timedelta(days=400))
+    except SpanTooLongError:
+        pass
+    else:
+        raise AssertionError("sweep_many swallowed SpanTooLongError")
+
+
+@offline
+def test_find_with_every_park_skipped_is_not_nothing_available():
+    """If every park errored, nothing was searched: exit 2, not 1. A network
+    error from inside the loop must still surface as 3."""
+    from campsites.http import CamisHTTPError
+
+    for as_json in (False, True):
+        client = _offline_client()
+        client.sweep_many = lambda parks, *a, **k: (
+            {}, {p.id: "No maps match" for p in parks})
+        argv = ["find", "grca", "Pinery", "--start", _D0, "--end", _D3]
+        code, out, err = _run_main(client, *argv, *(["--json"] if as_json else []))
+        assert code == EXIT_USAGE, f"all-skipped exited {code} (json={as_json}), want 2"
+        assert "skipped" in err
+
+        def down(*a, **k):
+            raise CamisHTTPError("/api/availability/map -> cannot resolve host")
+        client.sweep_many = down
+        code, _, _ = _run_main(client, *argv, *(["--json"] if as_json else []))
+        assert code == EXIT_NET, f"network error exited {code}, want 3"
+
+    # One park skipped among several that searched fine is still a real "none".
+    client = _offline_client()
+    client.sweep_many = lambda parks, *a, **k: ({}, {parks[0].id: "No maps match"})
+    code, _, _ = _run_main(client, "find", "grca", "Pinery", "--start", _D0, "--end", _D3)
+    assert code == EXIT_NONE, f"partially-skipped exited {code}, want 1"
+
+
+@offline
+def test_horizon_without_data_exits_the_same_in_text_and_json():
+    """Regression: text mode raised KeyError on the `error` payload (surfacing
+    as exit 3) while --json exited 1."""
+    client = _offline_client()
+    client.horizon = lambda park, **k: {
+        "park": "Pinery Provincial Park", "probed_maps": ["A"],
+        "error": "no availability data returned"}
+    code, out, err = _run_main(client, "horizon", "grca", "Pinery Provincial Park")
+    assert "KeyError" not in err, err
+    assert code == EXIT_NONE, f"text exited {code}, want 1: {err[:200]}"
+    assert "no availability data" in out
+    code, out, _ = _run_main(client, "horizon", "grca", "Pinery Provincial Park", "--json")
+    assert code == EXIT_NONE and "error" in json.loads(out)
+
+
+@offline
+def test_horizon_reaching_only_today_is_not_none_detected():
+    """days_out == 0 is a real window edge, not a missing one."""
+    client = _offline_client()
+    client.horizon = lambda park, **k: {
+        "park": "Pinery Provincial Park", "probed_maps": ["A"], "from": TODAY.isoformat(),
+        "last_date_with_availability": None,
+        "last_date_in_booking_window": TODAY.isoformat(), "days_out": 0,
+        "booking_windows": []}
+    code, out, _ = _run_main(client, "horizon", "grca", "Pinery Provincial Park")
+    assert "none detected" not in out, out
+    assert "0 days out" in out and code == EXIT_OK
+
+
+@offline
+def test_sweep_json_names_the_resolved_park_and_help_explains_end():
+    """`park` must be the park actually searched, not whatever was typed —
+    otherwise a caller can't tell which of several matches it got."""
+    client = _offline_client()
+    client.sweep = lambda park, *a, **k: []
+    code, out, _ = _run_main(client, "sweep", "grca", "pinery provincial",
+                             "--start", _D0, "--end", _D3, "--json")
+    assert code == EXIT_NONE
+    assert json.loads(out)["park"] == "Pinery Provincial Park", out[:300]
+
+    # The text header must say the range is inclusive — the misreading
+    # SKILL.md warns about is "availability up to --end".
+    code, out, _ = _run_main(client, "sweep", "grca", "pinery provincial",
+                             "--start", _D0, "--end", _D3)
+    header = out.splitlines()[0]
+    assert "inclusive" in header and "Pinery Provincial Park" in header, header
+
+    # --end is exclusive (departure) for search, inclusive everywhere else.
+    helps = {cmd: run_cli(cmd, "--help", timeout=60).stdout.replace("\n", " ")
+             for cmd in ("search", "sweep", "find", "site")}
+    assert "departure" in helps["search"] and "INCLUSIVE" not in helps["search"]
+    for cmd in ("sweep", "find", "site"):
+        assert "INCLUSIVE" in helps[cmd] and "departure" not in helps[cmd], cmd
 
 
 # =========================================================== network checks

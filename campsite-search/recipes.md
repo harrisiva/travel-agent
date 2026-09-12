@@ -72,8 +72,10 @@ python3 "$CS" find ontario "Algonquin" \
 # 0 openings across 0 of 17 parks (44 requests).
 ```
 
-It prints its request plan up front and **refuses before spending anything** if
-the plan exceeds `--max-requests` (default 200). Start narrow and widen.
+It prints its request plan up front and **refuses before any availability
+request** if the plan exceeds `--max-requests` (default 200). On a cold cache it
+has already fetched the park list and one map list per matching park (plus the
+equipment and booking-category lists) to make that plan — those are not counted against the ceiling. Start narrow and widen.
 
 An empty pattern sweeps the entire tenant — fine on a small one like GRCA:
 
@@ -207,7 +209,7 @@ python3 "$CS" stays ontario "The Massasauga Provincial Park"
 ```bash
 python3 "$CS" sweep ontario "The Massasauga Provincial Park" \
     --start 2026-08-22 --end 2026-08-24 --nights 2 --booking-category paddling
-# The Massasauga Provincial Park — 2-night stays between 2026-08-22 and 2026-08-24
+# The Massasauga Provincial Park — 2-night stays checking in 2026-08-22 to 2026-08-24 inclusive
 #
 #   2026-08-22 Sat -> 2026-08-24   6 sites
 #     The Massasauga/107 - North Arm, The Massasauga/110 - North Arm, ...
@@ -301,8 +303,37 @@ python3 "$CS" window ontario "Killarney Provincial Park"
 #   Backcountry Hiking: 2023-04-28T04:00:00Z .. 9999-12-30T05:00:00Z   opens: —
 ```
 
+`opens: —` means no go-live date is on file for that season — say "unknown",
+not "open now". Parks Canada usually does publish one
+(`opens: 2026-02-12T08:00:00` at Two Jack Lakeside).
+
 `horizon` answers the related question of how far ahead this park can be booked
 at all. Never set up a loop that races other users at a launch-day opening.
+
+---
+
+## 8. Alerts and closures for one park
+
+`alerts` takes a provider, not a park, and returns every alert on the tenant.
+Resolve the park id, then filter on `affectedResourceLocationIds`:
+
+```bash
+python3 "$CS" parks ontario --search killarney
+#  -2147483601  Killarney Provincial Park
+python3 "$CS" alerts ontario --json | python3 -c '
+import json, sys
+PARK = -2147483601
+for a in json.load(sys.stdin)["alerts"]:
+    if PARK in (a.get("affectedResourceLocationIds") or []):
+        en = next((v for v in a.get("localizedValues", [])
+                   if v.get("cultureName", "").startswith("en")), {})
+        print(en.get("messageTitle"), a.get("transactionDates"))'
+# Killarney Winter Camping [{...}]
+```
+
+`htmlMessageText` holds the body as HTML — strip tags before quoting it. No
+matching alert means none is posted, not that the park is open: check `window`
+for the season.
 
 ---
 
@@ -319,3 +350,4 @@ at all. Never set up a loop that races other users at a launch-day opening.
 | Filter values unknown | `attrs <prov> "<park>"` |
 | Equipment name unknown | `equipment <prov>` |
 | Site list looks stale | add `--no-cache`, or `cache-clear` |
+| Alerts for one park | `alerts <prov> --json`, filter `affectedResourceLocationIds` |

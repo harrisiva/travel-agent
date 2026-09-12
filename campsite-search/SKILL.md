@@ -1,6 +1,6 @@
 ---
 name: campsite-search
-description: Check campsite and cabin availability at Canadian national, provincial and conservation-authority campgrounds — Parks Canada, Ontario Parks, BC Parks, Grand River CA, Manitoba, Nova Scotia, New Brunswick, Newfoundland and Yukon. Use when the user asks whether a campground has sites open, wants to find any opening across a range of dates or a whole park group, wants cabins/yurts/oTENTiks/huts rather than tent sites, wants sites matching criteria (electric, pull-through, private, barrier-free), asks when reservations open for a park, wants one specific site's calendar, or wants a watch set up for a sold-out campground.
+description: Check campsite and cabin availability at Canadian national, provincial and conservation-authority campgrounds — Parks Canada, Ontario Parks, BC Parks, Grand River CA, Manitoba, Nova Scotia, New Brunswick, Newfoundland and Yukon. Use when the user asks whether a campground has sites open, wants to find any opening across a range of dates or a whole park group, wants cabins/yurts/oTENTiks/huts rather than tent sites, wants sites matching criteria (electric, pull-through, private, barrier-free), asks when reservations open for a park, wants one specific site's calendar, asks about park alerts or closures, or wants a watch set up for a sold-out campground.
 ---
 
 # Campsite search (Canada)
@@ -51,9 +51,12 @@ It prints a PASS/FAIL summary and exits non-zero on failure.
 
 Optional but recommended: `python3 -m pip install -q truststore` verifies TLS
 against the OS trust store. Without it, `reservation.pc.gc.ca` may fail
-verification on machines with an old `certifi`, and the tool falls back to
-`curl`. If neither is available that one provider errors; the other eight still
-work.
+verification on machines with an old `certifi`. On a TLS failure the tool tries,
+in order: `curl` if it is on `PATH`, then (only when there is no curl) the
+system CA bundle at the usual distribution paths — skipped if
+`REQUESTS_CA_BUNDLE`/`CURL_CA_BUNDLE` is already set. If all of those fail that
+one provider exits `3`; the other eight still work. Certificate checking is
+never disabled.
 
 ## Providers
 
@@ -81,6 +84,33 @@ plainly rather than guessing or substituting a nearby park.
 | "How far ahead can I book?" | `horizon` |
 | "What can I filter on?" | `attrs` |
 | "What cabins/yurts/oTENTiks exist here?" | `stays` |
+| "Any alerts or closures at Killarney?" | `alerts` — see below |
+
+**`alerts <provider>` takes no park.** It returns every alert on the tenant
+(27 on Ontario Parks). To answer for one park, resolve its id with
+`parks <provider> --search <name>`, run `alerts <provider> --json`, and keep
+only alerts whose `affectedResourceLocationIds` contains that id; the title and
+body are in the English entry of `localizedValues` (`messageTitle`,
+`htmlMessageText` — HTML, strip it), and `transactionDates` says when each
+applies. The text output is one truncated JSON line per alert and is not worth
+reading. Alerts are never cached. Recipe 8 has the one-liner.
+
+### Defaults, and what `--limit` means per command
+
+`--equipment tent` picks the **first** equipment whose name contains "tent"
+(an exact name wins if there is one) — on some tenants that is not a plain
+tent, so check `equipment` when results look wrong. `--party 2`,
+`--nights 2`, `--booking-category 0` (Campsite), `--max-requests 200`.
+
+`--limit` (default 40) truncates different things:
+
+| Command | Text output | `--json` |
+|---|---|---|
+| `search` | sites listed (and partial sites) | not applied — full lists |
+| `sweep` | check-in dates shown | sites per date (`site_count` is still the full count) |
+| `find` | parks shown | sites per park (`opening_count` is still full) |
+| `alerts` | alerts printed | not applied |
+| others | ignored | ignored |
 
 ## `--end` means something DIFFERENT in `search` and in `sweep`
 
@@ -92,9 +122,11 @@ This has produced wrong answers to users. Learn the two meanings:
   inclusive**. Check-in dates can land *on* `B`, and the checkout then falls
   *after* `B`. `--start 08-21 --end 08-23 --nights 1` really does report a
   check-in on `08-23` departing `08-24`.
+- **`site --start A --end B`** — also inclusive: the calendar has one line per
+  date from `A` through `B`.
 
-The `sweep` header prints `N-night stays between A and B`, which reads like an
-exclusive range and is easy to misread as "availability up to B".
+`--help` on each command states which meaning applies. The `sweep` header reads
+`N-night stays checking in A to B inclusive`.
 
 **Rule: read the `check_in` field on every row. Never infer a date from the
 header, and never assume a row means the day before it.** A row reading
@@ -159,6 +191,10 @@ correct answer there. Confirm with `search -v` (see below).
 ever look at one. `find ontario "Algonquin"` sweeps all 17 and ranks them by how
 much is open. An empty pattern (`find grca ""`) sweeps every park on the tenant.
 It refuses up front if the plan exceeds `--max-requests`, so start narrow.
+Input that is wrong for every park (span, dates, equipment, category) exits `2`
+before any park is tried, and so does a run where every park was skipped. A
+park is skipped only when its availability data fails to parse (API drift) — a
+park with nothing open, or no maps, is an ordinary empty result.
 
 Parks that `find` reports with no openings are often backcountry, day-use or
 group-only locations needing a different `--booking-category` — not failures.
@@ -220,11 +256,37 @@ one request per map — so never loop `search` over dates.
 |---|---|
 | `0` | found something |
 | `1` | query worked, nothing available |
-| `2` | usage/lookup error — bad or ambiguous park, unknown provider, span over 367 days |
+| `2` | usage/lookup error — bad or ambiguous park, unknown provider, unknown equipment or category, span over 367 days, request ceiling, `find` with every park skipped |
 | `3` | network or API error |
 
 Stable across `--json`. In a watch loop, treat **only** `1` as "keep waiting";
 `2` and `3` mean the loop is broken and must stop.
+
+## JSON shapes
+
+Every `--json` output is one **object**, never a bare array:
+`{"schema_version": 1, "ok": true, ...}`. On exit `2`/`3` it is instead
+`{"schema_version": 1, "ok": false, "exit_code": N, "error": "..."}` — check
+`ok` before reading anything else. Top-level keys on success:
+
+| Command | Keys |
+|---|---|
+| `search` | `provider park start end nights equipment party_size requests available[] partial[] counts{}` — `partial[]` rows add `free_nights` and `nights[]` (status per night) |
+| `sweep` | `provider park window{start,end} nights requests dates[]` — each `{check_in check_out weekday site_count sites[]}` |
+| `find` | `provider pattern parks_searched requests nights window parks[] skipped[]` — each park `{park park_id opening_count check_in_dates[] sites[]}`; `skipped[]` is `{park reason}` |
+| `site` | `site area description max_capacity attributes calendar[] free_nights[]` — `calendar[]` is `{date status}` |
+| `horizon` | `park probed_maps from last_date_with_availability last_date_in_booking_window days_out booking_windows[]` — or just `park probed_maps error` (still `ok: true`, exit 1) when no map answered |
+| `window` | `park windows[]` — each `{schedule start end go_live}` |
+| `parks` | `provider parks[]` of `{id name}` |
+| `attrs` | `park facets{name: {value: count}}` |
+| `stays` | `provider park booking_categories[] stay_types[]` |
+| `equipment` | `equipment[] booking_categories[]` |
+| `alerts` | `alerts[]` — raw API objects, see above |
+| `providers` | `camis[] unsupported{}` |
+| `cache-clear` | `cleared dir` (`dir` is null when the cache is memory-only) |
+
+Where present and non-null, `park` is the resolved full name, not what was
+typed (`stays` with no park gives `null`; `site` has no `park` key).
 
 ## Watching a sold-out campground
 
@@ -233,14 +295,25 @@ Keep the interval at **15 minutes or more**. Never set up anything that races
 other users at a launch-day opening — `window` shows when that is. Template in
 `recipes.md`.
 
+In `window`/`horizon` output, `opens: —` means the season has **no go-live
+date on file** — not "open now" and not "never". Report it as unknown; if the
+season's dates are current, bookings are usually already open.
+
 ## Hard limits
 
 - Date spans over **367 days** are rejected. The API returns an empty body
   rather than an error, so the tool refuses instead of reporting a false "none".
 - A request ceiling of 200 stops runaway sweeps; raise with `--max-requests`.
-- Reference data is cached on disk (parks/maps/sites 7d, equipment 30d,
-  schedules 6h); availability is never cached. Use `--no-cache` if a park's site
-  list looks stale, `cache-clear` to reset.
+  It counts **availability** requests (plus `window`/`horizon` schedule and
+  `alerts` calls) — not reference-data fetches. On a cold cache `find` fetches
+  the park list and one map list per matching park (plus the equipment and
+  booking-category lists) *before* it can plan, so a refused `find` has still
+  made those calls.
+- Reference data is cached on disk: parks, maps and site metadata 7d;
+  equipment, booking categories and attributes 30d; stay types 7d.
+  Availability, date schedules (`window`, go-live dates) and alerts are **never**
+  cached. Use `--no-cache` if a park's site list looks stale, `cache-clear` to
+  reset.
 
 ## Reporting back
 
