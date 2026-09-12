@@ -1,0 +1,24 @@
+{
+  "_comment": "SYNTHETIC — built from the RAML spec, not captured from a live API. Re-capture against production before trusting this suite.",
+  "_shape": "A 200 response with zero rows and NO isComplete/isCompleted field at all — neither key is present. HotelSearch.parse conservatively reads this as complete=False (see model.py: 'a missing flag means False'), but the CLI must not treat that absence as positive evidence of an unfinished search on the plain (non --complete) path; only an explicit isComplete:false earns exit 5. See the round-2 kayak-browse re-review, item 2.",
+  "searchTime": 95,
+  "totalResults": 0,
+  "totalAvailableResults": 0,
+  "totalFilteredResults": 0,
+  "currencyCode": "USD",
+  "languageCode": "EN",
+  "destination": {
+    "id": 58075,
+    "key": "kplace:58075",
+    "type": 2,
+    "name": "Boston",
+    "fullName": "Boston, Massachusetts, United States",
+    "isSearchable": true,
+    "latitude": 42.360903491390246,
+    "longitude": -71.05889023544313,
+    "hasBoundary": true,
+    "radius": 0,
+    "maximumRadius": 0
+  },
+  "results": []
+}

@@ -15,21 +15,21 @@ Never hard-code a location id — catalogues change, and the same city has an
 airport and several downtown counters.
 
 ```bash
-$K places "Toronto Pearson" --json
+$K places "JFK" --json
 ```
 
 ```json
 {
   "results": [
-    { "name": "Toronto Pearson Intl",
-      "full_name": "Toronto Pearson Intl Airport, Mississauga, Ontario, Canada (YYZ)",
-      "place_type": "airport", "iata": "YYZ", "city_id": 30202 }
+    { "name": "John F Kennedy Intl",
+      "full_name": "John F Kennedy Intl Airport, New York, New York, United States (JFK)",
+      "type": "airport", "iata": "JFK", "city_id": 22165 }
   ]
 }
 ```
 
-Use `iata` with `--pickup YYZ` (the default `--pickup-type airport`), or
-`city_id` with `--pickup 30202 --pickup-type city` to include downtown
+Use `iata` with `--pickup JFK` (the default `--pickup-type airport`), or
+`city_id` with `--pickup 22165 --pickup-type city` to include downtown
 counters. Autocomplete returns at most six rows, so it is a resolver rather
 than a catalogue: if the user's phrasing is vague, ask rather than guessing
 between two airports.
@@ -39,7 +39,7 @@ between two airports.
 ## 2. The everyday search
 
 ```bash
-$K cars --pickup YYZ --from 2026-12-20 --to 2026-12-23 --json
+$K cars --pickup JFK --from 2026-12-20 --to 2026-12-23 --json
 ```
 
 Read `meta.complete` before using the word "cheapest". Read
@@ -48,7 +48,7 @@ Read `meta.complete` before using the word "cheapest". Read
 With constraints — everything after `--to` is applied client-side:
 
 ```bash
-$K cars --pickup YYZ --from 2026-12-20 --to 2026-12-23 \
+$K cars --pickup JFK --from 2026-12-20 --to 2026-12-23 \
         --type suv,van --min-passengers 5 --transmission automatic \
         --unlimited-mileage --free-cancellation --exclude-opaque --json
 ```
@@ -84,7 +84,7 @@ price alone.
 ## 4. Is it cheaper if we shift the dates?
 
 ```bash
-$K sweep --pickup YYZ --from 2026-12-18 --to 2026-12-27 --nights 3 \
+$K sweep --pickup JFK --from 2026-12-18 --to 2026-12-27 --nights 3 \
          --max-requests 200 --json
 ```
 
@@ -95,9 +95,11 @@ whose price has to be exact.
 
 It prices the whole plan before issuing a single call and refuses with exit `2`
 if it would exceed `--max-requests` or the hourly quota. `--max-requests`
-defaults to **200**, and the budget is a *ceiling* — a single day costs up to
-about a dozen requests, so a ten-day sweep is priced near 130 and a value like
-`40` refuses the example above before it starts. When a sweep is refused,
+defaults to **200**, and the budget is a *ceiling*: a single day costs up to a
+dozen requests (`ceiling_polls` at the default `--max-poll-seconds 25`), plus
+up to two dozen more to re-poll the best `SWEEP_CONFIRM_TOP` (2) days to
+`complete` — so the ten-day sweep above is priced at 10 x 12 + 24 = **144**,
+and a value like `40` refuses it before it starts. When a sweep is refused,
 narrow the range rather than raising the ceiling; the quota is 250 car requests
 an hour and a refused sweep costs nothing.
 
@@ -109,7 +111,7 @@ operation mock prices cannot support.
 ## 5. One-way rentals
 
 ```bash
-$K cars --pickup YVR --drop YYC --from 2027-05-02 --to 2027-05-06 --json
+$K cars --pickup LAX --drop SFO --from 2027-05-02 --to 2027-05-06 --json
 ```
 
 One-way fees are already inside the total. Say the drop-off city back to the
@@ -132,8 +134,9 @@ because the response cannot distinguish "too wide" from "no prices".
 
 `--origin` and `--destination` take an IATA airport code or a numeric KAYAK
 place id — `places <name> --for flights --json` gives you both. Use the place
-id for a metro area (`--for flights` marks these `isMetro`); a three-letter
-code is sent as a single airport.
+id for a metro area (a row whose `type` reads as a region or metro rather than
+`airport`, or that has no `iata`); a three-letter code is sent as a single
+airport.
 
 ```bash
 # Every departure date across two months, non-stop, priced as a return trip
@@ -222,7 +225,7 @@ K="python3 /path/to/kayak-browse/scripts/kayak.py"
 THRESHOLD=350
 
 while true; do
-  out=$($K cars --pickup YYZ --from 2026-12-20 --to 2026-12-23 \
+  out=$($K cars --pickup JFK --from 2026-12-20 --to 2026-12-23 \
                --unlimited-mileage --max-poll-seconds 90 --json)
   code=$?
   case $code in
@@ -231,8 +234,8 @@ import json,sys
 d=json.load(sys.stdin)
 rows=[r for r in d['results'] if r['price']['total'] is not None]
 print(min(r['price']['total'] for r in rows) if rows else '')")
-       [ -n "$best" ] && awk \"BEGIN{exit !($best < $THRESHOLD)}\" \
-         && echo \"under threshold: $best\" ;;
+       [ -n "$best" ] && awk "BEGIN{exit !($best < $THRESHOLD)}" \
+         && echo "under threshold: $best" ;;
     1) echo "nothing matched those filters" ;;
     4) echo "key rejected or expired — stopping"; exit 4 ;;   # never keep polling
     5) echo "search timed out; treating as no reading this cycle" ;;
@@ -281,7 +284,7 @@ fresh one next session.
 URLs and tracking tokens, all of which would land in the context window.
 
 ```bash
-$K cars --pickup YYZ --from 2026-12-20 --to 2026-12-23 --full --json
+$K cars --pickup JFK --from 2026-12-20 --to 2026-12-23 --full --json
 ```
 
 `--full` replaces the projection with the API's own `results[]` rows — each one

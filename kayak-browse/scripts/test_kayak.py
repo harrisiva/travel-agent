@@ -45,7 +45,9 @@ from kayak import filters as filter_mod                       # noqa: E402
 from kayak.cache import Cache                                  # noqa: E402
 from kayak.client import Client, STATUS_COMPLETE, STATUS_SECOND  # noqa: E402
 from kayak.errors import AuthError, SearchTimeout, TransportError, UsageError  # noqa: E402
-from kayak.format import envelope, offer_row, search_meta      # noqa: E402
+from kayak.format import (                                      # noqa: E402
+    SANDBOX_ROW_PREFIX, envelope, offer_row, search_meta,
+)
 from kayak.http import Response                                # noqa: E402
 from kayak.model import (                                       # noqa: E402
     CalendarSearch, Car, CarSearch, DOORS_RANGES, HotelSearch,
@@ -686,6 +688,167 @@ def t_sweep_refuses_in_sandbox():
     assert "mock data" in stderr
 
 
+def t_sweep_all_days_network_failed_exits_three():
+    """B13: every day network-failing is not "nothing available".
+
+    A completed empty search legitimately exits 1 (`t_exit_empty_is_one`).
+    A sweep where every day's search raised a transport error never actually
+    looked, so it must not read the same way — a polling agent watching a
+    sold-out campground must not "wait" through an outage forever.
+    """
+    def responder(method, path, params, body):
+        return err(500, {})
+
+    code, _, stderr = run_cli(
+        ["sweep", "--pickup", "YYZ", "--from", "2026-12-20", "--to", "2026-12-21",
+         "--nights", "3", "--sandbox-ok"],
+        responses=responder)
+    assert code == 3, f"every day network-failing must exit 3, got {code}"
+    # `_fail` always prefixes "error: ", so asserting on that alone is
+    # vacuous — only "network" actually pins the message content.
+    assert "network" in stderr.lower()
+
+
+def t_sweep_mixed_failure_says_which_days_were_not_checked():
+    """Round-2 fix (#1): a mixed sweep must not silently report "no priced
+    offers on any day" as if the whole range were confirmed empty.
+
+    One day network-fails (500), one day genuinely completes empty. Exit 1
+    is defensible here (something really was checked and found empty) but
+    only if the output says out loud that the other day was never checked —
+    otherwise an agent reading "no priced offers on any day in that range"
+    reasonably concludes the whole range was searched.
+    """
+    FAILED_DAY = "2026-12-20"
+
+    def responder(method, path, params, body):
+        start = (body or {}).get("searchStartParameters") or {}
+        date_asked = ((start.get("pickup") or {}).get("date")
+                      if isinstance(start.get("pickup"), dict) else None)
+        if date_asked == FAILED_DAY:
+            return err(500, {})
+        return ok(fixture("cars_empty"))
+
+    args = ["sweep", "--pickup", "YYZ", "--from", "2026-12-20", "--to", "2026-12-21",
+            "--nights", "3", "--sandbox-ok"]
+
+    code, out, _ = run_cli(args + ["--json"], responses=responder)
+    data = json.loads(out)
+    assert code == 1, f"one day empty + one day network-down must still exit 1, got {code}"
+    assert data["meta"]["days_failed"] == 1, (
+        f"meta.days_failed must count the network-failed day, got "
+        f"{data['meta'].get('days_failed')}")
+
+    _, plain, _ = run_cli(args, responses=responder)
+    assert "1 of 2 days" in plain and "not checked" in plain, (
+        "a mixed sweep must say out loud that some days were never checked, "
+        "or exit 1 silently asserts the whole range is confirmed empty")
+
+
+def t_sweep_all_timeouts_with_no_partial_exits_five_not_one():
+    """Round-2 fix (#3): SearchTimeout's own `partial` defaults to None, and
+    a day recorded that way must fall into the same "not checked" bucket as
+    a network failure — not be counted toward a confirmed-empty sweep.
+
+    Today's two SearchTimeout call sites always populate `partial`, so this
+    exercises the defensive branch directly via a patched `sweep_cars`
+    rather than via a fixture that cannot occur through the real client.
+    A pure timeout (no network failure in the mix) exits 5, matching the
+    single-search SearchTimeout contract (`cars` itself: partial -> exit 5) —
+    not 3, which is reserved for when at least one day actually network-failed.
+    """
+    from kayak import client as client_mod
+
+    def fake_sweep_cars(self, *a, **k):
+        return [(date(2026, 12, 20), None,
+                 SearchTimeout("timed out before returning anything", partial=None))]
+
+    original = client_mod.Client.sweep_cars
+    client_mod.Client.sweep_cars = fake_sweep_cars
+    try:
+        code, _, stderr = run_cli(
+            ["sweep", "--pickup", "YYZ", "--from", "2026-12-20", "--to", "2026-12-20",
+             "--nights", "3", "--sandbox-ok"],
+            responses=[])
+    finally:
+        client_mod.Client.sweep_cars = original
+    assert code == 5, (
+        f"an all-timeout-with-no-partial sweep must exit 5 (not checked, not "
+        f"confirmed empty), got {code}")
+    assert "timed out" in stderr.lower()
+
+
+def t_sweep_usage_errors_are_not_network_failures():
+    """A per-day UsageError (a bug in our own request, not an outage or a
+    timeout) must not be counted as "not checked" — only TransportError and
+    SearchTimeout earn that classification. An all-UsageError sweep still
+    exits 1, distinguishing "our own bug" from "the tenant is down".
+
+    Kills a mutant widening the `isinstance(error, (TransportError,
+    SearchTimeout))` check to `isinstance(error, Exception)`.
+    """
+    from kayak import client as client_mod
+
+    def fake_sweep_cars(self, *a, **k):
+        return [(date(2026, 12, 20), None, UsageError("malformed request"))]
+
+    original = client_mod.Client.sweep_cars
+    client_mod.Client.sweep_cars = fake_sweep_cars
+    try:
+        code, _, _ = run_cli(
+            ["sweep", "--pickup", "YYZ", "--from", "2026-12-20", "--to", "2026-12-20",
+             "--nights", "3", "--sandbox-ok"],
+            responses=[])
+    finally:
+        client_mod.Client.sweep_cars = original
+    assert code == 1, (
+        f"a per-day UsageError must not be classified as 'not checked' "
+        f"(network/timeout); expected the plain empty-sweep exit 1, got {code}")
+
+
+def t_sweep_confirm_stage_failure_keeps_partial_not_unchecked():
+    """A day with real stage-1 (second-phase) offers must not be reclassified
+    as "not checked" just because the stage-2 confirm-to-complete re-poll
+    failed — `sweep_cars` deliberately keeps the earlier partial in that case
+    (client.py: `keep, _ = results[day]; results[day] = (keep, exc)`), and
+    that day's `search` is therefore NOT None even though its `error` is a
+    TransportError. Kills a mutant dropping the `search is None` half of the
+    "not checked" test.
+    """
+    calls = {"n": 0}
+
+    def responder(method, path, params, body):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return ok(fixture("cars_second_phase_with_offers"))
+        return err(500, {})
+
+    code, out, _ = run_cli(
+        ["sweep", "--pickup", "YYZ", "--from", "2026-12-20", "--to", "2026-12-20",
+         "--nights", "3", "--sandbox-ok", "--json"],
+        responses=responder)
+    data = json.loads(out)
+    assert code == 0, (
+        f"a day with real stage-1 offers must not be treated as 'not "
+        f"checked' just because the stage-2 confirm poll failed, got {code}")
+    assert data["meta"]["days_failed"] == 0, (
+        "a day with usable partial data from stage 1 must not count toward "
+        "days_failed just because the confirm re-poll failed")
+
+
+def t_sweep_genuinely_empty_still_exits_one():
+    """The other half of B13: a real "nothing found" sweep must stay exit 1.
+
+    Guards against overcorrecting B13 into treating every empty sweep as a
+    network failure.
+    """
+    code, _, _ = run_cli(
+        ["sweep", "--pickup", "YYZ", "--from", "2026-12-20", "--to", "2026-12-21",
+         "--nights", "3", "--sandbox-ok"],
+        responses=[ok(fixture("cars_empty"))] * 30)
+    assert code == 1, f"a genuinely empty sweep must still exit 1, got {code}"
+
+
 # 12. Poll-loop behaviour.
 
 
@@ -913,6 +1076,77 @@ def t_hotels_cli_partial_is_reported_not_hidden():
     assert len(data["results"]) == 2
 
 
+def t_hotels_partial_and_empty_exits_five_not_one():
+    """B14: a partial hotel search with zero rows so far must exit 5, not 1.
+
+    The tool's own rule for cars (`t_exit_partial_empty_is_five_not_one`) is
+    that a partial search which found nothing is 5, not 1 — 1 asserts the
+    search finished and the answer is genuinely no. Hotels must be consistent:
+    without --complete, `client.hotels()` never raises SearchTimeout, so this
+    has to be caught after the fact from `meta.complete`.
+    """
+    code, out, _ = run_cli(HOTEL_ARGS + ["--json"],
+                           responses=[ok(fixture("hotels_partial_empty"))])
+    assert code == 5, (
+        f"a partial hotel search with nothing back yet must exit 5, got "
+        f"{code}; only a COMPLETED empty search may exit 1")
+    assert json.loads(out)["meta"]["complete_flag_present"] is True, (
+        "hotels_partial_empty carries an explicit isComplete:false; the exit-5 "
+        "gate must see the flag as present")
+
+
+def t_hotels_absent_flag_and_empty_exits_one_not_five():
+    """Round-2 regression guard: an absent isComplete flag must not read as
+    positive evidence of an unfinished search on the plain (no --complete)
+    path.
+
+    `HotelSearch.parse` conservatively defaults a missing flag to
+    complete=False (model.py's own documented rule), but the client's other
+    documented rule — "an absent flag on a 200 is corroboration, not
+    counter-evidence, once the HTTP status is the authoritative signal" —
+    means the CLI must not escalate an absent flag to exit 5 the way it
+    rightly does for an explicit `isComplete: false`
+    (`t_hotels_partial_and_empty_exits_five_not_one`). Gated on
+    `_has_complete_flag`.
+    """
+    code, out, _ = run_cli(HOTEL_ARGS + ["--json"],
+                           responses=[ok(fixture("hotels_no_flag_empty"))])
+    data = json.loads(out)
+    assert code == 1, (
+        f"an empty search with no completion flag at all must exit 1, got "
+        f"{code}; only an explicit isComplete:false earns exit 5")
+    assert data["meta"]["complete_flag_present"] is False
+
+
+def t_hotels_completed_and_empty_still_exits_one():
+    """The other half of B14: a genuinely finished empty search stays exit 1.
+
+    Guards against overcorrecting the B14 fix into treating every empty
+    hotel result as partial.
+    """
+    code, _, _ = run_cli(HOTEL_ARGS, responses=[ok(fixture("hotels_empty"))])
+    assert code == 1, f"a completed empty hotel search must exit 1, got {code}"
+
+
+def t_hotels_limit_zero_does_not_hide_that_hotels_were_found():
+    """Defect 7: found-ness must be measured before `--limit` trims the list.
+
+    `--limit 0` on a partial search with real (but untrimmed-away) hotels
+    must not read as "nothing has come back yet" — that conflates "the
+    caller asked to see zero rows" with "the search found zero hotels".
+    `cars` (`bool(outcome.kept)`) and `when` (`bool(days)`) already check
+    pre-trim; `hotels` must match, using `meta.matched`.
+    """
+    code, out, _ = run_cli(HOTEL_ARGS + ["--limit", "0", "--json"],
+                           responses=[ok(fixture("hotels_partial"))])
+    data = json.loads(out)
+    assert code == 0, (
+        f"a partial search that matched hotels must not exit 5 just because "
+        f"--limit 0 trimmed the visible list to nothing, got {code}")
+    assert data["results"] == []
+    assert data["meta"]["matched"] == 2
+
+
 def t_hotels_deprecated_place_alias_still_works():
     """`--place` was the old name and is still accepted, silently.
 
@@ -958,6 +1192,43 @@ def t_hotels_limit_keeps_the_cheapest_not_the_first():
     assert data["meta"]["truncated"] is True
     assert data["meta"]["matched"] == 4, \
         "meta.matched must still report how many came back"
+
+
+def t_hotels_sandbox_suppresses_price_column():
+    """B15: `hotels` must hide sandbox prices the same way `cars` does.
+
+    Before this fix the "from" column printed the raw mock rate with only a
+    banner above the table — no per-row marker, unlike `cars`.
+    """
+    code, out, _ = run_cli(HOTEL_ARGS, responses=[ok(fixture("hotels_complete"))])
+    assert code == 0
+    assert "SANDBOX" in out, "the sandbox banner is missing"
+    assert "402.5" not in out and "188.4" not in out, \
+        "a mock hotel rate was printed without --sandbox-ok"
+
+
+def t_hotels_sandbox_ok_shows_marked_price():
+    """--sandbox-ok must actually reveal the price, marked, not be a no-op.
+
+    Kills two mutants: `show_price = not client.sandbox` (dropping the
+    `or args.sandbox_ok` half, making the flag do nothing), and deleting the
+    per-row `SANDBOX_ROW_PREFIX` on hotel rates.
+    """
+    code, out, _ = run_cli(HOTEL_ARGS + ["--sandbox-ok"],
+                           responses=[ok(fixture("hotels_complete"))])
+    assert code == 0
+    assert SANDBOX_ROW_PREFIX in out, (
+        "--sandbox-ok must mark the price it reveals, not print a bare number")
+    assert "188.4" in out, "the price should actually be visible with --sandbox-ok"
+
+
+def t_hotels_sandbox_ok_marks_every_row():
+    code, out, _ = run_cli(HOTEL_ARGS + ["--sandbox-ok", "--json"],
+                           responses=[ok(fixture("hotels_complete"))])
+    data = json.loads(out)
+    assert data["results"], "expected hotel rows"
+    assert all(row["priceIsReal"] is False for row in data["results"]), \
+        "every sandbox hotel row must carry priceIsReal: false"
 
 
 def t_hotels_without_rates_say_they_are_unranked():
@@ -1159,6 +1430,45 @@ def t_when_cli_takes_from_and_to():
         "`when` takes --from/--to as YYYY-MM; --month is gone"
 
 
+def t_when_sandbox_suppresses_price_column():
+    """B15: `when` must hide sandbox prices the same way `cars` does.
+
+    The calendar endpoint is sandboxed too — a predicted-vs-quoted flag is not
+    the same claim as "this number is real money" — so a raw mock fare must
+    not print without --sandbox-ok, exactly as for `cars` and `hotels`.
+    """
+    code, out, _ = run_cli(WHEN_ARGS, responses=[ok(fixture("calendar_days"))])
+    assert code == 0
+    assert "SANDBOX" in out, "the sandbox banner is missing"
+    assert "214" not in out and "179" not in out, \
+        "a mock calendar price was printed without --sandbox-ok"
+
+
+def t_when_sandbox_ok_shows_marked_price():
+    """--sandbox-ok must actually reveal the price, marked, not be a no-op.
+
+    Kills the same two mutant classes as the hotels version, one vertical
+    over: a `show_price` that ignores the flag, and a deleted per-row
+    `SANDBOX_ROW_PREFIX` on calendar rows.
+    """
+    code, out, _ = run_cli(WHEN_ARGS + ["--sandbox-ok"],
+                           responses=[ok(fixture("calendar_days"))])
+    assert code == 0
+    assert SANDBOX_ROW_PREFIX in out, (
+        "--sandbox-ok must mark the price it reveals, not print a bare number")
+    assert "214" in out or "179" in out, \
+        "the price should actually be visible with --sandbox-ok"
+
+
+def t_when_sandbox_ok_marks_every_row():
+    code, out, _ = run_cli(WHEN_ARGS + ["--sandbox-ok", "--json"],
+                           responses=[ok(fixture("calendar_days"))])
+    data = json.loads(out)
+    assert data["results"], "expected calendar rows"
+    assert all(row["priceIsReal"] is False for row in data["results"]), \
+        "every sandbox calendar row must carry priceIsReal: false"
+
+
 def t_when_cli_empty_exits_one():
     code, _, _ = run_cli(WHEN_ARGS, responses=[ok(fixture("calendar_empty"))])
     assert code == 1, f"a calendar with no rows must exit 1, got {code}"
@@ -1306,6 +1616,18 @@ OFFLINE = [
     ("sandbox hides the price column by default", t_sandbox_suppresses_price_column),
     ("sandbox marks every row priceIsReal:false", t_sandbox_ok_marks_every_row),
     ("sweep refuses to rank sandbox prices", t_sweep_refuses_in_sandbox),
+    ("sweep: every day network-failing exits 3, not 1",
+     t_sweep_all_days_network_failed_exits_three),
+    ("sweep: a mixed failure says which days were not checked",
+     t_sweep_mixed_failure_says_which_days_were_not_checked),
+    ("sweep: all-timeout-with-no-partial exits 5, not 1",
+     t_sweep_all_timeouts_with_no_partial_exits_five_not_one),
+    ("sweep: per-day UsageErrors are not network failures",
+     t_sweep_usage_errors_are_not_network_failures),
+    ("sweep: a failed confirm-poll keeps the stage-1 partial, not unchecked",
+     t_sweep_confirm_stage_failure_keeps_partial_not_unchecked),
+    ("sweep: a genuinely empty sweep still exits 1",
+     t_sweep_genuinely_empty_still_exits_one),
     ("poll loop reaches complete and sends cluster", t_poll_reaches_complete),
     ("second-phase settles early when it stops growing",
      t_poll_settles_early_in_second_phase),
@@ -1326,6 +1648,20 @@ OFFLINE = [
      t_hotels_cli_complete_flag_exits_five),
     ("a partial hotel list is labelled, not hidden",
      t_hotels_cli_partial_is_reported_not_hidden),
+    ("hotels: a partial empty search exits 5, not 1",
+     t_hotels_partial_and_empty_exits_five_not_one),
+    ("hotels: an absent completion flag falls through to exit 1, not 5",
+     t_hotels_absent_flag_and_empty_exits_one_not_five),
+    ("hotels: a completed empty search still exits 1",
+     t_hotels_completed_and_empty_still_exits_one),
+    ("hotels: --limit 0 does not hide that hotels were found",
+     t_hotels_limit_zero_does_not_hide_that_hotels_were_found),
+    ("hotels hides the price column in sandbox mode by default",
+     t_hotels_sandbox_suppresses_price_column),
+    ("hotels --sandbox-ok marks every row priceIsReal:false",
+     t_hotels_sandbox_ok_marks_every_row),
+    ("hotels --sandbox-ok actually shows the marked price",
+     t_hotels_sandbox_ok_shows_marked_price),
     ("the deprecated hotels --place alias still parses",
      t_hotels_deprecated_place_alias_still_works),
     ("hotels with no destination exits 2",
@@ -1349,6 +1685,12 @@ OFFLINE = [
      t_calendar_round_trip_takes_cheapest_inbound),
     ("an empty calendar still names the route", t_calendar_empty_parses),
     ("when takes --from/--to as YYYY-MM", t_when_cli_takes_from_and_to),
+    ("when hides the price column in sandbox mode by default",
+     t_when_sandbox_suppresses_price_column),
+    ("when --sandbox-ok marks every row priceIsReal:false",
+     t_when_sandbox_ok_marks_every_row),
+    ("when --sandbox-ok actually shows the marked price",
+     t_when_sandbox_ok_shows_marked_price),
     ("an empty calendar exits 1", t_when_cli_empty_exits_one),
     ("check calls the API even with a warm place cache",
      t_check_ignores_a_warm_place_cache),

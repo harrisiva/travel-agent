@@ -41,9 +41,10 @@ from .client import (
     STATUS_COMPLETE,
     STATUS_SECOND,
     Client,
+    _has_complete_flag,
     ceiling_polls,
 )
-from .errors import AuthError, KayakError, SearchTimeout, UsageError
+from .errors import AuthError, KayakError, SearchTimeout, TransportError, UsageError
 
 EXIT_OK, EXIT_NONE, EXIT_USAGE, EXIT_NET, EXIT_AUTH, EXIT_PARTIAL = 0, 1, 2, 3, 4, 5
 
@@ -487,25 +488,71 @@ def cmd_sweep(args) -> int:
     rows.sort(key=lambda r: _day_key(
         next((e for e in results if e["date"] == r[0]), {})))
 
+    # A day is "not checked" if its search never produced offers to judge —
+    # either the tenant/network failed outright (TransportError) or the
+    # search timed out with no partial result at all (SearchTimeout with
+    # .partial None, which sweep_cars stores as search=None too, see
+    # client.sweep_cars). Both mean the same thing to a caller deciding
+    # whether to keep polling: this day says nothing about "cheapest" or
+    # "nothing available", because nobody actually looked. A day dropped for
+    # a UsageError (a per-day bug, not an outage or a timeout) does not
+    # count here.
+    unchecked = [(day, error) for day, search, error in days
+                 if search is None and isinstance(error, (TransportError, SearchTimeout))]
+    all_unchecked = bool(days) and len(unchecked) == len(days)
+    any_network_failure = any(isinstance(error, TransportError)
+                              for _, error in unchecked)
+
     if not args.json:
         if rows:
             print(fmt.SANDBOX_BANNER + "\n" if client.sandbox else "", end="")
             print(fmt.table(rows[: args.limit],
                             ["pickup", "price", "car", "agency", "note"]))
+        elif all_unchecked:
+            print("every day in the range failed with a network or API "
+                  "error, or timed out before returning anything — nothing "
+                  "was actually checked")
         else:
+            if unchecked:
+                # The failure that opened this fix: a mixed sweep where some
+                # days genuinely had nothing and others were never checked
+                # must not report only "no priced offers" — that reads as a
+                # completed, confirmed-empty search across the whole range,
+                # when half of it was never looked at.
+                print(f"{len(unchecked)} of {len(days)} days failed with a "
+                      f"network error or timed out before returning "
+                      f"anything, and were not checked")
             print("no priced offers on any day in that range")
     found = any(r.get("cheapest") for r in results)
     results = results[: args.limit]
-    return _emit(args, "sweep", results, found,
-                 query={"pickup": args.pickup, "from": args.from_date.isoformat(),
-                        "to": args.to_date.isoformat(), "nights": args.nights},
-                 meta={"sandbox": client.sandbox,
-                       "prices_are_mocked": client.sandbox,
-                       "requests": client.requests_made,
-                       "days_scanned": len(days),
-                       "ranked_by": "price",
-                       "returned": len(results),
-                       "truncated": len(results) < len(days)})
+    query = {"pickup": args.pickup, "from": args.from_date.isoformat(),
+             "to": args.to_date.isoformat(), "nights": args.nights}
+    meta = {"sandbox": client.sandbox,
+            "prices_are_mocked": client.sandbox,
+            "requests": client.requests_made,
+            "days_scanned": len(days),
+            "days_failed": len(unchecked),
+            "ranked_by": "price",
+            "returned": len(results),
+            "truncated": len(results) < len(days)}
+    if all_unchecked:
+        # A network failure is the more urgent signal — "stop, do not keep
+        # polling this tenant" — so it wins exit 3 over a bare timeout even
+        # in a mix of the two. An all-timeout sweep with no network failures
+        # at all is `cars`' own SearchTimeout contract: exit 5, partial, not
+        # a confirmed empty.
+        if any_network_failure:
+            code, message = EXIT_NET, (
+                "every day in the range failed with a network or API "
+                "error — nothing was actually checked; this is not "
+                "\"nothing available\"")
+        else:
+            code, message = EXIT_PARTIAL, (
+                "every day's search timed out before returning anything — "
+                "nothing was actually checked, not confirmed empty")
+        return _fail(args, code, message, "sweep",
+                     results=results, query=query, meta=meta)
+    return _emit(args, "sweep", results, found, query=query, meta=meta)
 
 
 def _render_hotels(args, client, search) -> tuple[list[dict], dict]:
@@ -531,6 +578,10 @@ def _render_hotels(args, client, search) -> tuple[list[dict], dict]:
         # priceless offers: a row with no rate cannot be the cheapest room.
         hotels.sort(key=lambda hotel: hotel.sort_key())
     results = [h.summary() for h in hotels][: args.limit]
+    for row in results:
+        # Same honesty flag `offer_row` stamps on every car row: a rate read
+        # off this row on its own must still carry the sandbox marker.
+        row["priceIsReal"] = not client.sandbox
     meta = {
         "complete": complete,
         "partial": not complete,
@@ -546,13 +597,25 @@ def _render_hotels(args, client, search) -> tuple[list[dict], dict]:
         "prices_are_mocked": client.sandbox,
     }
     if not args.json:
+        # Sandbox honesty, same rule as `cars`: the price column is withheld
+        # entirely without --sandbox-ok, rather than shown with a caveat that
+        # competes with a user asking a direct "how much" question and loses.
+        show_price = not client.sandbox or args.sandbox_ok
         if client.sandbox:
             print(fmt.SANDBOX_BANNER + "\n")
-        rows = [[h.name, h.star_rating or "?", h.guest_rating or "?",
-                 h.lowest_rate if h.lowest_rate is not None else "?"]
-                for h in hotels[: args.limit]]
-        print(fmt.table(rows, ["hotel", "stars", "rating", "from"])
-              if rows else "no hotels found")
+        headers = ["hotel", "stars", "rating"]
+        if show_price:
+            headers.append("from")
+        rows = []
+        for h in hotels[: args.limit]:
+            row = [h.name, h.star_rating or "?", h.guest_rating or "?"]
+            if show_price:
+                price = h.lowest_rate if h.lowest_rate is not None else "?"
+                if client.sandbox and h.lowest_rate is not None:
+                    price = f"{fmt.SANDBOX_ROW_PREFIX} {price}"
+                row.append(price)
+            rows.append(row)
+        print(fmt.table(rows, headers) if rows else "no hotels found")
         footer = fmt.ranking_footer(
             ranked_by, "no hotel in this result carried a rate to rank on")
         if rows and footer:
@@ -560,6 +623,10 @@ def _render_hotels(args, client, search) -> tuple[list[dict], dict]:
         if rows:
             print(f"\nrates are for {HOTEL_OCCUPANCY} — there is no "
                   f"party-size option yet")
+        if not show_price:
+            print("\nsandbox prices are mock data — re-run with "
+                  "--sandbox-ok to see them; that flag does not make them "
+                  "real")
         if rows and len(hotels) > len(rows):
             print(f"\n{len(rows)} of {len(hotels)} shown — raise --limit for more")
         if not complete:
@@ -592,11 +659,38 @@ def cmd_hotels(args) -> int:
         # The caller asked for a finished search and did not get one: exit 5,
         # with the partial rows still rendered so the work is not wasted.
         results, meta = _render_hotels(args, client, exc.partial)
+        meta["complete_flag_present"] = (
+            _has_complete_flag(exc.partial) if exc.partial is not None else False)
         return _fail(args, EXIT_PARTIAL, str(exc), "hotels",
                      results=results, query=query, meta=meta)
 
     results, meta = _render_hotels(args, client, search)
-    return _emit(args, "hotels", results, bool(results), query=query, meta=meta)
+    # `_has_complete_flag` is the client's own rule for what "no isComplete in
+    # the body" means: on a definite 200 it is corroboration, not the primary
+    # signal, and the *absence* of the flag must not be read as evidence of
+    # incompleteness — only an explicit `isComplete: false` is. Without this
+    # gate, a plain 200 that simply omits the flag (which HotelSearch.parse
+    # conservatively reads as complete=False) exited 5 here, contradicting
+    # the exact "absent flag on a 200 is a green light" rule the client
+    # applies to itself under --complete (see client.py's `hotels()` and
+    # `_has_complete_flag`). An absent flag falls through to exit 1 instead.
+    flag_present = _has_complete_flag(search)
+    meta["complete_flag_present"] = flag_present
+    # `meta["matched"]` is the pre-`--limit` count, exactly what `cars`
+    # (`bool(outcome.kept)`) and `when` (`bool(days)`) already check —
+    # `--limit 0` must not turn "hotels were found" into "nothing has come
+    # back yet" just because the trimmed `results` list is empty.
+    found = bool(meta.get("matched"))
+    if flag_present and not found and not meta.get("complete", False):
+        # A partial search that found nothing has not earned exit 1: that
+        # code asserts the search finished and the answer is genuinely no.
+        # Mirrors the SearchTimeout branch above, and cars' own rule (see
+        # module docstring: "a partial search that found nothing is 5, not 1").
+        return _fail(args, EXIT_PARTIAL,
+                     "the hotel search had not finished and nothing has come "
+                     "back yet — not a final \"nothing available\"",
+                     "hotels", results=results, query=query, meta=meta)
+    return _emit(args, "hotels", results, found, query=query, meta=meta)
 
 
 def cmd_when(args) -> int:
@@ -612,14 +706,35 @@ def cmd_when(args) -> int:
     # applies, and for the same reason: an unpriced day answers nothing.
     ordered = sorted(days, key=lambda d: d.sort_key())
     results = [d.summary() for d in ordered][: args.limit]
+    for row in results:
+        # Same honesty flag `offer_row` stamps on every car row.
+        row["priceIsReal"] = not client.sandbox
     if not args.json:
+        # Same sandbox rule as `cars` and `hotels`: withhold the price column
+        # entirely without --sandbox-ok rather than print it with a caveat.
+        show_price = not client.sandbox or args.sandbox_ok
         if client.sandbox:
             print(fmt.SANDBOX_BANNER + "\n")
-        rows = [[d.key, d.price if d.price is not None else "?",
-                 "predicted" if d.predicted else "quoted"]
-                for d in ordered[: args.limit]]
-        print(fmt.table(rows, ["date", "price", "kind"])
+        headers = ["date", "kind"]
+        if show_price:
+            headers.insert(1, "price")
+        rows = []
+        for d in ordered[: args.limit]:
+            kind = "predicted" if d.predicted else "quoted"
+            row = [d.key]
+            if show_price:
+                price = d.price if d.price is not None else "?"
+                if client.sandbox and d.price is not None:
+                    price = f"{fmt.SANDBOX_ROW_PREFIX} {price}"
+                row.append(price)
+            row.append(kind)
+            rows.append(row)
+        print(fmt.table(rows, headers)
               if rows else "no calendar data for that route")
+        if not show_price:
+            print("\nsandbox prices are mock data — re-run with "
+                  "--sandbox-ok to see them; that flag does not make them "
+                  "real")
         if rows and len(ordered) > len(rows):
             print(f"\n{len(rows)} of {len(ordered)} shown — raise --limit for more")
     return _emit(args, "when", results, bool(days),
@@ -785,6 +900,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="wall-clock ceiling; 25 suits claude.ai, 90 Claude Code")
     p.add_argument("--limit", type=int, default=10,
                    help="most rows to return; trims --json as well as the table")
+    p.add_argument("--sandbox-ok", action="store_true",
+                   help="show sandbox price columns. Passing this does NOT "
+                        "make the numbers real — they remain mock data.")
     _add_global(p)
     p.set_defaults(func=cmd_hotels)
 
@@ -805,6 +923,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="non-stop fares only")
     p.add_argument("--limit", type=int, default=15,
                    help="most rows to return; trims --json as well as the table")
+    p.add_argument("--sandbox-ok", action="store_true",
+                   help="show sandbox price columns. Passing this does NOT "
+                        "make the numbers real — they remain mock data.")
     _add_global(p)
     p.set_defaults(func=cmd_when)
 
