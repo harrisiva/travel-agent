@@ -213,15 +213,27 @@ def _validate_party(adults: int, children: int, in_seat: int, on_lap: int) -> No
         )
 
 
-def unsatisfiable(filters: Filters, route: RouteFilters | None) -> str | None:
+def unsatisfiable(
+    filters: Filters,
+    route: RouteFilters | None,
+    *,
+    check_price: bool = True,
+    check_duration: bool = True,
+    check_airlines: bool = True,
+) -> str | None:
     """Why these filters can never match on this route, or None if they might.
 
-    Google publishes the route's real bounds — cheapest and dearest fare, the
-    carriers that appear, the duration range — so a filter that excludes
-    everything is knowable *before* answering. Without this the tool returns
-    "nothing matched" (exit 1, "keep waiting"), and a watch loop built on an
-    impossible threshold polls forever and never fires. `_check_airlines`
-    solved that for carriers; this generalises it to the rest.
+    Google publishes bounds for the search it answered — the cheapest fare and
+    the quickest flight *for these dates*, the carriers that appear — so a
+    filter that excludes everything is knowable *before* answering. Without
+    this the tool returns "nothing matched" (exit 1, "keep waiting"), and a
+    watch loop built on an impossible filter polls forever and never fires.
+
+    The price and duration floors belong to one date on one day, so they only
+    prove anything about that search. A caller that looks beyond it — a sweep
+    over later dates, a watch waiting for tomorrow's fares — must pass
+    `check_price=False` (and `check_duration=False` for other dates), or it
+    refuses exactly the question it was asked.
 
     Deliberately conservative: only conditions the payload proves are reported,
     so a filter that merely happens to match nothing today still exits 1.
@@ -229,14 +241,15 @@ def unsatisfiable(filters: Filters, route: RouteFilters | None) -> str | None:
     if route is None:
         return None
 
-    if (filters.max_price is not None and route.price_min is not None
+    if (check_price and filters.max_price is not None
+            and route.price_min is not None
             and filters.max_price < route.price_min):
         return (
-            f"no fare on this route is at or under {filters.max_price} "
+            f"no fare in this search is at or under {filters.max_price} "
             f"{route.currency} — the cheapest is {route.price_min}"
         )
 
-    if (filters.max_duration_minutes is not None
+    if (check_duration and filters.max_duration_minutes is not None
             and route.duration_min_minutes is not None
             and filters.max_duration_minutes < route.duration_min_minutes):
         return (
@@ -244,7 +257,10 @@ def unsatisfiable(filters: Filters, route: RouteFilters | None) -> str | None:
             f"minutes or less — the quickest is {route.duration_min_minutes}"
         )
 
-    known = {code.upper() for code, _ in route.airlines}
+    # The carrier chips, too, belong to one date: a carrier flying only some
+    # weekdays is absent from the others. A sweep judges them per date instead.
+    known = ({code.upper() for code, _ in route.airlines}
+             if check_airlines else set())
     if known and filters.airlines:
         # --airlines is a whitelist, i.e. an OR: "Flair or WestJet" is satisfied
         # by either. Only a request where NOTHING asked for flies the route is

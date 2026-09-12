@@ -27,9 +27,10 @@ There is nothing to set up. No API key, no login, no configuration.
 
 `requests` is used when present but is **not required** — the client falls back
 to `curl` and then to Python's own `urllib`, so it is built to work in a
-locked-down sandbox where pip is unavailable. (The self-check's `[offline]` group exercises both: `requests` absent, curl
-absent, curl present but unspawnable, and curl behind a proxy — with mocked
-transports rather than live calls.) Install it only if you want its retry
+locked-down sandbox where pip is unavailable. (The self-check's `[offline]`
+group exercises every fallback, in four cases: `requests` absent, curl absent,
+curl present but unspawnable, and curl behind a proxy — with mocked transports
+rather than live calls.) Install it only if you want its retry
 handling:
 
 ```bash
@@ -73,7 +74,7 @@ parse the output** — the human format is for showing the user.
 
 ```bash
 cd <path-to-this-skill>/scripts
-python3 flights.py search YYZ YHZ --depart 2026-09-25 --return 2026-09-27 --json
+python3 flights.py search YYZ YHZ --depart +15 --return +17 --json
 ```
 
 `flights.py` works when invoked by absolute path from any working directory.
@@ -107,7 +108,7 @@ read the carriers off `search` results instead.
 | `airports` | takes a place name instead of a trip: `airports Toronto`. Resolves structurally — it reads the airports Google actually routes to, so `Bali` resolves to `DPS` even though the airport is in Denpasar |
 | `search` | all the result filters below, plus `--limit N` (most itineraries to show, default 10, minimum 1) |
 | `price-check` | — (it reports the verdict for the trip as asked) |
-| `cheapest` | `--days N` (how many departure dates to try, default 14, maximum 60 — but a window is capped at 40 requests, so above 40 days you must raise `--step`), `--step N` (default 1, minimum 1). **`--return` here sets the trip *length*, not a fixed date** — see below |
+| `cheapest` | `--days N` (the window, in days: default 14, maximum 60), `--step N` (default 1, minimum 1). It visits `ceil(days/step)` dates and at most 40 of them, so above 40 days you must raise `--step`. **`--return` here sets the trip *length*, not a fixed date** — see below |
 | `route` | — |
 | `watch` | `--under PRICE` (required), plus the result filters |
 
@@ -161,9 +162,9 @@ specific return times, say the tool reports round-trip totals against outbound
 options, and that picking an exact return pair is not supported.
 
 **On `cheapest`, `--return` sets the trip length, and the sweep slides it.**
-`cheapest YYZ YHZ --depart 10-22 --return 10-27 --days 7` prices a *five-night*
+`cheapest YYZ YHZ --depart +42 --return +47 --days 7` prices a *five-night*
 trip departing on each of seven days — not seven return options for a fixed
-27th. Each row in the JSON carries the `return` date actually priced, so check
+return date. Each row in the JSON carries the `return` date actually priced, so check
 it before quoting a saving. If the user wants a fixed return, use `search`.
 
 **Prices are for the whole party.** `--adults 2` returns roughly double, and
@@ -209,30 +210,31 @@ conservative — when the page's evidence is mixed or absent it makes no claim
 and the search proceeds.
 
 **A filter that cannot possibly match is refused, not silently applied.**
-Google publishes each route's real bounds. `--airlines` is a whitelist and so
+Google publishes bounds with every search. `--airlines` is a whitelist and so
 an OR — `--airlines F8,XX` is fine when F8 flies the route, and only a list
 where *nothing* asked for flies it is refused. Excluding every carrier on the
-route is refused too. Along with those, a `--max-price` below the cheapest fare, a `--max-duration`
-under the quickest flight, or a departure window that excludes itself all exit
-2 and say why. Returning "nothing matched" instead would be a false negative —
-and exit 1 is the code a watch loop reads as "keep waiting", so an impossible
-filter would poll forever and never fire. This applies to `search`, `cheapest`
-and `watch` alike (on `cheapest`, the check runs against the first date of the
-sweep).
+route is refused too, and so is a departure window that excludes itself. All
+of these exit 2 and say why, on `search`, `cheapest` and `watch` alike. The
+carrier list is per date, so `cheapest` judges carriers after the sweep and
+refuses only when **no** date in the range lists the carrier. A carrier that
+flies some weekdays and not others is swept, not refused.
+Returning "nothing matched" instead would be a false negative — and exit 1 is
+the code a watch loop reads as "keep waiting", so an impossible filter would
+poll forever and never fire.
 
-**`watch --under` is checked against the route's floor too.** A threshold below
-anything the route has ever sold exits `2` with the real range, rather than
-exiting `1` on every poll forever:
+The price and duration bounds are different: they describe **this search, on
+these dates, today**, so they only prove anything about that one search.
+`search` refuses a `--max-price` below its own cheapest fare, or a
+`--max-duration` under its quickest flight. `cheapest` checks neither — a
+later date in the sweep can be cheaper or quicker than the first. `watch`
+checks duration but not price, because waiting for the fare to fall below
+today's is the whole point of it.
 
-```
---under 20 CAD is below every fare on this route; the cheapest is 102 and the
-range runs to 953. A watch on this threshold would never fire.
-```
-
-`--under` is not a result filter — it is the trigger — so it gets its own check
-in `watch`, alongside the filter check that covers the flags above. You do not
-need to mirror it with `--max-price`, and should not: `--max-price` also filters
-the results.
+**`watch --under` below today's cheapest fare is the normal case, and is never
+refused.** It exits `1` ("not yet") until the fare falls to it. Only a
+threshold of zero or less is rejected, at parse time. `--under` is the
+trigger, not a result filter; do not mirror it with `--max-price`, which also
+filters the results.
 
 **Clock filters are times of day, local to their own airport.**
 `--arrive-before 18:00` means "lands by 6pm" wherever it lands, so a long-haul
@@ -272,12 +274,13 @@ it were a verdict.
 differ — that is the market, not a bug. Do not tell a user a price is "wrong"
 because it moved.
 
-**`--days` on `cheapest` is one request per day.** Single searches are capped
-at **5 requests**; `cheapest` defaults its own budget to one request per date
-plus three spare for retries
-(up to 40), because asking for `--days 14` *is* asking for 14 requests. A plan
-that would exceed the ceiling is refused before the first request rather than
-half-run. Use `--step 2` to halve a wide sweep.
+**`cheapest` costs one request per visited date.** `--days N --step S` visits
+`ceil(N/S)` dates, never more than 40. Every other command defaults to a
+ceiling of **5 requests**. `cheapest` sets its own default instead: one per
+visited date plus **3 spare for retries**, capped at 40. Asking for `--days 14`
+*is* asking for 14 requests. `--max-requests` overrides either default, up to
+the hard maximum of 40. A plan that would exceed the ceiling is refused before
+the first request rather than half-run. Use `--step 2` to halve a wide sweep.
 
 That ceiling is low on purpose. Google blocks rather than throttles, and on
 claude.ai the request leaves from a shared datacenter address — an over-eager
@@ -303,7 +306,7 @@ Identical under `--json`.
 
 | Code | Meaning |
 |---|---|
-| `0` | found what was asked for (`airports`: the place resolved to at least one airport) (for `watch`: the fare is at or below `--under`; for `price-check`: there is a verdict word) |
+| `0` | found what was asked for (`airports`: the place resolved to at least one airport) (for `watch`: the fare is at or below `--under`; for `price-check`: there is a verdict word; for `cheapest`: at least one date swept has a priced option that passes the filters) |
 | `1` | the query worked, nothing matched (`airports`: Google returned a results page but routed nowhere) (for `watch`: still above the threshold, *or* nothing priced matched the filters; for `price-check`: no verdict word for these dates; for `cheapest`: no priced option on any date swept) |
 | `2` | usage or lookup error — see below |
 | `3` | network failure, Google blocking, a payload whose shape changed, or (for `route`) a response with no route metadata in it |
@@ -320,9 +323,10 @@ Exit `2` covers, all refused **before** any request unless noted:
   `--json` they come back as a proper error object rather than a usage block on
   stderr;
 - a sweep whose plan exceeds `--max-requests`, or `--days` over 60;
-- **after** one request: a currency Google did not actually price in, a filter
-  the route's own bounds prove can never match, and a `watch --under` threshold
-  below the route's cheapest fare.
+- **after** one request: a currency Google did not actually price in, or a
+  filter the search's own bounds prove can never match (see above for which
+  bounds each command checks). A `watch --under` below today's fare is *not*
+  on this list — it exits 1.
 
 **The 1 vs 3 split is what makes a watch loop safe.** Only `1` means keep
 waiting. A `3` means the check itself failed and says nothing about the fare —
@@ -390,9 +394,13 @@ diagnostic only, never report it), `current`, `typical`, `low`,
 Any of them except `currency` and `history` can be `null`.
 
 `route_fare_range` (`price-check`, only when there is no `price_context`) —
-`min`, `max`, `currency`. These are Google's own filter bounds for the **whole
-route**, not for the dates you asked about, and they are typically far wider
-than the search returned. Do not quote them as "fares on these dates".
+`min`, `max`, `currency`. These are the ends of Google's price-filter slider
+for **this search** — not a route-wide or historical range. `min` is at or
+just below the cheapest fare on these dates today. It equalled the cheapest
+priced itinerary in four of five captures, and in the fifth it was 200 against
+216, where some options carried no price. `max` is only where the slider
+stops. Do not quote `max`, and do not
+present the pair as a range of fares, or as a verdict.
 
 `filters` — the route's `price_min`, `price_max`, `currency`, `airlines[]`,
 `alliances[]`, `connection_airports[]` (each a `code`/`name` object — as are `airlines[]` and `alliances[]`),

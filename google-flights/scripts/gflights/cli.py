@@ -319,16 +319,17 @@ def _query(args):
     )
 
 
-def _refuse_impossible(args, result) -> None:
+def _refuse_impossible(args, result, **checks) -> None:
     """Refuse filters this route proves can never match.
 
     Returning "nothing matched" (exit 1) for an impossible filter is a false
     negative, and exit 1 is the code a watch loop reads as "keep waiting" — so
-    an unsatisfiable threshold made a cron poll forever and never fire. This
-    used to cover carriers only, and only in `search`; it now covers price,
-    duration, carrier and time windows, in every command that filters.
+    an unsatisfiable threshold made a cron poll forever and never fire. It
+    covers price, duration, carrier and time windows, in every command that
+    filters; `checks` switches off the bounds that only hold for one date on
+    one day (see `unsatisfiable`).
     """
-    reason = unsatisfiable(_filters(args), result.filters)
+    reason = unsatisfiable(_filters(args), result.filters, **checks)
     if reason:
         raise QueryError(reason)
 
@@ -385,22 +386,22 @@ def cmd_price_check(args) -> int:
                 print(f"Cheapest right now:  {cheapest} {args.currency} "
                       f"({basis} total for {_party(args)})")
             if spread and spread.price_min is not None:
-                print(f"Route-wide fare range: "
+                print(f"Price-filter bounds: "
                       f"{_span(spread.price_min, spread.price_max)} "
-                      f"{spread.currency} (Google's own filter bounds for this "
-                      f"route — wider than what this search returned)")
+                      f"{spread.currency} (Google's price slider for this "
+                      f"search — not a history, and the top is not a fare "
+                      f"to quote)")
             # "The fare above is real" only holds when a fare was printed. With
-            # no priced itinerary the only number on screen is the route-wide
-            # range, which SKILL.md says must never be quoted as a fare for
-            # these dates — so the sentence would point the agent straight at
-            # the one figure it is told not to use.
+            # no priced itinerary the only number on screen is the slider
+            # bounds, which SKILL.md says must never be quoted as a fare range
+            # — so the sentence would point the agent straight at the one
+            # figure it is told not to use.
             closing = (
                 "The fare above is real; there is just nothing to judge it "
                 "against."
                 if cheapest is not None else
-                "No fare was returned for these dates either, so there is "
-                "nothing to quote — the range above is the whole route, not "
-                "your dates."
+                "No priced option was returned either, so there is nothing "
+                "to quote — the bounds above are a filter slider, not fares."
             )
             print(
                 "\nNo price verdict available — Google publishes its "
@@ -495,9 +496,22 @@ def cmd_cheapest(args) -> int:
     filters = _filters(args)
 
     rows = []
+    # Why each date's carrier chips rule the airline filters out (None if they
+    # do not). Refused only when EVERY date does — a carrier that flies some
+    # weekdays and not others must not sink the whole sweep on the first date.
+    carrier_reasons = []
     for index, (day, result) in enumerate(sweep):
         if index == 0:
-            _refuse_impossible(args, result)
+            # Only what holds on every date: the clock window. The first date's
+            # fare, duration and carrier bounds say nothing about the later
+            # ones, and refusing on them threw away sweeps where a later date
+            # would have matched.
+            _refuse_impossible(args, result, check_price=False,
+                               check_duration=False, check_airlines=False)
+        if filters.airlines or filters.exclude_airlines:
+            carrier_reasons.append(unsatisfiable(
+                filters, result.filters, check_price=False,
+                check_duration=False))
         matched = filters.apply(result.itineraries)
         prices = [i.price for i in matched if i.price is not None]
         rows.append({
@@ -511,6 +525,11 @@ def cmd_cheapest(args) -> int:
             "cheapest": min(prices) if prices else None,
             "options": len(matched),
         })
+
+    if carrier_reasons and all(carrier_reasons):
+        raise QueryError(
+            f"on no date in this range: {carrier_reasons[0]}"
+        )
 
     priced = [r for r in rows if r["cheapest"] is not None]
     best = min(priced, key=lambda r: r["cheapest"]) if priced else None
@@ -546,7 +565,7 @@ def cmd_cheapest(args) -> int:
 
 
 def cmd_route(args) -> int:
-    """"Who flies this route, and what can I actually filter on?" """
+    """"What can I actually filter on for this route, and where does it connect?" """
     result = _client(args).search(_query(args))
     filters = result.filters
     if filters is None:
@@ -592,20 +611,11 @@ def cmd_watch(args) -> int:
     result says nothing about the fare.
     """
     result = _client(args).search(_query(args))
-    _refuse_impossible(args, result)
-
-    # --under is not a Filters field, so the general check above never sees it.
-    # Without this, a threshold below everything the route has ever offered
-    # exits 1 on every poll — indistinguishable from "not yet", so the cron job
-    # runs until the flight departs and never fires.
-    route = result.filters
-    if route is not None and route.price_min is not None and args.under < route.price_min:
-        raise QueryError(
-            f"--under {args.under} {route.currency} is below every fare on this "
-            f"route; the cheapest is {route.price_min}"
-            + (f" and the range runs to {route.price_max}" if route.price_max else "")
-            + ". A watch on this threshold would never fire."
-        )
+    # A watch waits for the fare to fall, so today's cheapest fare is not a
+    # floor for it — neither for --under (a threshold below today's price is
+    # the normal case) nor for --max-price. Refusing on either turned the
+    # command's whole purpose into exit 2.
+    _refuse_impossible(args, result, check_price=False)
 
     matched = _filters(args).apply(result.itineraries)
     priced = [i for i in matched if i.price is not None]
@@ -773,7 +783,8 @@ def _add_common(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--max-requests", type=_budget, default=None,
                         help=f"ceiling on requests to Google (default "
                              f"{DEFAULT_MAX_REQUESTS}; `cheapest` defaults to "
-                             f"one per date; max {MAX_MAX_REQUESTS})")
+                             f"one per visited date plus {RETRY_HEADROOM} for "
+                             f"retries; max {MAX_MAX_REQUESTS})")
 
 
 class _Parser(argparse.ArgumentParser):
@@ -837,7 +848,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_cheapest)
 
     p = sub.add_parser("route",
-                       help="who flies this route and what can be filtered on")
+                       help="fare and duration bounds for these dates, "
+                            "connection airports, and Google's filter chips "
+                            "(not a list of who flies it)")
     _add_trip(p); _add_common(p)
     p.set_defaults(func=cmd_route)
 

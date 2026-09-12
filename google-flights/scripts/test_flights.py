@@ -741,6 +741,120 @@ def test_cheapest_defaults() -> None:
     check("offline", "it really did sweep the whole default window",
           len(calls) == 14, f"searched {len(calls)} dates")
 
+    # The budget actually built: one per visited date plus the documented 3
+    # spare for retries, capped at 40. Without the spare, one 5xx or TLS
+    # recovery exhausts the ceiling and throws away every date already fetched.
+    def budget(extra):
+        seen = []
+
+        def capture(self, query):
+            seen.append(self.transport.max_requests)
+            return parsed
+
+        Client.search = capture
+        try:
+            with contextlib.redirect_stdout(io.StringIO()), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                cli.main(["cheapest", "YYZ", "YHZ", "--depart", "+30", *extra])
+        finally:
+            Client.search = original
+        return seen[0] if seen else None
+
+    for extra, want in ((["--days", "14"], 17), (["--days", "40"], 40),
+                        (["--days", "60", "--step", "2"], 33)):
+        got = budget(extra)
+        check("offline", f"cheapest {' '.join(extra)} budgets {want} requests",
+              got == want, f"got {got} — one per visited date + 3, capped at 40")
+
+
+def _run_stubbed(argv: list[str], result_for=None) -> int:
+    """Run the CLI with Client.search stubbed; `result_for(n)` picks each reply."""
+    parsed = search_result(fixture(NONSTOP), "CAD")
+    calls = []
+    original = Client.search
+
+    def stub(self, query):
+        calls.append(query)
+        return result_for(len(calls) - 1) if result_for else parsed
+
+    Client.search = stub
+    try:
+        with contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()):
+            return cli.main(argv)
+    finally:
+        Client.search = original
+
+
+def _cheaper(by: int):
+    """The nonstop capture with every fare cut by `by` — a later, cheaper date."""
+    parsed = copy.deepcopy(search_result(fixture(NONSTOP), "CAD"))
+    for it in parsed.itineraries:
+        if it.price is not None:
+            object.__setattr__(it, "price", it.price - by)
+    return parsed
+
+
+def test_floors_are_not_ceilings() -> None:
+    """Today's cheapest fare is not a floor for a watch or a sweep.
+
+    The capture's cheapest fare (and Google's price_min) is 249 and its
+    quickest flight 125 minutes. `watch --under 100` is the normal use of the
+    command — wait for the fare to fall — and was refused with exit 2. And a
+    `cheapest` sweep refused itself on the *first* date's floors, although a
+    later date could match.
+    """
+    print("\nfloors that only hold for one date")
+    trip = ["YYZ", "YHZ", "--depart", "+30"]
+
+    code = _run_stubbed(["watch", *trip, "--under", "100"])
+    check("offline", "a watch threshold below today's cheapest fare is polled, not refused",
+          code == 1, f"exit {code} — waiting for the fare to fall is what watch is for")
+    code = _run_stubbed(["watch", *trip, "--under", "100", "--max-price", "150"])
+    check("offline", "and so is a --max-price below it on a watch",
+          code == 1, f"exit {code}")
+    check("offline", "a watch threshold at today's fare still fires",
+          _run_stubbed(["watch", *trip, "--under", "249"]) == 0)
+    check("offline", "a zero watch threshold is still refused",
+          not _parses(["watch", *trip, "--under", "0"]))
+    # What a watch must still refuse: a filter the date proves impossible would
+    # otherwise exit 1 ("not yet") on every poll until the flight departs.
+    code = _run_stubbed(["watch", *trip, "--under", "300", "--airlines", "XX"])
+    check("offline", "a watch on a carrier that does not fly the route is refused",
+          code == 2, f"exit {code} — exit 1 here polls forever")
+    code = _run_stubbed(["watch", *trip, "--under", "300", "--max-duration", "100"])
+    check("offline", "a watch under the date's quickest flight is refused",
+          code == 2, f"exit {code} — the capture's quickest flight is 125 minutes")
+    code = _run_stubbed(["search", *trip, "--max-duration", "100"])
+    check("offline", "a search under its own quickest flight is refused",
+          code == 2, f"exit {code}")
+
+    base = search_result(fixture(NONSTOP), "CAD")
+    later = _cheaper(100)
+    code = _run_stubbed(["cheapest", *trip, "--days", "3", "--max-price", "200",
+                         "--json"], lambda n: base if n == 0 else later)
+    check("offline", "a sweep is not refused on its first date's price floor",
+          code == 0, f"exit {code} — dates 2 and 3 are priced at 149")
+    code = _run_stubbed(["cheapest", *trip, "--days", "3", "--max-duration", "100"])
+    check("offline", "nor on its first date's duration floor",
+          code != 2, f"exit {code}")
+    code = _run_stubbed(["cheapest", *trip, "--days", "3", "--airlines", "XX"])
+    check("offline", "a carrier that flies the route on no date is still refused on a sweep",
+          code == 2, f"exit {code}")
+    # A carrier flying only some weekdays: absent from the first date's chips,
+    # present on the later ones.
+    weekday = replace(base, filters=replace(
+        base.filters,
+        airlines=type(base.filters.airlines)(
+            [*base.filters.airlines, ("ZZ", "Zed Air")])))
+    code = _run_stubbed(["cheapest", *trip, "--days", "3", "--airlines", "ZZ"],
+                        lambda n: base if n == 0 else weekday)
+    check("offline", "a sweep is not refused on its first date's carrier list",
+          code != 2, f"exit {code} — ZZ flies dates 2 and 3")
+    code = _run_stubbed(["search", *trip, "--max-price", "200"])
+    check("offline", "a single search still refuses a price under its own floor",
+          code == 2, f"exit {code}")
+
 
 def test_budget() -> None:
     print("\nrequest budget")
@@ -1181,6 +1295,7 @@ def main() -> int:
     test_currency_honesty()
     test_cli_guards()
     test_cheapest_defaults()
+    test_floors_are_not_ceilings()
     test_budget()
     test_degraded_sandbox()
     if not args.offline:
