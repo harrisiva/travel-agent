@@ -1,0 +1,247 @@
+[
+ {
+  "theatre": "Cineplex Cinemas Vaughan",
+  "theatreId": 7408,
+  "dates": [
+   {
+    "startDate": "2026-09-11T00:00:00",
+    "movies": [
+     {
+      "id": 37997,
+      "presentationType": "Film Presentation",
+      "name": "Spider-Man: Brand New Day",
+      "filmUrl": "spiderman-brand-new-day",
+      "isEvent": false,
+      "runtimeInMinutes": 145,
+      "smallPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37997_130_193.jpg",
+      "mediumPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37997_320_470.jpg",
+      "largePosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37997_768_1024.jpg",
+      "genres": [
+       "Action",
+       "Adventure"
+      ],
+      "experiences": [
+       {
+        "experienceTypes": [
+         "3D"
+        ],
+        "order": 2,
+        "isCcEnabled": true,
+        "isDsEnabled": true,
+        "sessions": [
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7408&showtimeId=542545&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=542545&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=542545&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=542545&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=542545&a=0000000001&l=7408&m=spiderman-brand-new-day&ss=False",
+          "showtimeShareKey": "v:542545_t:7408_a:0000000001",
+          "vistaSessionId": 542545,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T18:40:00",
+          "showStartDateTimeUtc": "2026-09-11T22:40:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 335,
+          "isSoldOut": false,
+          "auditorium": "Aud 12"
+         },
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7408&showtimeId=542559&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=542559&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=542559&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=542559&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=542559&a=0000000001&l=7408&m=spiderman-brand-new-day&ss=False",
+          "showtimeShareKey": "v:542559_t:7408_a:0000000001",
+          "vistaSessionId": 542559,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T22:00:00",
+          "showStartDateTimeUtc": "2026-09-12T02:00:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 343,
+          "isSoldOut": false,
+          "auditorium": "Aud 12"
+         }
+        ]
+       }
+      ],
+      "brightcoveVideoId": "ref:Spider-Man Brand New Day EN Trailer 5",
+      "localRating": "PG",
+      "ratingDescription": "Parental guidance advised.",
+      "warnings": [
+       "Violence",
+       "Coarse Language"
+      ],
+      "languageCode": "EN",
+      "language": "English",
+      "subtitleLanguage": "",
+      "marketLanguageCode": "EN",
+      "detailPageUrl": "https://www.cineplex.com/Movie/spiderman-brand-new-day",
+      "passesAllowed": true,
+      "hasPosterImage": true
+     },
+     {
+      "id": 37617,
+      "presentationType": "Film Presentation",
+      "name": "The Odyssey",
+      "filmUrl": "the-odyssey",
+      "isEvent": false,
+      "runtimeInMinutes": 172,
+      "smallPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37617_130_193.jpg",
+      "mediumPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37617_320_470.jpg",
+      "largePosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37617_768_1024.jpg",
+      "genres": [
+       "Action"
+      ],
+      "experiences": [
+       {
+        "experienceTypes": [
+         "IMAX",
+         "70mm"
+        ],
+        "order": 2,
+        "isCcEnabled": false,
+        "isDsEnabled": false,
+        "sessions": [
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7408&showtimeId=539605&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=539605&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=539605&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=539605&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=539605&a=0000000001&l=7408&m=the-odyssey&ss=False",
+          "showtimeShareKey": "v:539605_t:7408_a:0000000001",
+          "vistaSessionId": 539605,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T11:00:00",
+          "showStartDateTimeUtc": "2026-09-11T15:00:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 54,
+          "isSoldOut": false,
+          "auditorium": "IMAX"
+         },
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7408&showtimeId=539604&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=539604&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=539604&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=539604&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=539604&a=0000000001&l=7408&m=the-odyssey&ss=False",
+          "showtimeShareKey": "v:539604_t:7408_a:0000000001",
+          "vistaSessionId": 539604,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T15:00:00",
+          "showStartDateTimeUtc": "2026-09-11T19:00:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 55,
+          "isSoldOut": false,
+          "auditorium": "IMAX"
+         }
+        ]
+       }
+      ],
+      "brightcoveVideoId": "ref:The Odyssey EN Trailer 3",
+      "localRating": "PG",
+      "ratingDescription": "Parental guidance advised.",
+      "warnings": [
+       "Violence",
+       "Not Recommended for Young Children",
+       "Coarse Language",
+       "Photosensitivity Warning"
+      ],
+      "languageCode": "EN",
+      "language": "English",
+      "subtitleLanguage": "",
+      "marketLanguageCode": "EN",
+      "detailPageUrl": "https://www.cineplex.com/Movie/the-odyssey",
+      "passesAllowed": true,
+      "hasPosterImage": true
+     },
+     {
+      "id": 61598,
+      "presentationType": "Film Presentation",
+      "name": "Hope (Korean w/e.s.t.)",
+      "filmUrl": "hope-korean-west",
+      "isEvent": false,
+      "runtimeInMinutes": 157,
+      "smallPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/61598_130_193.jpg",
+      "mediumPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/61598_320_470.jpg",
+      "largePosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/61598_768_1024.jpg",
+      "genres": [
+       "Action"
+      ],
+      "experiences": [
+       {
+        "experienceTypes": [
+         "UltraAVX",
+         "ScreenX"
+        ],
+        "order": 2,
+        "isCcEnabled": false,
+        "isDsEnabled": false,
+        "sessions": [
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7408&showtimeId=542527&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=542527&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=542527&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=542527&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=542527&a=0000000001&l=7408&m=hope-korean-west&ss=False",
+          "showtimeShareKey": "v:542527_t:7408_a:0000000001",
+          "vistaSessionId": 542527,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T12:00:00",
+          "showStartDateTimeUtc": "2026-09-11T16:00:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 384,
+          "isSoldOut": false,
+          "auditorium": "AVX #1"
+         },
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7408&showtimeId=542585&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=542585&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=542585&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=542585&VISTAHOCategoryCode=0000000001&LocationId=7408&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=542585&a=0000000001&l=7408&m=hope-korean-west&ss=False",
+          "showtimeShareKey": "v:542585_t:7408_a:0000000001",
+          "vistaSessionId": 542585,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T15:30:00",
+          "showStartDateTimeUtc": "2026-09-11T19:30:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 385,
+          "isSoldOut": false,
+          "auditorium": "AVX #1"
+         }
+        ]
+       }
+      ],
+      "brightcoveVideoId": "ref:Hope EN Trailer 2",
+      "localRating": "14A",
+      "ratingDescription": "Suitable for persons 14 years of age or older. Persons under 14 must be accompanied by an adult.",
+      "warnings": [
+       "Frightening Scenes",
+       "Coarse Language",
+       "Frequent Violence"
+      ],
+      "languageCode": "KO",
+      "language": "Korean",
+      "subtitleLanguage": "English",
+      "marketLanguageCode": "EN",
+      "detailPageUrl": "https://www.cineplex.com/Movie/hope-korean-west",
+      "passesAllowed": true,
+      "hasPosterImage": true
+     }
+    ]
+   }
+  ]
+ }
+]

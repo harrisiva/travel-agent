@@ -56,6 +56,9 @@ CHUNK_RE = re.compile(r'src="([^"]*/_next/static/chunks/[^"]+\.js)"')
 # The public surface — what `from cineplex_api import *` and callers should use.
 __all__ = [
     "new_session", "get_subscription_key", "format_api_date", "to_12h",
+    "UsageError", "ApiError", "KNOWN_EXPERIENCES", "normalize_experience",
+    "parse_experiences", "check_experiences", "filter_showtimes_by_experience",
+    "theatre_experience_codes",
     "fetch_showtimes", "fetch_theatres", "fetch_all_theatres", "fetch_movies",
     "fetch_seat_layout", "fetch_seat_availability",
     "flatten_showtimes", "flatten_theatres", "flatten_movies",
@@ -92,7 +95,10 @@ def _scrape_key(session: requests.Session) -> str | None:
 def get_subscription_key(session: requests.Session, force_refresh: bool = False) -> str:
     """Return a usable subscription key, using cache -> scrape -> default."""
     if not force_refresh and KEY_CACHE.exists():
-        cached = KEY_CACHE.read_text().strip()
+        try:
+            cached = KEY_CACHE.read_text().strip()
+        except (OSError, UnicodeDecodeError):
+            cached = ""  # unreadable cache: fall through to a fresh scrape
         if re.fullmatch(r"[0-9a-f]{32}", cached):
             return cached
 
@@ -127,14 +133,24 @@ def _get(url: str, params: dict, session: requests.Session):
             headers={"Ocp-Apim-Subscription-Key": key}, timeout=20,
         )
         if resp.status_code == 401 and attempt == 0:
-            KEY_CACHE.unlink(missing_ok=True)  # stale key -> drop & re-scrape
+            try:
+                KEY_CACHE.unlink(missing_ok=True)  # stale key -> drop & re-scrape
+            except OSError:
+                pass  # read-only filesystem: the forced re-scrape still runs
             continue
         resp.raise_for_status()
+        # A date with no showtimes (or an unknown locationId) answers 204 with
+        # an empty body. That is "no data", not a failure.
+        if resp.status_code == 204 or not resp.content.strip():
+            return None
         return resp.json()
 
 
 def format_api_date(value) -> str:
-    """Format a date as M/D/YYYY (no zero-padding), matching the site."""
+    """Format a date as M/D/YYYY (no zero-padding), matching the site.
+
+    Raises ``UsageError`` on anything unparseable rather than passing it
+    through — the API would answer with a 400 or, worse, an empty 204."""
     if isinstance(value, (datetime, date)):
         return f"{value.month}/{value.day}/{value.year}"
     text = str(value).strip()
@@ -144,7 +160,140 @@ def format_api_date(value) -> str:
             return f"{parsed.month}/{parsed.day}/{parsed.year}"
         except ValueError:
             continue
-    return text
+    raise UsageError(f"unrecognised date {text!r}; use M/D/YYYY or YYYY-MM-DD")
+
+
+# --------------------------------------------------------------------------- #
+# Experiences (IMAX, 70mm, UltraAVX, ...)
+# --------------------------------------------------------------------------- #
+# The server-side `experiences` filter matches only undocumented lowercase
+# codes: `imax` works, but `IMAX`, `ultraavx` and `dolby atmos` silently return
+# nothing. So showtimes are fetched unfiltered and filtered here, against the
+# `experienceTypes` labels each session actually carries.
+#
+# Every label seen across all 152 theatres (surveyed 2026-09-10, showtimes
+# for 2026-09-12). Used only to tell a
+# typo from a real format that happens not to be playing that day.
+KNOWN_EXPERIENCES = (
+    "Regular", "Recliner", "UltraAVX", "Dolby Atmos", "D-BOX", "3D",
+    "Laser Projection", "VIP 19+", "VIP 18+", "IMAX", "ScreenX", "70mm",
+    "4DX", "Clubhouse",
+)
+# Short forms people type -> the normalised label they mean.
+EXPERIENCE_ALIASES = {"avx": "ultraavx", "atmos": "dolbyatmos",
+                      "laser": "laserprojection", "standard": "regular"}
+# The theatres endpoint has no per-theatre experience data, so its filter has
+# to go to the server. These codes were each verified to narrow the result;
+# Dolby Atmos and Clubhouse have no known code.
+THEATRE_EXPERIENCE_CODES = {
+    "regular": "regular", "recliner": "recliner", "ultraavx": "avx",
+    "dbox": "dbox", "3d": "3d", "laserprojection": "laser", "vip": "vip",
+    "imax": "imax", "screenx": "screenx", "70mm": "70mm", "4dx": "4dx",
+}
+
+
+class UsageError(ValueError):
+    """Bad input the API would not reject cleanly (CLI exit code 2)."""
+
+
+class ApiError(RuntimeError):
+    """The API answered, but with something unusable (CLI exit code 3)."""
+
+
+def normalize_experience(label) -> str:
+    """'VIP 19+' -> 'vip', 'D-BOX' -> 'dbox', 'Dolby Atmos' -> 'dolbyatmos'.
+
+    Case, spaces and punctuation are dropped, a trailing age limit ("19+") is
+    ignored, and short aliases ('avx', 'atmos') map to the full name."""
+    text = re.sub(r"\s*\d+\+$", "", str(label).strip())
+    key = re.sub(r"[^0-9a-z]", "", text.lower())
+    return EXPERIENCE_ALIASES.get(key, key)
+
+
+def parse_experiences(value) -> list[str]:
+    """'70mm, IMAX' or ['70mm', 'IMAX'] -> ['70mm', 'imax'] (normalised, deduped).
+
+    Raises ``UsageError`` when something was given but nothing survives
+    normalising ('19+', ',', ' '): silently dropping the filter would answer
+    with every screening."""
+    if value is None or value == "" or value == []:
+        return []
+    parts = value.split(",") if isinstance(value, str) else list(value)
+    out = []
+    for p in parts:
+        key = normalize_experience(p)
+        if key and key not in out:
+            out.append(key)
+    if not out:
+        raise UsageError(f"--experiences {value!r} names no experience")
+    return out
+
+
+def check_experiences(experiences, responses) -> None:
+    """Raise ``UsageError`` for a token that is neither a built-in label nor a
+    label on any session in ``responses`` (a list of showtimes responses).
+
+    Checking against the responses too means a label Cineplex adds later is
+    accepted on any day it is actually playing."""
+    valid = {normalize_experience(e) for e in KNOWN_EXPERIENCES}
+    valid |= {normalize_experience(t) for data in responses
+              for rec in flatten_showtimes(data) for t in rec["experience"]}
+    unknown = [w for w in parse_experiences(experiences) if w not in valid]
+    if unknown:
+        raise UsageError(
+            f"unknown experience {', '.join(unknown)}; known: "
+            + ", ".join(KNOWN_EXPERIENCES))
+
+
+def filter_showtimes_by_experience(data, experiences, strict=True):
+    """Keep only experience blocks carrying ANY of ``experiences`` (OR).
+
+    Matching is on normalised labels, so '70MM', 'vip', 'dolby atmos' and
+    'D-BOX' all work. With ``strict``, a token that is neither a known label
+    nor present in this response raises ``UsageError`` — a typo would
+    otherwise read as "no screenings" forever."""
+    wanted = parse_experiences(experiences)
+    if not wanted:
+        return data
+    # Validate even when there is no data, or a typo on an empty date slips by.
+    if strict:
+        check_experiences(experiences, [data])
+    if not data:
+        return data
+    out = []
+    for theatre in data:
+        dates = []
+        for day in theatre.get("dates") or []:
+            movies = []
+            for movie in day.get("movies") or []:
+                exps = [e for e in movie.get("experiences") or []
+                        if {normalize_experience(t) for t in
+                            e.get("experienceTypes") or []} & set(wanted)]
+                if exps:
+                    movies.append({**movie, "experiences": exps})
+            if movies:
+                dates.append({**day, "movies": movies})
+        if dates:
+            out.append({**theatre, "dates": dates})
+    return out
+
+
+def theatre_experience_codes(experiences) -> str | None:
+    """Translate experiences into the server codes the theatres filter wants.
+
+    Raises ``UsageError`` for a format with no verified code rather than
+    sending it and getting back a silent empty list."""
+    wanted = parse_experiences(experiences)
+    if not wanted:
+        return None
+    missing = [w for w in wanted if w not in THEATRE_EXPERIENCE_CODES]
+    if missing:
+        raise UsageError(
+            f"theatres cannot filter on {', '.join(missing)} (no server code); "
+            "run showtimes --experiences per theatre instead. Supported here: "
+            + ", ".join(sorted(THEATRE_EXPERIENCE_CODES)))
+    # The server ORs a comma-separated list.
+    return ",".join(dict.fromkeys(THEATRE_EXPERIENCE_CODES[w] for w in wanted))
 
 
 # --------------------------------------------------------------------------- #
@@ -153,19 +302,19 @@ def format_api_date(value) -> str:
 def fetch_showtimes(location_id, date_value, film_id=None, experiences=None,
                     language="en", session=None) -> list:
     """Showtimes for a theatre + date. If ``film_id`` is None, every film
-    playing at that theatre is returned. Returns a list of theatre blocks;
-    use ``flatten_showtimes`` for a flat list of session records."""
-    session = session or new_session()
-    if isinstance(experiences, (list, tuple)):
-        experiences = ",".join(experiences)
+    playing at that theatre is returned. Returns a list of theatre blocks, or
+    None when the date has no showtimes; use ``flatten_showtimes`` for a flat
+    list of session records.
 
+    ``experiences`` is applied client-side (see
+    ``filter_showtimes_by_experience``), never sent to the server."""
+    session = session or new_session()
     params = {"language": language, "locationId": location_id,
               "date": format_api_date(date_value)}
     if film_id:
         params["filmId"] = film_id
-    if experiences:
-        params["experiences"] = experiences
-    return _get(SHOWTIMES_URL, params, session)
+    return filter_showtimes_by_experience(
+        _get(SHOWTIMES_URL, params, session), experiences)
 
 
 def fetch_theatres(film_id, city=None, region=None, region_code=None,
@@ -176,8 +325,7 @@ def fetch_theatres(film_id, city=None, region=None, region_code=None,
     {favouriteTheatres, nearbyTheatres, otherTheatres}; use
     ``flatten_theatres`` for a flat list."""
     session = session or new_session()
-    if isinstance(experiences, (list, tuple)):
-        experiences = ",".join(experiences)
+    experiences = theatre_experience_codes(experiences)
 
     params = {"language": language, "filmId": film_id, "country": country,
               "accuracyKm": accuracy_km}
