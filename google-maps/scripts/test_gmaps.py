@@ -703,6 +703,36 @@ def t_routing_traffic_preferred_over_free_flow():
             "a free-flow number was labelled traffic-aware")
 
 
+def _transit_body(echoed_mode: int = MODES["transit"]) -> str:
+    """A directions reply whose head carries the transit clock block at [5]:
+    `[[_, timezone, depart], [_, timezone, arrive]]`."""
+    tz = "America/Toronto"
+    head = [echoed_mode, "Line 1", [6100, "6.1 km"], [2100, "35 min"], None,
+            [[None, tz, "9:04 AM"], [None, tz, "9:31 AM"]]]
+    return ")]}'\n" + json.dumps([[None, [[head]]]])
+
+
+def t_transit_clock_times_reach_the_place():
+    """The departure and arrival are read from the route head and copied onto
+    the place. Break either link and `--mode transit` loses its clock times
+    with no error — every test above still passes on the duration alone."""
+    origin, dest = (43.6453, -79.3807), (43.6677, -79.3948)
+    found = routes(FakeSession(lambda url: _transit_body()), origin, dest, "transit")
+    assert_(found and found[0]["transit"] == {"depart": "9:04 AM", "arrive": "9:31 AM",
+                                              "timezone": "America/Toronto"},
+            f"routes() did not read the transit block: {found and found[0]['transit']}")
+    # The same block on a drive route is not transit, and must not be read as it.
+    driven = routes(FakeSession(lambda url: _transit_body(MODES["drive"])),
+                    origin, dest, "drive")
+    assert_(driven[0]["transit"] is None, "a drive route was given transit times")
+
+    places = [{"lat": dest[0], "lng": dest[1]}]
+    routing.annotate(FakeSession(lambda url: _transit_body()), origin, places,
+                     "transit")
+    assert_(places[0].get("transit", {}).get("depart") == "9:04 AM",
+            f"annotate dropped the transit times: {places[0]}")
+
+
 def _star_body(legs: list[tuple[int, int]], echoed_mode: int = 0) -> str:
     """A star-chain reply: one head per leg, in `O,D0,O,D1,O…` order.
 
@@ -936,6 +966,90 @@ def t_cli_json_success_shape():
     assert_(payload["count"] == len(payload["results"]) == 1,
             "count and results disagree")
 
+
+def t_transit_times_survive_the_default_payload():
+    """`nearby --mode transit` without --full must still carry the clock times.
+
+    They were --full-only, so the documented answer — "leave 9:04, arrive
+    9:31" — silently vanished from both the table and the JSON. straight_km
+    went with it, which is what the table prints for a place with no route.
+    """
+    routed = {"name": "Routed", "status": OPEN, "straight_km": 1.2,
+              "travel_minutes": 22.0, "travel_km": 3.1, "travel_mode": "transit",
+              "traffic_aware": False,
+              "transit": {"depart": "9:04 AM", "arrive": "9:31 AM",
+                          "timezone": "America/Toronto"}}
+    unrouted = {"name": "Unrouted", "status": OPEN, "straight_km": 4.7}
+    argv = ["nearby", "--near", "43.65,-79.38", "--mode", "transit"]
+    with patched(cli, "run", lambda s, spec: _stub_result(
+            [dict(routed), dict(unrouted)])):
+        code, out = run_cli(argv + ["--json"])
+    rows = json.loads(out)["results"]
+    assert_(rows[0].get("transit", {}).get("depart") == "9:04 AM",
+            "transit departure is missing from the default --json payload")
+    assert_(rows[1].get("straight_km") == 4.7,
+            "straight_km is missing from the default --json payload")
+    with patched(cli, "run", lambda s, spec: _stub_result(
+            [dict(routed), dict(unrouted)])):
+        code, out = run_cli(argv)
+    assert_("depart 9:04 AM" in out and "arrive 9:31 AM" in out,
+            f"the table dropped the transit times: {out!r}")
+    assert_("4.7 km direct" in out,
+            f"the table dropped the straight-line distance: {out!r}")
+
+
+def t_no_traffic_footer_is_drive_only():
+    """Only driving has live traffic. Saying "no live traffic was available"
+    under a walking list reads as a lookup that failed, when there was never
+    anything to look up."""
+    def footer(mode):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            render.places([{"name": "X", "status": OPEN, "travel_minutes": 9.0,
+                            "travel_km": 0.7, "travel_mode": mode,
+                            "traffic_aware": False}], None)
+        return buf.getvalue()
+    for mode in ("walk", "bike", "transit"):
+        assert_("no live traffic" not in footer(mode),
+                f"the no-traffic footer appeared for --mode {mode}")
+    assert_("no live traffic" in footer("drive"),
+            "a free-flow drive time no longer says it lacks traffic")
+
+
+def t_mixed_traffic_footer_names_both():
+    """Only the nearest five drive rows get a traffic re-check, so a longer
+    list is mixed. The footer must not claim traffic for all of it."""
+    rows = [{"name": "Near", "status": OPEN, "travel_minutes": 5.0,
+             "travel_km": 1.0, "travel_mode": "drive", "traffic_aware": True},
+            {"name": "Far", "status": OPEN, "travel_minutes": 25.0,
+             "travel_km": 9.0, "travel_mode": "drive", "traffic_aware": False}]
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        render.places(rows, None)
+    out = buf.getvalue()
+    assert_("where marked" in out and "free-flow" in out,
+            f"a mixed drive list did not say which times include traffic: {out!r}")
+    assert_(out.count("include live traffic") == 1,
+            f"a mixed drive list also got the unqualified traffic claim: {out!r}")
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        render.places(rows[:1], None)
+    assert_("free-flow" not in buf.getvalue(),
+            "an all-traffic list was told some times are free-flow")
+
+
+def t_full_keeps_what_the_summary_drops():
+    """--full is the only way to get ids and coordinates for chaining. If it
+    trims like the default, dedup-by-place_id and every lat,lng hand-off break."""
+    place = {"name": "X", "status": OPEN, "lat": 43.6, "lng": -79.3,
+             "place_id": "ChIJabc", "ftid": "0x1:0x2",
+             "hours_week_days": blank_week(), "route_via": "Line 1"}
+    full = project(place, full=True)
+    for key in ("lat", "lng", "place_id", "ftid", "hours_week_days", "route_via"):
+        assert_(key in full, f"--full dropped {key}")
+    trimmed = project(place, full=False)
+    for key in ("lat", "lng", "place_id", "ftid", "hours_week_days", "route_via"):
+        assert_(key not in trimmed, f"the default payload leaked {key}")
 
 
 # --- regressions: every one of these shipped once ----------------------------

@@ -6,8 +6,8 @@ description: >-
   and travel time by car, foot, bike or transit including live traffic. Use
   whenever the user asks what's open near somewhere now or at a given time,
   what's within walking distance, how long it takes to get between two places,
-  a place's hours for the week, or an address or phone number for a place by
-  name. Read-only — it never books, reserves or contacts anywhere.
+  or a named place's weekly hours, address or phone number (all from the
+  `hours` command). Read-only — it never books, reserves or contacts anywhere.
 ---
 
 # Google Maps — places, hours, travel times
@@ -48,8 +48,12 @@ works with no setup.
 | "Somewhere open near me, not far" | **`nearby`** |
 | "What ramen places are around here?" | `search` |
 | "How long to get from A to B?" | `travel` |
-| "What are X's hours this week?" | `hours` |
-| "Where exactly is X?" | `geocode` |
+| "What are X's hours this week?" / "Is X open now?" | `hours` |
+| "What's X's address / phone number?" | `hours` — it returns both |
+| Coordinates for a place, to chain into another command | `geocode` |
+
+`geocode` returns only a name and `lat`/`lng` — no address, no phone. For
+anything a person asked about a named place, use `hours`.
 
 **`nearby` is the default choice.** It finds places, drops the closed ones,
 attaches a travel time to each and ranks by it. `search` is the same lookup
@@ -82,7 +86,8 @@ sixth the size of `--full`, and it is closer to what you will report anyway.
 
 **`--sort` differs by command.** `search` takes `relevance` (default),
 `rating` or `distance`. `nearby` adds `travel` and uses it by default — pass
-`--sort relevance` explicitly to get Google's own order. `travel` has no
+`--sort relevance` explicitly to get Google's own order. `distance` is
+straight-line from the search point, not road distance or travel time. `travel` has no
 `--sort` at all and reports destinations in the order given.
 
 **`--open-at` also accepts an ISO datetime** (`'2026-10-04 21:00'`), but only
@@ -96,7 +101,11 @@ is in.** A bare "8 minutes" for a place 600 m away is the correct *driving*
 answer and a useless one — it is a seven-minute walk. In a city centre, `walk`
 is usually what the user means.
 
-`transit` additionally returns real departure and arrival clock times.
+`transit` additionally returns a departure and arrival clock time (`transit`:
+`depart`, `arrive`, `timezone`) for the next journey leaving now — not a
+timetable. Only places priced individually get one — the nearest five (plus
+any the cheap first pass could not price), the same ones that get a traffic
+check for `drive`. The rest have a duration but no clock times.
 
 ## Things that will otherwise catch you out
 
@@ -137,12 +146,24 @@ quietly answering a smaller question. Narrow with `--limit`, or raise the
 ceiling deliberately. `--concurrency` (default 12) changes speed, not cost —
 lower it if Google starts rate-limiting.
 
+The plan charged against `--max-place-requests`: `nearby` is one per place
+for routing plus one, and one more per place with `--with-hours`/`--open-at`
+(`search` pays only the hours part). `travel` is one geocode for each
+free-text `--from`/`--to` (coordinates are free) plus `1 + number of --to`, so
+the default 25 covers about eleven free-text destinations. If the ceiling
+stops lookups part-way and nothing is left to show, the exit is **2**, not 1 —
+the search was not exhaustive, so it must not read as "nothing matched".
+
 **The full week is opt-in and costs one request per place.** `--with-hours`
 attaches it, `--open-at` implies it, and `hours` gets it for one place.
 `--open-at` is interpreted in **the place's own local time** — the clock Google
 publishes hours in, and what a traveller means by "open when we land at 9pm".
 Verified: live `status` is computed in the place's timezone too, so a Tokyo
 search run from Toronto reports Tokyo's morning correctly.
+
+**Live traffic exists only for `drive`.** Walk, bike and transit times never
+carry it and `traffic_aware` is always `false` for them — that is not a failed
+lookup, so do not caveat a walking time for lacking traffic.
 
 **Travel times include live traffic only when `traffic_aware` is true.** On
 some routes Google's traffic figure describes a different journey from the
@@ -176,12 +197,22 @@ container is per-session, so a cache would never be warm. The tool writes
 nothing to disk at all — verified: the package opens no file for writing.
 
 **JSON is trimmed by default.** The payload carries what a decision needs; add
-`--full` for coordinates, ids, URLs and structured hour spans. `place_id`, `ftid`, `lat`/`lng`, `timezone`, `categories`, `city_region`,
-`website`, `maps_url`, `hours_week_source` and `hours_week_days` are
-`--full`-only **in `search` and `nearby`**. `travel` is not trimmed and has
+`--full` for coordinates, ids, URLs and structured hour spans. `place_id`,
+`ftid`, `lat`/`lng`, `timezone`, `categories`, `city_region`, `website`,
+`maps_url`, `hours_week_source`, `hours_week_days`, `route_via`,
+`free_flow_minutes`, `traffic_range` and `open_at_query` are `--full`-only
+**in `search` and `nearby`**; `transit` and `straight_km` are always in the
+default payload. `travel` is not trimmed and has
 no `--full` flag at all — it always returns `lat`/`lng`, `straight_km`,
 `route_via`, `free_flow_minutes`, `traffic_range` and, for transit,
 `transit`. Passing `--full` to `travel` is a usage error.
+
+`matched_before_limit` (in `search` and `nearby`) is how many places passed
+the free filters — permanently closed, open-now, `--min-rating` — before
+`--limit` cut the list. It is counted *before* the `--open-at` and `--within`
+filters, so after either of those a gap between it and `count` is mostly
+places filtered out, not places `--limit` hid; do not tell the user to raise
+`--limit` on that basis.
 
 An oversized result sheds whole rows and sets `shown` / `matched` /
 `output_truncated` rather than emitting JSON your output cap would corrupt into
@@ -203,7 +234,7 @@ Say the limit plainly rather than improvising an answer around it.
 | Not supported | Workaround |
 |---|---|
 | **Search along a route** ("where can we stop for lunch on the way to X?") | No `along` command exists. Interpolate waypoints between the two ends and search around each — the worked, tested method is **recipe 5** in `recipes.md`. It approximates the route as a straight line, so sanity-check the towns it names against the real road. |
-| **Automatic radius widening** when nothing is open | No `--expand`. Retry manually at increasing `--span` (3000 → 10000 → 25000) and say which radius the answer came from. A small `--span` is a common cause of a false "nothing open nearby". |
+| **Automatic radius widening** when nothing is open | No `--expand`. Retry manually at increasing `--span` (default 10000 → 25000 → 50000) and say which span the answer came from. `--span` is the width of the search viewport in metres, not a radius. A small `--span` is a common cause of a false "nothing open nearby". |
 | **Price level** (`$`–`$$$$`) | Not returned by these endpoints at all. Say it is unavailable; never infer it from rating or category. |
 | **Sorting `travel` results** | `travel` returns destinations in `--to` order, never ranked. Sort them yourself before reporting "the closest is…". |
 | **Dated departure or arrival times** | Routing is always "leave now". Transit clock times are for the current departure; there is no "at 8am tomorrow". |
@@ -236,13 +267,17 @@ Identical with and without `--json`:
 
 Verified in place: a nonsense query exits `1` with a normal envelope and
 `count: 0`; `--min-rating 9`, an unknown flag, `--max-requests 0` and an
-over-ceiling plan all exit `2`; an unreachable host exits `3`. `hours` exits
+over-ceiling plan all exit `2`, as does an empty result caused by places the
+ceiling left unlooked-up; an unreachable host exits `3`. `hours` exits
 `3` when the weekly lookup itself failed, so a caller retries instead of
 recording "this place publishes nothing".
 
 Only `1` means "keep waiting" — a network outage, a blocked sandbox and a
 Google schema change all return `3`, never `1`. Under `--json` a failure writes
-`{"ok": false, "exit_code": N, "error": ...}` to stdout as well as stderr.
+`{"ok": false, "exit_code": N, "error": ...}` to stdout; stderr always gets a
+plain-text error, never JSON, with or without `--json`. For a bad flag that is
+argparse's usage text ending in `gmaps <command>: error: ...`; otherwise it is
+a single `error: ...` line.
 Exit `1` is not a failure: `search` and `nearby` keep the normal envelope
 with `count: 0`. **`hours` is the exception** — a name matching nothing
 writes `{"ok": false, "exit_code": 1, "error": ...}` instead of an envelope.

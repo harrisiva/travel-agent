@@ -28,7 +28,7 @@ If it exits `1`, widen in this order, because each step costs requests:
 1. drop `--min-rating`
 2. raise `--within`
 3. switch `--mode walk` to `drive`
-4. raise `--span` (`--span 20000`)
+4. raise `--span` from its default of 10000 (`--span 25000`, then `50000`)
 5. broaden `--query` ("restaurants" rather than "dinner")
 
 Never silently drop `--within`. If the answer is 25 minutes away, say so.
@@ -67,7 +67,13 @@ Each `--to` still costs a geocode, so pass `lat,lng` when a previous search
 already gave you coordinates.
 
 `travel` reports time and distance, and nothing about opening hours. For
-whether they are also *open*, run `search` on the names and read `status`.
+whether each is also *open*, run `hours "<name>" --near <city>` per place and
+read `status` — it is the one-place lookup, and it also gives the closing time
+and the week. Check its name matches what you asked for (see `SKILL.md`).
+
+Budget: the ceiling charges one geocode per free-text `--from`/`--to` plus
+`1 + number of --to`, so three named places from a named origin is 8 of the
+default 25.
 
 Results come back in `--to` order, not ranked — sort them yourself before
 saying which is closest. Only the five nearest get a live-traffic figure; the
@@ -156,9 +162,9 @@ happening in practice, not a hypothetical.
 - **Use `--sort distance`, not travel time.** You want what is nearest the
   route; a fast road can otherwise put a distant place first.
 - **Budget it.** `--max-requests 1` caps each waypoint at one search page;
-  `--limit 3` caps the routing calls that follow it. Together a three-stop
-  sweep stays near a dozen requests. Unbounded, this is the shape that issues
-  hundreds.
+  `--limit 3` caps the routing calls that follow it (one star request plus up
+  to three re-checks). With the two geocodes, a three-stop sweep stays under
+  twenty requests. Unbounded, this is the shape that issues hundreds.
 
 Deduplicate when merging — adjacent waypoints overlap. `place_id` is the right
 key but it is `--full`-only, so either add `--full --json` or fall back to

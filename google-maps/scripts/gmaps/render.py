@@ -91,9 +91,19 @@ def _footnotes(rows: list[dict], result) -> None:
             notes.append(f"{more} more matched but were cut by --limit")
         if getattr(result, "travel_unknown", 0):
             notes.append(f"{result.travel_unknown} could not be routed")
-    if any(p.get("traffic_aware") for p in rows):
+    aware = any(p.get("traffic_aware") for p in rows)
+    # Drive only: Google publishes no traffic figure for walk, bike or transit,
+    # so "none was available" there reads as a failure that never happened.
+    free = any(p.get("travel_minutes") is not None and not p.get("traffic_aware")
+               and p.get("travel_mode", "drive") == "drive" for p in rows)
+    # Only the nearest five are re-priced for traffic, so a longer drive list is
+    # mixed. Saying "include live traffic" there overstates rows 6 onward.
+    if aware and free:
+        notes.append("drive times include live traffic where marked (traffic); "
+                     "others are free-flow")
+    elif aware:
         notes.append("drive times include live traffic")
-    elif any(p.get("travel_minutes") is not None for p in rows):
+    elif free:
         notes.append("travel times are free-flow; no live traffic was available")
     for note in notes:
         print(f"  ({note})")

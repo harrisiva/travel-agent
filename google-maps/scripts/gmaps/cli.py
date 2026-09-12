@@ -270,8 +270,11 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--near", required=True, help="'lat,lng' or free text")
         sp.add_argument("--query", default="restaurants", help="what to look for")
         sp.add_argument("--span", type=int, default=10000,
-                        help="search radius in metres (default 10000)")
-        sp.add_argument("--limit", type=int, default=20)
+                        help="width of the search viewport in metres, not a "
+                             "radius (default 10000)")
+        sp.add_argument("--limit", type=int, default=20,
+                        help="most results to return (default: search 20, "
+                             "nearby 8)")
         sp.add_argument("--min-rating", type=float)
         sp.add_argument("--with-hours", action="store_true",
                         help="attach the full week (one request per place)")
@@ -307,7 +310,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--open-now", action="store_true",
                    help="only places open right now")
     s.add_argument("--sort", choices=("relevance", "rating", "distance"),
-                   default="relevance")
+                   default="relevance",
+                   help="distance is straight-line, not travel time "
+                        "(default relevance)")
     s.set_defaults(func=cmd_search, mode="drive")
     add_json(s); add_locale(s)
 
@@ -330,7 +335,9 @@ def build_parser() -> argparse.ArgumentParser:
     # asked otherwise, and a sentinel is the only way to tell "the user chose
     # relevance" from "the user chose nothing".
     n.add_argument("--sort", choices=("travel", "rating", "distance", "relevance"),
-                   default=None)
+                   default=None,
+                   help="distance is straight-line; travel is by --mode "
+                        "(default travel)")
     n.set_defaults(func=cmd_nearby, open_now=True)
     # Fewer than search: nobody picks dinner from 20, and this is the
     # multiplier on every per-place request and every output byte.

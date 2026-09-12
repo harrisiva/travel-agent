@@ -18,7 +18,9 @@ coordinates, phone, website, categories and IANA timezone.
 `tbm=map` is the whole trick. `/maps/preview/place` and `/maps/preview/directions`
 both return **400** on every `pb` shape tried; `/maps/dir/` returns the app shell
 with no `AF_initDataCallback` payload (unlike Google Flights, which server-renders
-its results). Directions are *not* reachable this way — see *Driving distance*.
+its results). Directions are not reachable *through `tbm=map`*; they come from
+`/maps/preview/directions` once its `pb` is right — the 400s above were a
+malformed `pb`. See *Driving distance*.
 
 ### Response envelope
 

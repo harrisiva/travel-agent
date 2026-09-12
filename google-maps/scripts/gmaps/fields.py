@@ -143,6 +143,10 @@ SUMMARY_FIELDS = (
     "name", "address", "rating", "status", "status_detail", "hours_today",
     "editorial", "neighbourhood", "phone",
     "travel_minutes", "travel_km", "travel_mode", "traffic_aware",
+    # The departure and arrival ARE the transit answer, and straight_km is what
+    # the table prints when a place has no travel time. Trimming either left
+    # `nearby --mode transit` with no clock times unless --full was passed.
+    "transit", "straight_km",
     "hours_week", "open_at", "business_status",
     # Failures ride in the DEFAULT payload, not behind --full. A consumer that
     # cannot see "this lookup failed" reads a missing schedule as "no hours
@@ -156,8 +160,8 @@ SUMMARY_FIELDS = (
 FULL_ONLY_FIELDS = (
     "lat", "lng", "ftid", "place_id", "maps_url", "website", "timezone",
     "city_region",
-    "categories", "straight_km", "route_via", "free_flow_minutes",
-    "traffic_range", "hours_week_days", "hours_week_source", "transit",
+    "categories", "route_via", "free_flow_minutes",
+    "traffic_range", "hours_week_days", "hours_week_source",
     "open_at_query",
 )
 
