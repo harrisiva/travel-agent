@@ -222,6 +222,62 @@ def test_parser() -> None:
           "YYZ" in airports and airports["YYZ"].latitude is not None)
 
 
+def test_baggage_links() -> None:
+    """Baggage POLICY URLS — the one payload field that is easy to read from
+    the wrong index and impossible to notice.
+
+    Index 11 is baggage; index 26 is accessibility. Both are lists of
+    (code, name, url) for the same carriers, so pointing at the wrong one
+    yields a perfectly well-formed answer that sends travellers to a
+    special-assistance page to look up their bag allowance. Nothing raises,
+    nothing looks wrong, and the tool is confidently useless — exactly the
+    failure this file exists to catch.
+    """
+    print("\nbaggage policy links")
+    html = fixture(NONSTOP)
+    result = search_result(html, "CAD")
+    links = result.baggage_links
+
+    check("offline", "the route's carriers each carry a policy link",
+          len(links) == 4 and {c for c, _, _ in links} == {"AC", "F8", "PD", "WS"},
+          f"got {[c for c, _, _ in links]}")
+
+    check("offline", "every row is (code, name, url) with a real URL",
+          all(len(c) == 2 and n and u.startswith("http") for c, n, u in links))
+
+    # The mix-up that would never announce itself.
+    payload = blocks(html)["ds:1"]
+    accessibility = {row[2] for row in (payload[26] or []) if isinstance(row, list)}
+    check("offline", "baggage links are not the accessibility links from [26]",
+          accessibility and not ({u for _, _, u in links} & accessibility),
+          "index 11 and index 26 returned overlapping URLs")
+
+    check("offline", "and they are the baggage pages, not assistance pages",
+          all("baggage" in u or "bagage" in u for _, _, u in links),
+          f"got {[u for _, _, u in links]}")
+
+    # Absence is ordinary: this route's payload carries no baggage node at all.
+    check("offline", "a route with no baggage node yields an empty list, not an error",
+          search_result(fixture(CONNECTING), "CAD", "one way").baggage_links == [])
+
+    # Malformed rows must be dropped, never crash and never half-fill a tuple.
+    broken = json.loads(json.dumps(payload))
+    broken[11] = [
+        ["AC", "Air Canada", "https://example.invalid/bag"],   # keep
+        ["XX", "Two Fields Only"],                             # drop: too short
+        ["YY", "Nonstring", 12345],                            # drop: url not a str
+        "not-even-a-list",                                     # drop
+    ]
+    mutated = html.replace(
+        json.dumps(payload, separators=(",", ":")),
+        json.dumps(broken, separators=(",", ":")),
+    )
+    kept = search_result(mutated, "CAD").baggage_links
+    check("offline", "malformed baggage rows are skipped, not fatal and not partial",
+          kept == [("AC", "Air Canada", "https://example.invalid/bag")],
+          f"got {kept}")
+
+
 def test_guards() -> None:
     print("\nshape guards (the silent-wrong-answer defence)")
     html = fixture(NONSTOP)
@@ -1285,6 +1341,7 @@ def main() -> int:
     test_encoder()
     test_parser()
     test_connecting_parser()
+    test_baggage_links()
     test_guards()
     test_malformed_rows()
     test_validation()

@@ -150,6 +150,25 @@ Run `python3 flights.py <command> --help` for exact flags.
 
 ## Things that will otherwise catch you out
 
+**Every price here is a BARE FARE. Google publishes no baggage allowance at
+all.** Not per fare, not per carrier — the payload simply does not carry it. So
+two fares on one route are not comparable until you know what each includes: a
+Porter Basic ticket to Las Vegas carries a personal item and nothing else, while
+an Air Canada Basic at the same price on the same evening includes a full-size
+carry-on. On a trip needing checked bags that gap is worth more than the fare
+difference.
+
+What the payload *does* carry is the airlines' own policy pages. `search`
+surfaces them as `baggage_links` in `--json` (and a short footer in the human
+output): one `{carrier, carrier_name, policy_url}` per carrier on the route.
+
+**They are links, not allowances.** They cannot tell you whether the fare in
+front of you includes a bag — only where the authoritative answer lives. Never
+present a total as complete without saying baggage is excluded, and when the
+trip obviously needs a checked bag (camping gear, a month away), say so and
+point at the link rather than quietly omitting the cost. Absent for some routes,
+in which case the list is empty — ordinary, not an error.
+
 **On a round trip, the price is the whole trip but the legs are only the
 outbound.** Google prices round trips as "from $X" against a chosen outbound;
 the returning flights are not in the payload. Every itinerary carries

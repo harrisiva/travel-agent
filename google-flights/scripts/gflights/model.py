@@ -235,6 +235,14 @@ class SearchResult:
     price_context: PriceContext | None
     filters: RouteFilters | None
     airports: list[Airport] = field(default_factory=list)
+    #: Per-carrier baggage policy pages for the carriers on this route, as
+    #: (code, name, url). These are LINKS, not allowances: Google ships the
+    #: airline's own policy URL and nothing about what a given fare includes.
+    #: Every price this tool reports is a bare fare, so a carry-on or a checked
+    #: bag may cost extra and two fares are not comparable until that is known.
+    #: Surfaced so the caller can send someone to the authoritative page rather
+    #: than guess — never treat presence here as evidence a bag is included.
+    baggage_links: list[tuple[str, str, str]] = field(default_factory=list)
     #: Options Google returned that did not match the expected shape and were
     #: dropped. Surfaced rather than swallowed: a non-zero count means the
     #: answer is incomplete, which the user deserves to know.

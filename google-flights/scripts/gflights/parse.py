@@ -517,6 +517,16 @@ def _pairs(node: Any) -> list[tuple[str, str]]:
     ]
 
 
+def _triples(node: Any) -> list[tuple[str, str, str]]:
+    """(code, name, url) rows, skipping anything not shaped that way."""
+    return [
+        (item[0], item[1], item[2])
+        for item in (node or [])
+        if isinstance(item, list) and len(item) >= 3
+        and all(isinstance(item[i], str) for i in (0, 1, 2))
+    ]
+
+
 def _filters(node: Any, currency: str) -> RouteFilters | None:
     if not isinstance(node, list):
         return None
@@ -715,6 +725,7 @@ _BEST = 2
 _OTHER = 3
 _PRICE_CONTEXT = 5
 _FILTERS = 7
+_BAGGAGE = 11        # per-carrier baggage POLICY URLS — not allowances
 _ENDPOINTS = 1
 _NEARBY = 17
 
@@ -858,4 +869,5 @@ def search_result(
         price_context=_price_context(_at(payload, _PRICE_CONTEXT), currency, html),
         filters=filters,
         airports=_airports([_at(payload, _ENDPOINTS), _at(payload, _NEARBY)]),
+        baggage_links=_triples(_at(payload, _BAGGAGE)),
     )

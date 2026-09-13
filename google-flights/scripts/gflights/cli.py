@@ -351,6 +351,11 @@ def cmd_search(args) -> int:
                 f"({len(result.itineraries)} flights exist on this route — "
                 f"your filters excluded all of them.)"
             )
+        if matched and result.baggage_links:
+            print()
+            print("Fares above EXCLUDE baggage. Carriers' own policies:")
+            for code, name, url in result.baggage_links:
+                print(f"  {code}  {name:<18} {url}")
     return _emit(
         args,
         {
@@ -360,6 +365,13 @@ def cmd_search(args) -> int:
             "total_before_filters": len(result.itineraries),
             "unparsed": result.unparsed,
             "itineraries": [i.to_dict() for i in matched[: args.limit]],
+            # Policy PAGES, not allowances — see SKILL.md. Google ships no
+            # per-fare baggage data at all, so this cannot tell you whether a
+            # given fare includes a bag; it only says where to go and read.
+            "baggage_links": [
+                {"carrier": code, "carrier_name": name, "policy_url": url}
+                for code, name, url in result.baggage_links
+            ],
         },
         bool(matched),
     )

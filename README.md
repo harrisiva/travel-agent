@@ -450,6 +450,10 @@ listing scraper can do that.
 <details>
 <summary>Three things to keep straight</summary>
 
+- Every price is a **bare fare**: Google publishes no baggage allowance, so a
+  ticket with no carry-on and one with a checked bag included look identical.
+  `search` returns `baggage_links` — the carriers' own policy pages for the
+  route — which say where to check, never what a given fare includes.
 - On a round trip the price is the **whole trip** but the legs shown are the
   **outbound only** — every itinerary says which, via `price_covers`.
 - Prices cover the **whole party**, so `--adults 2` roughly doubles them.
@@ -862,7 +866,7 @@ being down is easy to tell apart from the skill being broken.
 | campsite-search | `python3 test_availability.py` | 24 — 18 offline + 6 live |
 | cineplex-showtimes | `python3 test_cineplex.py` | 18 — 14 offline + 4 live |
 | enterprise-rentals | `python3 test_availability.py` | 163 — 157 offline + 6 live |
-| google-flights | `python3 test_flights.py` | 142 offline + a live group |
+| google-flights | `python3 test_flights.py` | 148 offline + a live group |
 | google-maps | `python3 test_gmaps.py` | 97 offline + a live group |
 | google-hotels | `python3 test_hotels.py` | 531 offline + a live group |
 | uber-eats | `python3 test_ubereats.py` | 574 offline + a live group |
