@@ -1,0 +1,7 @@
+<!-- google-hotels fixture. KIND: SYNTHETIC. No block was observed in the probe's 44 requests; this is google-flights/scripts/fixtures/blocked_consent.html, which carries no ds:2 block (the hotels RESULTS_MARKER) and no ds:1. looks_blocked must be True. -->
+<!doctype html><html><head><title>Before you continue to Google</title></head>
+<body><!-- The interstitial Google serves instead of results when it decides a
+     client is a bot. HTTP 200, no ds:1 block: parses as 'no flights' unless
+     detected, which is the false negative this repo forbids. -->
+<form action="https://consent.google.com/save"><div>Before you continue to Google Search</div></form>
+</body></html>

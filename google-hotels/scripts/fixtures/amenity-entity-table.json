@@ -1,0 +1,1034 @@
+{
+ "28": {
+  "name": "Wi-Fi",
+  "group": 7,
+  "heading": "Internet",
+  "pages": [
+   "fairmont_2ad_ny",
+   "fairmont_2ad_ny(chip)",
+   "plus270",
+   "plus270(chip)",
+   "samesun_cid",
+   "samesun_cid(chip)"
+  ],
+  "quals": [
+   [
+    1,
+    "free"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "162": {
+  "name": "Wi-Fi in public areas",
+  "group": 7,
+  "heading": "Internet",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "23": {
+  "name": "Restaurant",
+  "group": 6,
+  "heading": "Food & drink",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid",
+   "samesun_cid(chip)"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "4": {
+  "name": "Bar",
+  "group": 6,
+  "heading": "Food & drink",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "148": {
+  "name": "Table service",
+  "group": 6,
+  "heading": "Food & drink",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "24": {
+  "name": "Room service",
+  "group": 6,
+  "heading": "Food & drink",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "54": {
+  "name": "Breakfast",
+  "group": 6,
+  "heading": "Food & drink",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid",
+   "samesun_cid(chip)"
+  ],
+  "quals": [
+   [
+    1,
+    "free"
+   ],
+   [
+    2,
+    "extra charge"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "41": {
+  "name": "Bicycle rental",
+  "group": 3,
+  "heading": "Activities",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [
+   [
+    1,
+    "free"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "9": {
+  "name": "Golf",
+  "group": 3,
+  "heading": "Activities",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "44": {
+  "name": "Tennis",
+  "group": 3,
+  "heading": "Activities",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "47": {
+  "name": "Horseback riding",
+  "group": 3,
+  "heading": "Activities",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "90": {
+  "name": "Boutique shopping",
+  "group": 3,
+  "heading": "Activities",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "19": {
+  "name": "Pool",
+  "group": 11,
+  "heading": "Pools",
+  "pages": [
+   "fairmont_2ad_ny",
+   "fairmont_2ad_ny(chip)",
+   "plus270",
+   "plus270(chip)",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "20": {
+  "name": "Indoor pool",
+  "group": 11,
+  "heading": "Pools",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "22": {
+  "name": "Outdoor pool",
+  "group": 11,
+  "heading": "Pools",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "156": {
+  "name": "Wading pool",
+  "group": 11,
+  "heading": "Pools",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "10": {
+  "name": "Hot tub",
+  "group": 11,
+  "heading": "Pools",
+  "pages": [
+   "fairmont_2ad_ny",
+   "fairmont_2ad_ny(chip)",
+   "plus270",
+   "plus270(chip)",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "15": {
+  "name": "Parking",
+  "group": 8,
+  "heading": "Parking & transportation",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid",
+   "samesun_cid(chip)"
+  ],
+  "quals": [
+   [
+    2,
+    "extra charge"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "143": {
+  "name": "Self parking",
+  "group": 8,
+  "heading": "Parking & transportation",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [
+   [
+    2,
+    "extra charge"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "153": {
+  "name": "Valet parking",
+  "group": 8,
+  "heading": "Parking & transportation",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [
+   [
+    2,
+    "extra charge"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "102": {
+  "name": "EV charger",
+  "group": 8,
+  "heading": "Parking & transportation",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "39": {
+  "name": "Car rental onsite",
+  "group": 8,
+  "heading": "Parking & transportation",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "122": {
+  "name": "Local shuttle",
+  "group": 8,
+  "heading": "Parking & transportation",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "18": {
+  "name": "Pet-friendly",
+  "group": 9,
+  "heading": "Pets",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [
+   [
+    2,
+    "extra charge"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "100": {
+  "name": "Dogs allowed",
+  "group": 9,
+  "heading": "Pets",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "94": {
+  "name": "Cats allowed",
+  "group": 9,
+  "heading": "Pets",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "215": {
+  "name": "Organic food and beverages",
+  "group": 25,
+  "heading": "Sustainable sourcing",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "210": {
+  "name": "Locally sourced food and beverages",
+  "group": 25,
+  "heading": "Sustainable sourcing",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "214": {
+  "name": "Organic cage-free eggs",
+  "group": 25,
+  "heading": "Sustainable sourcing",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "213": {
+  "name": "Vegetarian meals",
+  "group": 25,
+  "heading": "Sustainable sourcing",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "25": {
+  "name": "Smoke-free property",
+  "group": 10,
+  "heading": "Policies & payments",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "33": {
+  "name": "Front desk",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [
+   [
+    3,
+    "24 hour"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "51": {
+  "name": "Baggage storage",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "38": {
+  "name": "Concierge",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "40": {
+  "name": "Convenience store",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "31": {
+  "name": "Full-service laundry",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "103": {
+  "name": "Elevator",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "157": {
+  "name": "Wake up calls",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "110": {
+  "name": "Gift shop",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "112": {
+  "name": "Housekeeping",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "8": {
+  "name": "Fitness center",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [
+   [
+    1,
+    "free"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "104": {
+  "name": "Elliptical machine",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "151": {
+  "name": "Treadmill",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "161": {
+  "name": "Weight machines",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "107": {
+  "name": "Free weights",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "35": {
+  "name": "Massage",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "34": {
+  "name": "Sauna",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "26": {
+  "name": "Spa",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "fairmont_2ad_ny(chip)",
+   "plus270",
+   "plus270(chip)",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "142": {
+  "name": "Hair salon",
+  "group": 14,
+  "heading": "Wellness",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "105": {
+  "name": "English",
+  "group": 21,
+  "heading": "Languages spoken",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "164": {
+  "name": "Air conditioning in some rooms",
+  "group": 12,
+  "heading": "Rooms",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "96": {
+  "name": "Coffee maker",
+  "group": 12,
+  "heading": "Rooms",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "135": {
+  "name": "Private bathroom",
+  "group": 20,
+  "heading": "Bathrooms",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "89": {
+  "name": "Bathtub in some rooms",
+  "group": 20,
+  "heading": "Bathrooms",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270",
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "144": {
+  "name": "Shower",
+  "group": 20,
+  "heading": "Bathrooms",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "254": {
+  "name": "Green Key Eco Rating",
+  "group": 26,
+  "heading": "Eco certifications",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "11": {
+  "name": "Kid-friendly",
+  "group": 5,
+  "heading": "Children",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "116": {
+  "name": "Activities for kids",
+  "group": 5,
+  "heading": "Children",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "117": {
+  "name": "Kids' club",
+  "group": 5,
+  "heading": "Children",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "131": {
+  "name": "Accessible parking",
+  "group": 2,
+  "heading": "Accessibility",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "130": {
+  "name": "Accessible elevator",
+  "group": 2,
+  "heading": "Accessibility",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "192": {
+  "name": "Food waste reduction program",
+  "group": 24,
+  "heading": "Waste reduction",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": true
+ },
+ "190": {
+  "name": "Donates excess food",
+  "group": 24,
+  "heading": "Waste reduction",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": true
+ },
+ "207": {
+  "name": "Safely handles hazardous substances",
+  "group": 24,
+  "heading": "Waste reduction",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": true
+ },
+ "203": {
+  "name": "Safely disposes of electronics, batteries, and lightbulbs",
+  "group": 24,
+  "heading": "Waste reduction",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": true
+ },
+ "193": {
+  "name": "single-use plastic straws",
+  "group": 24,
+  "heading": "Waste reduction",
+  "pages": [
+   "fairmont_2ad_ny",
+   "plus270"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": true
+ },
+ "56": {
+  "name": "Breakfast buffet",
+  "group": 6,
+  "heading": "Food & drink",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "154": {
+  "name": "Vending machines",
+  "group": 6,
+  "heading": "Food & drink",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "37": {
+  "name": "Credit cards",
+  "group": 10,
+  "heading": "Policies & payments",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "98": {
+  "name": "Debit cards",
+  "group": 10,
+  "heading": "Policies & payments",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "129": {
+  "name": "NFC mobile payments",
+  "group": 10,
+  "heading": "Policies & payments",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "93": {
+  "name": "Cash",
+  "group": 10,
+  "heading": "Policies & payments",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "146": {
+  "name": "Social hour",
+  "group": 13,
+  "heading": "Services",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "137": {
+  "name": "Private car service",
+  "group": 8,
+  "heading": "Parking & transportation",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [
+   [
+    2,
+    "extra charge"
+   ]
+  ],
+  "conflicts": [],
+  "inferred": false
+ },
+ "109": {
+  "name": "German",
+  "group": 21,
+  "heading": "Languages spoken",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "163": {
+  "name": "air conditioning",
+  "group": 12,
+  "heading": "Rooms",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "14": {
+  "name": "Kitchen in some rooms",
+  "group": 12,
+  "heading": "Rooms",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "136": {
+  "name": "Private bathroom in some rooms",
+  "group": 20,
+  "heading": "Bathrooms",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "145": {
+  "name": "Shower in some rooms",
+  "group": 20,
+  "heading": "Bathrooms",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ },
+ "27": {
+  "name": "accessible",
+  "group": 2,
+  "heading": "Accessibility",
+  "pages": [
+   "samesun_cid"
+  ],
+  "quals": [],
+  "conflicts": [],
+  "inferred": false
+ }
+}

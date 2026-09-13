@@ -1,0 +1,123 @@
+{
+  "from": {
+    "query": "Banff",
+    "name": "Banff",
+    "lat": 51.178430399999996,
+    "lng": -115.5707903
+  },
+  "query": "hotels",
+  "mode": null,
+  "open_now": false,
+  "open_at": null,
+  "hours_unknown": 20,
+  "week_unknown": 0,
+  "hours_failed": 0,
+  "skipped": 0,
+  "network_errors": 0,
+  "travel_unknown": 0,
+  "traffic_aware": false,
+  "matched_before_limit": 20,
+  "count": 10,
+  "results": [
+    {
+      "name": "Samesun Banff",
+      "address": "Samesun Banff, 433 Banff Ave, Banff, AB T1L 1B4",
+      "rating": 4.3,
+      "phone": "+14037624499",
+      "editorial": "Hostel with free WiFi, breakfast & a bar",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.56
+    },
+    {
+      "name": "Mount Royal Hotel",
+      "address": "Mount Royal Hotel, 138 Banff Ave, Banff, AB T1L 1J3",
+      "rating": 4.3,
+      "phone": "+18778622623",
+      "editorial": "Relaxed rooms & communal dining",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.25
+    },
+    {
+      "name": "HI Banff Alpine Centre",
+      "address": "HI Banff Alpine Centre, 801 Hidden Ridge Way, Banff, AB T1L 1B3",
+      "rating": 4.4,
+      "phone": "+14037624123",
+      "editorial": "Lodge-style hostel with a bar & dining",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 1.74
+    },
+    {
+      "name": "Bow View Lodge",
+      "address": "Bow View Lodge, 228 Bow Ave, Banff, AB T1L 1A5",
+      "rating": 3.6,
+      "phone": "+18006611565",
+      "editorial": "Riverside hotel offering pool access",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.34
+    },
+    {
+      "name": "Banff Caribou Lodge & Spa",
+      "address": "Banff Caribou Lodge & Spa, 521 Banff Ave, Banff, AB T1L 1H8",
+      "rating": 4,
+      "phone": "+18005638764",
+      "editorial": "Lodge-style hotel with spa & steakhouse",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.96
+    },
+    {
+      "name": "Banff International Hostel",
+      "address": "Banff International Hostel, 449 Banff Ave, Banff, AB T1L 1A6",
+      "rating": 4.1,
+      "phone": "+14039857744",
+      "editorial": "Mountain lodge offering free breakfast",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.66
+    },
+    {
+      "name": "Best Western Plus Banff International Lodge",
+      "address": "Best Western Plus Banff International Lodge, 453 Marten St, Banff, AB T1L 1B3",
+      "rating": 4.1,
+      "phone": "+14037625575",
+      "editorial": "Casual hotel with an indoor pool",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.61
+    },
+    {
+      "name": "Brewster Mountain Lodge",
+      "address": "Brewster Mountain Lodge, 208 Caribou St, Banff, AB T1L 1C1",
+      "rating": 4.4,
+      "phone": "+14037622900",
+      "editorial": "Lodge-style hotel with free breakfast",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.21
+    },
+    {
+      "name": "Elk + Avenue Hotel",
+      "address": "Elk + Avenue Hotel, 333 Banff Ave, Banff, AB T1L 1J3",
+      "rating": 4.3,
+      "phone": "+18774422623",
+      "editorial": "Hip lodging with a deck & mountain views",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.16
+    },
+    {
+      "name": "Red Carpet Inn",
+      "address": "Red Carpet Inn, 425 Banff Ave, Banff, AB T1L 1B6",
+      "rating": 3.8,
+      "phone": "+14037624184",
+      "editorial": "Modest inn with free Wi-Fi & ski lockers",
+      "status": "unknown",
+      "business_status": "unknown",
+      "straight_km": 0.49
+    }
+  ]
+}

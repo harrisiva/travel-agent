@@ -1,7 +1,8 @@
 # travel-agent
 
-> Six Claude Skills for planning trips — what's playing tonight, whether a
-> campsite opened up, what that flight actually costs right now.
+> Seven Claude Skills for planning trips — what's playing tonight, whether a
+> campsite opened up, what that flight actually costs right now, what the
+> hotel costs once tax is in.
 
 ![Python 3](https://img.shields.io/badge/python-3-3776AB?logo=python&logoColor=white)
 ![No API keys](https://img.shields.io/badge/setup-none_(1_exception)-success)
@@ -18,6 +19,7 @@ or pays for anything.
 | [**cineplex-showtimes**](#cineplex-showtimes) | Cineplex showtimes, theatres, films and live seat availability | — |
 | [**google-flights**](#google-flights) | Live fares and schedules, plus Google's own "is this a good price?" verdict | — |
 | [**google-maps**](#google-maps) | What's open nearby, full opening hours, travel time by car/foot/bike/transit | — |
+| [**google-hotels**](#google-hotels) | What a hotel costs for real nights — every seller, with and without tax, cancellation deadlines; relies on google-maps to find the hotels | — |
 | [**enterprise-rentals**](#enterprise-rentals) | Enterprise rental prices worldwide — real make/model, mileage terms, trip totals | — |
 | [**kayak-browse**](#kayak-browse) | Cars, hotels and cheapest flight dates across hundreds of providers | 🔑 **key** |
 
@@ -29,15 +31,15 @@ or pays for anything.
 > **On claude.ai, turn on network access first.** The code sandbox blocks every
 > domain by default, so every skill here fails until you do:
 > **Settings → Capabilities → Code execution → network access for all domains**
-> (or allowlist just the hosts you need — `www.google.com` covers google-maps and
-> google-flights). Then **start a new chat**; the setting doesn't apply to the
+> (or allowlist just the hosts you need — `www.google.com` covers google-maps,
+> google-flights and google-hotels). Then **start a new chat**; the setting doesn't apply to the
 > conversation you changed it in. Needs a paid plan with code execution. In
 > Claude Code it works with no setup.
 
 > [!WARNING]
 > **`kayak-browse` needs a KAYAK affiliate API key** and has never been run
 > against the live API. Without a key every command exits `4` and answers
-> nothing. Skip it unless you have one — the other five need no setup at all.
+> nothing. Skip it unless you have one — the other six need no setup at all.
 
 ---
 
@@ -83,6 +85,7 @@ cd campsite-search/scripts    && python3 -m campsites --help
 cd cineplex-showtimes/scripts && python3 cineplex_showtimes.py --help
 cd google-flights/scripts     && python3 flights.py --help
 cd google-maps/scripts        && python3 gmaps.py --help
+cd google-hotels/scripts      && python3 hotels.py --help
 cd enterprise-rentals/scripts && python3 enterprise.py --help
 cd kayak-browse/scripts       && python3 kayak.py --help
 ```
@@ -216,6 +219,35 @@ Copy one, or ask in your own words.
 >
 > *From the Drake Hotel, which is quickest by transit — the ROM, the CN Tower or
 > Casa Loma?*
+
+</details>
+
+<details>
+<summary><b>🛏️ google-hotels</b></summary>
+
+> *What does the Fairmont Banff Springs cost for New Year's Eve and the night
+> after, two of us — and is that with tax?*
+>
+> *Who's selling that cheapest, and can I still cancel it free the week
+> before?*
+>
+> *Price me the hotels around Canmore for Oct 14–16, cheapest first — I'm
+> working remotely so it has to have free wifi.*
+>
+> *Same three nights at the Samesun in Banff — is any check-in day in the first
+> three weeks of October cheaper, and is mid-week better than the weekend?*
+>
+> *Of the Alpine Club, the Samesun and the Banff Y, which is cheapest for
+> those nights with two adults and a six-year-old?*
+>
+> *Killarney's full for the long weekend. What would the hotels near the park
+> cost for the same nights instead?*
+>
+> *Flight from Toronto, a small car, and three nights at a hotel near Halifax
+> airport — am I anywhere near $800 all in, tax included?*
+>
+> *Watch the Samesun for Oct 10–12 and tell me when it goes under $60 a night
+> including tax.*
 
 </details>
 
@@ -478,6 +510,89 @@ Recipes in [`google-maps/recipes.md`](google-maps/recipes.md).
 
 ---
 
+### google-hotels
+
+Live prices from **Google Hotels'** own per-hotel page, which server-renders
+every seller's rate for the dates you ask — with and without tax, the stay
+total broken into base, taxes and fees, and each seller's free-cancellation
+deadline. No API key, no browser.
+
+| Command | What it answers |
+| --- | --- |
+| `quote` | What does this hotel cost for these nights, from whom, and is that with tax? |
+| `shortlist` | Which of these hotels — the ones google-maps found near a place — is cheapest for these nights? Filterable by price, rating, stars, free cancellation and amenity |
+| `cheapest` | Which check-in day in a window is cheapest for an N-night stay? `--step 7` compares weekends |
+| `watch` | Has this hotel dropped under my threshold yet? (one check; cron owns the loop) |
+| `resolve` | Every id form for a hotel — ftid, place_id, CID, entity token — offline |
+| `doctor` | Why did that fail — environment and transport check |
+
+```sh
+cd google-maps/scripts
+python3 gmaps.py search --near Canmore --query hotels --full --json > /tmp/canmore.json
+cd ../../google-hotels/scripts
+python3 hotels.py shortlist --ids-from /tmp/canmore.json --checkin +30 --checkout +32
+python3 hotels.py quote 0x5370ca3b2e2fb8bf:0x99e9a92cf4f6ce --checkin 2026-12-31 --checkout 2027-01-02
+python3 hotels.py cheapest 0x5370ca3b2e2fb8bf:0x99e9a92cf4f6ce --checkin +1 --nights 2 --days 21 --step 7
+```
+
+**Every seller, both tax bases, on one page.** Google's headline rate is
+often not the cheapest — the hotel's own site undercut it in several
+captures — and every rate carries the before-tax and after-tax figure side by
+side, so *"is that with tax?"* is answered from the page rather than guessed.
+
+<details>
+<summary>What it depends on, and what it deliberately does not do</summary>
+
+- **It prices hotels by id; google-maps finds them.** Google's hotel *list*
+  is on a path this skill does not use, so there is no "search Banff" here.
+  `gmaps.py search --near <place> --query hotels --full --json` produces the
+  candidate file (`--full` is what carries the ids), and `shortlist` prices
+  it. A bare hotel name is refused with the exact google-maps command to run —
+  it never guesses which building you meant. Without google-maps installed it
+  still prices any id off a Google Maps link, or a pasted Google Hotels link.
+- **`shortlist` is not a market search.** It reports "cheapest of the 6
+  checked near Canmore", never "cheapest in Canmore" — a budget motel Maps
+  ranks 30th is invisible unless google-maps was asked for more.
+- **No "is this a good price?" verdict.** Google publishes one for flights;
+  for hotels it exists only on the list page. The skill offers facts instead —
+  a cheaper seller, a cheaper check-in day, the rank among those checked.
+- **Vacation rentals** have no Maps id, so they are reachable only from a
+  pasted Google Hotels link (`quote --token`).
+- **Phase 2** (`search` and `trend` over the list page — twenty priced hotels
+  per page and Google's typical/low/high band) is designed but not shipped;
+  it lands only once a live check proves the list honours requested dates.
+
+</details>
+
+<details>
+<summary>Exit codes, what it refuses, and the request budget</summary>
+
+Prices are never cached — the lead rate moved $1,283 → $1,198 → $1,053
+between fetches minutes apart. Nothing is written to disk.
+
+`1` the query worked and nothing: no rates listed for these nights (never
+"sold out" — the phrase exists nowhere in the data) · `2` refused, and it says
+why: a past or inverted stay, more than 30 nights or 330 days out, a party out
+of bounds, a bare name, an unknown id, a currency Google didn't price in ·
+`3` the check failed, including **a page that priced a different stay than
+asked** — Google answers a bad stay with a real price for a different one,
+so every response is checked against the page's own echo of the dates and
+party before it is reported.
+
+**Only `1` is safe to keep polling on.** A `watch --under` below today's
+price is the normal case and exits `1` until the price falls.
+
+Fan-out is capped: one page per hotel (1.6–4.3 MB each, 2.5 s apart);
+`shortlist` prices at most 10, `cheapest` at most 21 dates; hard cap 40
+requests. A plan over the ceiling is refused before the first request.
+
+Recipes in [`google-hotels/recipes.md`](google-hotels/recipes.md); the
+reverse-engineering in [`google-hotels/NOTES.md`](google-hotels/NOTES.md).
+
+</details>
+
+---
+
 ### enterprise-rentals
 
 Live rental prices from Enterprise, anywhere it operates. Verified live in
@@ -630,6 +745,7 @@ being down is easy to tell apart from the skill being broken.
 | enterprise-rentals | `python3 test_availability.py` | 163 — 157 offline + 6 live |
 | google-flights | `python3 test_flights.py` | 142 offline + a live group |
 | google-maps | `python3 test_gmaps.py` | 97 offline + a live group |
+| google-hotels | `python3 test_hotels.py` | 531 offline + a live group |
 | kayak-browse | `python3 test_kayak.py --offline` | 76 — no network, no key needed |
 
 Add `--offline` to any of them to skip the network group.
