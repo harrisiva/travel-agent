@@ -1,6 +1,6 @@
 # travel-agent
 
-> Seven Claude Skills for planning trips — what's playing tonight, whether a
+> Eight Claude Skills for planning trips — what's playing tonight, whether a
 > campsite opened up, what that flight actually costs right now, what the
 > hotel costs once tax is in.
 
@@ -21,6 +21,7 @@ or pays for anything.
 | [**google-maps**](#google-maps) | What's open nearby, full opening hours, travel time by car/foot/bike/transit | — |
 | [**google-hotels**](#google-hotels) | What a hotel costs for real nights — every seller, with and without tax, cancellation deadlines; relies on google-maps to find the hotels | — |
 | [**enterprise-rentals**](#enterprise-rentals) | Enterprise rental prices worldwide — real make/model, mileage terms, trip totals | — |
+| [**uber-eats**](#uber-eats) | Uber Eats menus, prices and sale prices near an address, every public deal, and where a dish is cheapest | — |
 | [**kayak-browse**](#kayak-browse) | Cars, hotels and cheapest flight dates across hundreds of providers | 🔑 **key** |
 
 **[Quick start](#quick-start)** · **[Sample prompts](#sample-prompts)** ·
@@ -32,14 +33,14 @@ or pays for anything.
 > domain by default, so every skill here fails until you do:
 > **Settings → Capabilities → Code execution → network access for all domains**
 > (or allowlist just the hosts you need — `www.google.com` covers google-maps,
-> google-flights and google-hotels). Then **start a new chat**; the setting doesn't apply to the
+> google-flights and google-hotels; `www.ubereats.com` covers uber-eats). Then **start a new chat**; the setting doesn't apply to the
 > conversation you changed it in. Needs a paid plan with code execution. In
 > Claude Code it works with no setup.
 
 > [!WARNING]
 > **`kayak-browse` needs a KAYAK affiliate API key** and has never been run
 > against the live API. Without a key every command exits `4` and answers
-> nothing. Skip it unless you have one — the other six need no setup at all.
+> nothing. Skip it unless you have one — the other seven need no setup at all.
 
 ---
 
@@ -87,6 +88,7 @@ cd google-flights/scripts     && python3 flights.py --help
 cd google-maps/scripts        && python3 gmaps.py --help
 cd google-hotels/scripts      && python3 hotels.py --help
 cd enterprise-rentals/scripts && python3 enterprise.py --help
+cd uber-eats/scripts          && python3 ubereats.py --help
 cd kayak-browse/scripts       && python3 kayak.py --help
 ```
 
@@ -276,6 +278,30 @@ Copy one, or ask in your own words.
 >
 > *The minivans at Halifax airport are sold out for Dec 24–28. Can you keep
 > checking and tell me if one comes up for under $900?*
+
+</details>
+
+<details>
+<summary><b>🍜 uber-eats</b></summary>
+
+> *What's open near Union Station right now that can get here in under 30
+> minutes?*
+>
+> *Show me Himalayan Kitchen's menu — anything under $15?*
+>
+> *What BOGO deals are there near me tonight, and on which dishes?*
+>
+> *Where's the cheapest butter chicken I can get delivered to 65 Front St W?*
+>
+> *Is Blondies Pizza on Uber Eats, and what does a large with bacon come to
+> before fees?*
+>
+> *Any places with $0 delivery near me rated 4.5 or better?*
+>
+> *Tell me when Blondies Pizza opens.*
+>
+> *Albert's has 25% off select items — which dishes, and what do they cost
+> now?*
 
 </details>
 
@@ -661,6 +687,99 @@ Recipes in [`enterprise-rentals/recipes.md`](enterprise-rentals/recipes.md).
 
 ---
 
+### uber-eats
+
+Menus, prices and deals from **Uber Eats'** own web JSON API — the calls the
+site makes when you set a delivery address and open a restaurant. No account,
+no key, no browser. Everything is relative to a delivery address, and the
+answer says which one.
+
+| Command | What it answers |
+| --- | --- |
+| `nearby` | What can I get here — rating, ETA, distance, deal badges — filterable by rating, ETA, distance and deal type |
+| `find` | Is this restaurant on Uber Eats at my address, and what is its id? |
+| `menu` | What's on the menu and what does it cost — sale price *and* original, BOGO markers, sold-out state, today's hours |
+| `item` | One dish's option groups and add-on prices, and the "from" price with the required picks |
+| `deals` | Every public deal nearby, typed — BOGO, % off, $ off with minimum spend, $0 delivery — and with `--items`, the dishes each applies to |
+| `compare` | Where is this dish cheapest across the nearest N menus? |
+| `watch` | Has it opened / gone on sale / dropped under $X / come back in stock yet? (one check; cron owns the loop) |
+| `locate` | Which address will Uber deliver to, and a token to pin it |
+| `doctor` | Why did that fail — is Uber's bot protection blocking us? |
+
+```sh
+cd uber-eats/scripts
+python3 ubereats.py nearby --at "65 Front St W, Toronto" --max-eta 30 --min-rating 4.5
+python3 ubereats.py menu "Himalayan Kitchen" --at "65 Front St W, Toronto" --under 15
+python3 ubereats.py deals --at "65 Front St W, Toronto" --type bogo
+python3 ubereats.py compare "butter chicken" --at "65 Front St W, Toronto"
+```
+
+**The sale price is the price, and it says what it was.** Uber's payload
+carries the discounted figure as the price and hides the original inside a
+struck-through span of HTML, so a naive reader either misses the saving or
+gets it backwards. Every dish reports `price` and `was` separately, and a
+BOGO is ranked at full price with "second one free" — never at half.
+
+<details>
+<summary>What it depends on, and what it deliberately does not do</summary>
+
+- **`nearby`, `find` and `deals` are not a market search.** They see the
+  page of stores Uber's feed returned for that address — about 100–150, and
+  both the membership and the order of that set shift between calls minutes
+  apart. Every header reads "N of the M stores Uber returned near X — Uber's
+  list, not the whole market", and a `find` miss is never "it isn't on Uber
+  Eats" — paste the restaurant's Uber Eats link and
+  `menu` takes it directly.
+- **No keyword or cuisine search.** Uber's search endpoint is behind its bot
+  protection and the feed ignores a query, so "Thai near me" is `nearby` and
+  pick by name, or `compare "pad thai"` over the nearest menus.
+- **No fees, no totals.** Delivery and service fees exist only once there is
+  a cart; the anonymous API returns null for both. The skill never estimates
+  a total and says fees are added at checkout.
+- **Public deals only.** Uber One pricing and account offers are invisible
+  logged out, and every deals answer says so.
+- **Canada only, verified.** Other Uber Eats countries are attempted via
+  `--locale` and labelled unverified.
+- **Read-only by construction.** The transport refuses any endpoint outside a
+  five-name allowlist before opening a socket; there is no cart, order or
+  favourite path to reach.
+
+</details>
+
+<details>
+<summary>Exit codes, what it refuses, and the request budget</summary>
+
+Prices, deals, menus and open/closed state are never cached; only a resolved
+address is (30 days).
+
+`1` the query worked and nothing matched — filters excluded everything, the
+restaurant wasn't among the stores returned, no menu listed the dish; for
+`watch`, not yet · `2` refused, and it says why: an address Uber doesn't
+serve, an unknown store id, a name matching zero or several stores, a dish
+that isn't on the menu, a plan over `--max-requests` · `3` the check failed,
+including **Uber's bot protection serving a challenge instead of JSON** —
+Cloudflare on the pages, and Uber's own reCAPTCHA defense on the API after
+roughly 110 requests from one IP in a day, which then lasts hours — reported
+as a block, never as "nothing nearby". Keep runs small; there is no
+workaround and none will be added.
+
+**Only `1` is safe to keep polling on.** A `watch --under` below today's
+price is the normal case and exits `1` until it drops.
+
+Fan-out is capped: `compare` reads 1 feed + `--stores` menus (default 10,
+max 24); `deals --items` one menu per store (default 10 stores); hard cap 25
+requests per command, 1 s apart. Each command's own plan plus two spare for
+retries is its ceiling and `--max-requests` can only lower it; a plan over
+the cap is refused before the first request. A Cloudflare challenge anywhere in a run is exit `3` for the
+whole command.
+
+Recipes in [`uber-eats/recipes.md`](uber-eats/recipes.md); the
+reverse-engineering in [`uber-eats/NOTES.md`](uber-eats/NOTES.md).
+
+</details>
+
+---
+
 ### kayak-browse
 
 > [!WARNING]
@@ -746,6 +865,7 @@ being down is easy to tell apart from the skill being broken.
 | google-flights | `python3 test_flights.py` | 142 offline + a live group |
 | google-maps | `python3 test_gmaps.py` | 97 offline + a live group |
 | google-hotels | `python3 test_hotels.py` | 531 offline + a live group |
+| uber-eats | `python3 test_ubereats.py` | 574 offline + a live group |
 | kayak-browse | `python3 test_kayak.py --offline` | 76 — no network, no key needed |
 
 Add `--offline` to any of them to skip the network group.
