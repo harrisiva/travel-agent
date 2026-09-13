@@ -26,7 +26,14 @@ or pays for anything.
 
 **[Quick start](#quick-start)** · **[Sample prompts](#sample-prompts)** ·
 **[Contributing](#contributing)** · **[Skill reference](#skill-reference)** ·
+**[AllTrails connector](#pairs-well-with-the-alltrails-connector)** ·
 **[Self-checks](#self-checks)**
+
+> [!TIP]
+> **For hiking trips, add the [AllTrails connector](#pairs-well-with-the-alltrails-connector).**
+> These skills get you there and into a bed; AllTrails picks the trail. It's a
+> free, official Claude connector — deliberately not a skill in this repo,
+> [and for a good reason](#pairs-well-with-the-alltrails-connector).
 
 > [!IMPORTANT]
 > **On claude.ai, turn on network access first.** The code sandbox blocks every
@@ -852,6 +859,55 @@ inventory usefully (the sandbox is US-only).
 Recipes in [`kayak-browse/recipes.md`](kayak-browse/recipes.md).
 
 </details>
+
+---
+
+## Pairs well with: the AllTrails connector
+
+These skills answer *can I get there, where do I sleep, what does it cost.*
+They say nothing about **which hike is actually worth doing** — and that is the
+question a mountain trip turns on.
+
+AllTrails covers it, and there is deliberately **no AllTrails skill in this
+repo**. Its `robots.txt` disallows `ClaudeBot`, `Claude-User` and
+`Claude-SearchBot` by name, every HTML and `/api/` path answers plain `requests`
+with a 403 DataDome challenge, and the historically-public Algolia key has been
+rotated. Scraping it would be both blocked and unwelcome. AllTrails ships an
+official connector instead, so use that.
+
+**Set it up** — it's free on all Claude plans, and OAuth opens a browser once:
+
+| Where | How |
+| --- | --- |
+| **claude.ai / desktop** | Add it from the [**AllTrails connector page**](https://claude.com/connectors/alltrails) |
+| **Claude Code** | `claude mcp add alltrails --transport http https://www.alltrails.com/mcp` |
+
+**What it adds:** trails near a point or inside a bounding box, search by name,
+full trail detail, and a trailhead forecast — over 500,000 curated trails with
+ratings, distance, elevation gain and difficulty. Its filter surface is richer
+than the AllTrails website's own explore UI: activity, attraction (waterfall,
+hot springs, wildflowers), difficulty, route type, traffic level, and numeric
+ranges for length, elevation gain and highest point.
+
+**Why it's worth the two minutes:** it turns "go to Madeira" into *Pico do
+Arieiro → Pico Ruivo, 8.7 km, 731 m gain, 4.8★* — and, more usefully, it finds
+the hike you didn't know to ask for. Planning Zion, it surfaced Observation
+Point as **215 m of gain to a viewpoint higher than Angels Landing, with no
+permit and no chains** — a better answer than the famous one, which you only
+find by comparing the numbers.
+
+Compose it with the skills here: `google-flights` gets you there,
+`campsite-search` or `google-hotels` puts you in a bed, `google-maps` gives the
+drive from the airport to the trailhead, and AllTrails picks the trail.
+
+> *I've got four days near Canmore in September — find me trails over 10 km
+> with big elevation gain and a waterfall, then price a hostel for those nights.*
+
+**Two caveats.** The connector is **account-level**, so it is not available to
+someone who only downloads a `.skill` bundle from [`dist/`](dist/) — it has to
+be added to Claude, not installed here. And `get_trail_weather_overview` is a
+**7-day forecast only**: useful the week you travel, useless for planning a trip
+months out. Don't reach for it to answer "what's the weather like there in May".
 
 ---
 
