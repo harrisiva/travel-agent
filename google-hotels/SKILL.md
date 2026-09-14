@@ -7,7 +7,7 @@ description: >-
   and amenities — plus a priced shortlist of the hotels google-maps found near
   a place, filterable by amenity, and the cheapest check-in day for one hotel
   across a range. It prices hotels BY ID: run google-maps first (`gmaps.py
-  search --near <place> --query hotels --full --json`). Use whenever the user
+  search --near PLACE --query hotels --full --json`). Use whenever the user
   asks what a hotel costs on given dates, who sells it cheapest, whether that
   includes tax, what hotels near a place cost, which have free Wi-Fi, which
   night or week is cheaper, or wants a watch on one hotel's price. It can't
