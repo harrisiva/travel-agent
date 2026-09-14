@@ -1,0 +1,25 @@
+{
+  "_comment": "SYNTHETIC — built from the RAML spec, not captured from a live API. Re-capture against production before trusting this suite.",
+  "_shape": "A completed search that found nothing. The flag is `isComplete`, as in every RAML type and example — no fixture here spells it `isCompleted`, because a fixture is what the server sends and the server sends `isComplete`. The parser also tolerates the prose spelling; that fallback is covered from an inline dict in the test, not from a fixture, so nothing here can teach a wrong shape.",
+  "isComplete": true,
+  "searchTime": 118,
+  "totalResults": 0,
+  "totalAvailableResults": 0,
+  "totalFilteredResults": 0,
+  "currencyCode": "USD",
+  "languageCode": "EN",
+  "destination": {
+    "id": 58075,
+    "key": "kplace:58075",
+    "type": 2,
+    "name": "Boston",
+    "fullName": "Boston, Massachusetts, United States",
+    "isSearchable": true,
+    "latitude": 42.360903491390246,
+    "longitude": -71.05889023544313,
+    "hasBoundary": true,
+    "radius": 0,
+    "maximumRadius": 0
+  },
+  "results": []
+}

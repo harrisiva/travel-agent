@@ -1,0 +1,636 @@
+{
+  "_comment": "SYNTHETIC \u2014 built from the RAML spec, not captured from a live API. Re-capture against production before trusting this suite.",
+  "searchId": "QSBGBspPnD",
+  "cluster": "c7",
+  "status": "complete",
+  "pageSize": 500,
+  "sort": {
+    "key": "price"
+  },
+  "priceMode": "total",
+  "currency": "CAD",
+  "days": 3,
+  "totalCount": 9,
+  "results": [
+    {
+      "id": "r0",
+      "bookingOptions": [
+        {
+          "agencyCode": "hertz",
+          "providerCode": "pricelinecar",
+          "bookingUrl": "https://www.kayak.com/book/hertz",
+          "pickupLocationId": "L1",
+          "paymentType": "prepay",
+          "isCreditCardRequired": false,
+          "car": {
+            "brand": "Fiat",
+            "type": {
+              "code": "ECAR",
+              "displayName": "Economy",
+              "groups": [
+                "small"
+              ]
+            },
+            "passengers": 5,
+            "bags": 2,
+            "doors": "doors4",
+            "transmission": "automatic",
+            "fuel": "petrol",
+            "sipp": "ECAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/ECAR.png"
+          },
+          "badges": [
+            {
+              "code": "greatDeal",
+              "displayName": "greatDeal"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "unlimited",
+              "displayName": "Unlimited"
+            },
+            "cancellation": {
+              "isUnlimited": false,
+              "limitHours": 48
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 126.0,
+            "displayPrice": "$126"
+          }
+        }
+      ]
+    },
+    {
+      "id": "r1",
+      "bookingOptions": [
+        {
+          "agencyCode": "avis",
+          "providerCode": "kayakdirect",
+          "bookingUrl": "https://www.kayak.com/book/avis",
+          "pickupLocationId": "L1",
+          "paymentType": "prepay",
+          "isCreditCardRequired": false,
+          "car": {
+            "brand": "Toyota",
+            "type": {
+              "code": "CCAR",
+              "displayName": "Compact",
+              "groups": [
+                "small"
+              ]
+            },
+            "passengers": 5,
+            "bags": 2,
+            "doors": "doors45",
+            "transmission": "automatic",
+            "fuel": "hybrid",
+            "sipp": "CCAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/CCAR.png"
+          },
+          "badges": [
+            {
+              "code": "greatDeal",
+              "displayName": "greatDeal"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "unlimited",
+              "displayName": "Unlimited"
+            },
+            "cancellation": {
+              "isUnlimited": true
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 143.5,
+            "displayPrice": "$144"
+          }
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "bookingOptions": [
+        {
+          "agencyCode": "sixt",
+          "providerCode": "pricelinecar",
+          "bookingUrl": "https://www.kayak.com/book/sixt",
+          "pickupLocationId": "L1",
+          "paymentType": "prepay",
+          "isCreditCardRequired": false,
+          "car": {
+            "brand": "Ford",
+            "type": {
+              "code": "IFAR",
+              "displayName": "Intermediate SUV",
+              "groups": [
+                "suv"
+              ]
+            },
+            "passengers": 5,
+            "bags": 3,
+            "doors": "doors5",
+            "transmission": "automatic",
+            "fuel": "petrol",
+            "sipp": "IFAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/IFAR.png"
+          },
+          "badges": [
+            {
+              "code": "greatDeal",
+              "displayName": "greatDeal"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "limited",
+              "limit": 200,
+              "displayName": "200 km"
+            },
+            "cancellation": {
+              "isUnlimited": false,
+              "limitHours": 48
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 201.0,
+            "displayPrice": "$201"
+          }
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "bookingOptions": [
+        {
+          "agencyCode": "hertz",
+          "providerCode": "kayakdirect",
+          "bookingUrl": "https://www.kayak.com/book/hertz",
+          "pickupLocationId": "L1",
+          "paymentType": "prepay",
+          "isCreditCardRequired": false,
+          "car": {
+            "brand": "Jeep",
+            "type": {
+              "code": "SFAR",
+              "displayName": "Standard SUV",
+              "groups": [
+                "suv"
+              ]
+            },
+            "passengers": 5,
+            "bags": 4,
+            "doors": "doors5",
+            "transmission": "automatic",
+            "fuel": "petrol",
+            "sipp": "SFAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/SFAR.png"
+          },
+          "badges": [
+            {
+              "code": "greatDeal",
+              "displayName": "greatDeal"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "unlimited",
+              "displayName": "Unlimited"
+            },
+            "cancellation": {
+              "isUnlimited": false,
+              "limitHours": 48
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 233.0,
+            "displayPrice": "$233"
+          }
+        }
+      ]
+    },
+    {
+      "id": "r4",
+      "bookingOptions": [
+        {
+          "agencyCode": "avis",
+          "providerCode": "pricelinecar",
+          "bookingUrl": "https://www.kayak.com/book/avis",
+          "pickupLocationId": "L2",
+          "paymentType": "prepay",
+          "isCreditCardRequired": true,
+          "car": {
+            "brand": "Chrysler",
+            "type": {
+              "code": "MVAR",
+              "displayName": "Minivan",
+              "groups": [
+                "van"
+              ]
+            },
+            "passengers": 7,
+            "bags": 5,
+            "doors": "doors5",
+            "transmission": "automatic",
+            "fuel": "petrol",
+            "sipp": "MVAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/MVAR.png"
+          },
+          "badges": [
+            {
+              "code": "greatDeal",
+              "displayName": "greatDeal"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "unlimited",
+              "displayName": "Unlimited"
+            },
+            "cancellation": {
+              "isUnlimited": false,
+              "limitHours": 48
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 289.0,
+            "displayPrice": "$289"
+          }
+        }
+      ]
+    },
+    {
+      "id": "r5",
+      "bookingOptions": [
+        {
+          "agencyCode": "mystery",
+          "providerCode": "pricelinecar",
+          "bookingUrl": "https://www.kayak.com/book/mystery",
+          "pickupLocationId": "L1",
+          "paymentType": "prepay",
+          "isCreditCardRequired": false,
+          "car": {
+            "brand": "Fiat",
+            "type": {
+              "code": "ECAR",
+              "displayName": "Economy",
+              "groups": [
+                "small"
+              ]
+            },
+            "passengers": 5,
+            "bags": 2,
+            "doors": "doors4",
+            "transmission": "automatic",
+            "fuel": "petrol",
+            "sipp": "ECAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/ECAR.png"
+          },
+          "badges": [
+            {
+              "code": "cheapest",
+              "displayName": "cheapest"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "unlimited",
+              "displayName": "Unlimited"
+            },
+            "cancellation": {
+              "isUnlimited": false,
+              "limitHours": 48
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 98.0,
+            "displayPrice": "$98"
+          }
+        }
+      ]
+    },
+    {
+      "id": "r6",
+      "bookingOptions": [
+        {
+          "agencyCode": "turo",
+          "providerCode": "kayakdirect",
+          "bookingUrl": "https://www.kayak.com/book/turo",
+          "pickupLocationId": "L2",
+          "paymentType": "prepay",
+          "isCreditCardRequired": false,
+          "car": {
+            "brand": "Ford",
+            "type": {
+              "code": "IFAR",
+              "displayName": "Intermediate SUV",
+              "groups": [
+                "suv"
+              ]
+            },
+            "passengers": 5,
+            "bags": 3,
+            "doors": "doors5",
+            "transmission": "automatic",
+            "fuel": "petrol",
+            "sipp": "IFAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/IFAR.png"
+          },
+          "badges": [
+            {
+              "code": "greatDeal",
+              "displayName": "greatDeal"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "unlimited",
+              "displayName": "Unlimited"
+            },
+            "cancellation": {
+              "isUnlimited": false,
+              "limitHours": 48
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 112.0,
+            "displayPrice": "$112"
+          }
+        }
+      ]
+    },
+    {
+      "id": "r7",
+      "bookingOptions": [
+        {
+          "agencyCode": "drivedoor",
+          "providerCode": "kayakdirect",
+          "bookingUrl": "https://www.kayak.com/book/drivedoor",
+          "pickupLocationId": "L1",
+          "paymentType": "prepay",
+          "isCreditCardRequired": false,
+          "car": {
+            "brand": "Ram",
+            "type": {
+              "code": "PPAR",
+              "displayName": "Pickup",
+              "groups": [
+                "pickupTruck"
+              ]
+            },
+            "passengers": 5,
+            "bags": 3,
+            "doors": "doors4",
+            "transmission": "automatic",
+            "fuel": "diesel",
+            "sipp": "PPAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/PPAR.png"
+          },
+          "badges": [
+            {
+              "code": "greatDeal",
+              "displayName": "greatDeal"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "unlimited",
+              "displayName": "Unlimited"
+            },
+            "cancellation": {
+              "isUnlimited": false,
+              "limitHours": 48
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 305.0,
+            "displayPrice": "$305"
+          },
+          "fees": [
+            {
+              "code": "youngDriver",
+              "rate": {
+                "price": 35.0,
+                "displayPrice": "$35"
+              },
+              "isIncludedInTotal": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r8",
+      "bookingOptions": [
+        {
+          "agencyCode": "sixt",
+          "providerCode": "kayakdirect",
+          "bookingUrl": "https://www.kayak.com/book/sixt",
+          "pickupLocationId": "L1",
+          "paymentType": "prepay",
+          "isCreditCardRequired": false,
+          "car": {
+            "brand": "BMW",
+            "type": {
+              "code": "PCAR",
+              "displayName": "Premium",
+              "groups": [
+                "luxury"
+              ]
+            },
+            "passengers": 5,
+            "bags": 3,
+            "doors": "doors4",
+            "transmission": "automatic",
+            "fuel": "electric",
+            "sipp": "PCAR",
+            "features": [
+              {
+                "code": "ac",
+                "displayName": "AC"
+              }
+            ],
+            "image": "https://img.example/PCAR.png"
+          },
+          "badges": [
+            {
+              "code": "greatDeal",
+              "displayName": "greatDeal"
+            }
+          ],
+          "policy": {
+            "mileage": {
+              "code": "limited",
+              "limit": 100,
+              "displayName": "100 km"
+            },
+            "cancellation": {
+              "isUnlimited": false,
+              "limitHours": 48
+            },
+            "fuel": {
+              "code": "fullToFull",
+              "displayName": "Full to full"
+            }
+          },
+          "price": {
+            "price": 410.0,
+            "displayPrice": "$410"
+          }
+        }
+      ]
+    }
+  ],
+  "agencies": {
+    "hertz": {
+      "displayName": "Hertz",
+      "type": "regular"
+    },
+    "avis": {
+      "displayName": "Avis",
+      "type": "regular"
+    },
+    "sixt": {
+      "displayName": "Sixt",
+      "type": "regular"
+    },
+    "mystery": {
+      "displayName": "Mystery Deal",
+      "type": "opaque"
+    },
+    "turo": {
+      "displayName": "Turo",
+      "type": "p2p"
+    },
+    "drivedoor": {
+      "displayName": "DriveDoor",
+      "type": "delivery"
+    }
+  },
+  "providers": {
+    "pricelinecar": {
+      "displayName": "PricelineCar"
+    },
+    "kayakdirect": {
+      "displayName": "KAYAK Direct"
+    }
+  },
+  "carLocations": {
+    "L1": {
+      "locationId": "L1",
+      "locationType": "inTerminal",
+      "address": "YYZ Terminal 1",
+      "cityName": "Mississauga",
+      "countryCode": "CA",
+      "displayDistance": "0.0 km",
+      "airport": {
+        "code": "YYZ",
+        "displayName": "Toronto Pearson",
+        "terminalName": "T1"
+      },
+      "coordinates": {
+        "latitude": 43.6777,
+        "longitude": -79.6248
+      }
+    },
+    "L2": {
+      "locationId": "L2",
+      "locationType": "shuttle",
+      "address": "5900 Airport Rd",
+      "cityName": "Mississauga",
+      "countryCode": "CA",
+      "displayDistance": "2.4 km",
+      "airport": {
+        "code": "YYZ",
+        "displayName": "Toronto Pearson"
+      },
+      "coordinates": {
+        "latitude": 43.69,
+        "longitude": -79.62
+      }
+    }
+  }
+}

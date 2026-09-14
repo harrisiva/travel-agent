@@ -13,8 +13,14 @@ travel-agent/
 ├── campsite-search/        # one directory per skill, AT THE ROOT
 │   ├── SKILL.md            #   how Claude drives the tool — the interface contract
 │   ├── recipes.md          #   worked end-to-end workflows, loaded on demand
-│   └── scripts/            #   the CLI itself
+│   ├── scripts/            #   the CLI itself
+│   └── NOTES.md            #   optional: reverse-engineering notes (some skills
+│                           #   call it endpoints.md); ships in the bundle
 ├── cineplex-showtimes/
+├── enterprise-rentals/
+├── google-flights/
+├── google-maps/
+├── kayak-browse/
 ├── dist/*.skill            # built zips — what non-technical users download
 ├── build.sh                # regenerates dist/ from the directories above
 ├── README.md               # the front door: what each skill offers
@@ -66,7 +72,7 @@ each leaves a whole audience without the skill.
 3. **Write a self-check** (see below) and run it.
 4. **`./build.sh`** to regenerate `dist/`. Without this, the skill exists in the
    repo but nobody can install it on claude.ai.
-5. **Update `README.md`** in three places, the same shape as the existing two
+5. **Update `README.md`** in three places, the same shape as the existing
    skills: a row in the table at the top, a section documenting the commands,
    and a block of **sample prompts** under *Sample prompts*. An undocumented
    skill in `dist/` is one nobody will download.
@@ -98,13 +104,15 @@ stale. Say so when you finish — it needs re-uploading by hand.
 
 ## The pattern that works here
 
-Both skills follow the same shape, and it's a good default for anything that
+The skills here share one shape, and it's a good default for anything that
 answers questions about a live website.
 
 **Find the JSON API, don't scrape the HTML.** Every site with a date picker or
 a seat map is calling its own endpoint. Open devtools, watch the network tab,
 find the request that returns the data. Scraping rendered DOM breaks on every
-redesign; the JSON endpoint behind it rarely changes shape.
+redesign; the JSON endpoint behind it rarely changes shape. If there is no
+such endpoint — Google Flights server-renders its results — parse the data
+payload embedded in the page, never the rendered DOM.
 
 **Subcommands that map to questions, not to endpoints.** `sweep` ("any opening
 in this range?") is a real question; a thin wrapper over one endpoint is not.
@@ -118,7 +126,7 @@ hard-code an ID — catalogues change.
 **`--json` on every command.** Human-readable tables by default, structured
 output for chaining. Both are used constantly.
 
-**Stable exit codes.** `campsites` uses:
+**Stable exit codes.** Every skill uses:
 
 | Code | Meaning |
 |---|---|
@@ -130,6 +138,8 @@ output for chaining. Both are used constantly.
 The distinction between `1` and `3` is what makes a polling loop safe: only `1`
 means keep waiting. Without it, an agent watching a sold-out campground will
 happily loop forever on a network outage. Keep codes identical under `--json`.
+A skill may add codes above `3` for its own failure modes; document them in its
+`SKILL.md`, and never let one mean "nothing available".
 
 **Read-only by default.** `campsite-search` queries reservation systems and
 never books. If a skill could take an action with real-world consequences,
@@ -161,7 +171,8 @@ shim is for.
 
 ## Self-checks
 
-Ship one. `campsite-search/scripts/test_availability.py` is the model:
+Ship one, named `scripts/test_*.py`. `campsite-search/scripts/test_availability.py`
+is the model:
 
 - Two labelled groups: `[offline]` (pure logic, no sockets) and `[network]`
   (live calls). `--offline` runs only the first.
@@ -200,7 +211,7 @@ skip the obvious; spend the space on what it would otherwise get wrong.
 ## Before you commit
 
 ```sh
-cd <skill-name>/scripts && python3 test_availability.py   # or a live call
+cd <skill-name>/scripts && python3 test_*.py --offline
 ./build.sh
 ```
 
@@ -214,9 +225,14 @@ Say so — it needs re-uploading by hand.
 ## Dependencies and setup
 
 **A skill must be self-contained: Python 3, no API keys, no configuration.**
-The README promises users that "on claude.ai there is nothing for you to set
-up", and that promise is per-skill — one skill that needs a key or a config
-file breaks it for the whole repo. Someone who downloads a `.skill`, uploads it
+The README promises users no Python, no clone and no keys on claude.ai (network
+access aside), and that promise is per-skill — one skill that needs a key or a
+config file breaks it for the whole repo.
+
+**The one exception is `kayak-browse`,** which needs a KAYAK affiliate API key
+and is kept deliberately. It says so in its description, its README row, its
+README section and the install instructions, and must keep saying so. Don't add
+a second exception. Someone who downloads a `.skill`, uploads it
 in Settings → Capabilities → Skills, and asks a question must get an answer,
 with no step in between.
 
@@ -231,10 +247,14 @@ does — scrape the public one the site's own frontend uses at runtime and cache
 it (`.cineplex_key`) — or pick a different API. A key the user has to supply is
 a reason not to ship the skill, not a setup instruction to add to `SKILL.md`.
 Anything the skill caches is a cache: it must rebuild itself when absent, and
-never be committed or shipped in `dist/`.
+never be committed or shipped in `dist/`. Prefer a cache directory outside the
+repo; a cache file that has to live inside the skill directory (like
+`.cineplex_key`) must be added to both `.gitignore` and the `-x` list in
+`build.sh`, or it leaks into the bundle.
 
-The one dependency is `requests`. Each `SKILL.md` opens by installing it if
-it's missing:
+The one permitted dependency is `requests`. Every `SKILL.md` whose scripts use
+it opens by installing it if it's missing (`google-maps` is standard library
+only, and has no such block):
 
 ```bash
 python3 -c "import requests" 2>/dev/null || python3 -m pip install -q requests

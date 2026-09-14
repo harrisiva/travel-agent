@@ -1,0 +1,16 @@
+{
+  "_comment": "SYNTHETIC — built from the RAML spec, not captured from a live API. Re-capture against production before trusting this suite.",
+  "_shape": "CalendarResponse for a route with no cached or predicted prices. The places still resolve, so origin/destination are present and only results[] is empty — 'we know the route, we have no prices' rather than 'we do not know this route'.",
+  "origin": {
+    "placeId": 123567,
+    "placeType": "airport",
+    "name": "Boston Logan International Airport"
+  },
+  "destination": {
+    "placeId": 654231,
+    "placeType": "airport",
+    "name": "Los Angeles International Airport"
+  },
+  "results": [],
+  "airports": []
+}

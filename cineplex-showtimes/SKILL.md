@@ -10,104 +10,126 @@ description: >-
 
 # Cineplex Showtimes & Seat Availability
 
-A small, dependency-light Python client for Cineplex's public theatrical +
-ticketing APIs. Two files do everything:
+A small Python client for Cineplex's public theatrical + ticketing APIs:
 
-- `scripts/cineplex_api.py` — importable library (pure data functions, all return JSON).
-- `scripts/cineplex_showtimes.py` — CLI driver with 5 subcommands, each supports `--json`.
+- `scripts/cineplex_showtimes.py` — the CLI, 5 subcommands, each supports `--json`.
+- `scripts/cineplex_api.py` — the importable library behind it.
+- `scripts/test_cineplex.py` — self-check (`--offline` for logic only).
 
-**Tool location:** the `scripts/` directory next to this SKILL.md. All commands
-below assume you first `cd` into that directory. Detailed recipes and
-scheduled-job templates are in `recipes.md`, also next to this file.
+**Read-only.** It queries showtimes and seat maps; it never holds, books or
+pays for a seat. **Nothing volatile is cached** — every showtime and seat
+answer is fetched live. The only thing cached is Cineplex's public API key
+(`.cineplex_key`), which the tool scrapes from cineplex.com itself.
+
+All commands below assume you first `cd` into the `scripts/` directory next to
+this file. Watch/cron templates are in `recipes.md`, also next to this file.
 
 ## Setup (run once)
-
-The only dependency is `requests`. Check, and install if missing:
 
 ```bash
 cd <path-to-this-skill>/scripts
 python3 -c "import requests" 2>/dev/null || python3 -m pip install -q requests
 ```
 
-No API key or login is needed — the tool auto-scrapes Cineplex's public API key
-at runtime and caches it in `.cineplex_key`.
+No API key, login or configuration.
 
-## The 5 commands
+## Choosing a command
 
-Always add `--json` when you (the agent) are going to parse the output.
+| Question | Command |
+|---|---|
+| Film title → `filmId` | `movies --name` |
+| Theatre name → `theatreId` | `locations --name` |
+| What's on at a theatre on a date; is a showing sold out | `showtimes` |
+| Which theatres are showing a film | `theatres` |
+| Exactly which seats are open; are the middle of G/H free | `seats` |
 
-| Command | Purpose | Key flags |
-|---------|---------|-----------|
-| `movies` | List films / resolve a title → `filmId` | `--name`, `--json` |
-| `locations` | List every theatre / resolve a name → `theatreId` | `--name`, `--json` |
-| `theatres` | Theatres showing a film near a place (with distances) | `--film` (req), `--city`/`--latitude`/`--longitude`/`--postal`, `--name`, `--experiences`, `--json` |
-| `showtimes` | Screening times for a theatre + date(s) | `--location` (req), `--date`/`--dates`, `--film`, `--experiences`, `--json` |
-| `seats` | Live seat availability for one showtime | `--theatre` (req), `--showtime` (req), `--rows`, `--middle`, `--all`, `--map`, `--json` |
+| Command | Flags |
+|---|---|
+| `movies` | `--name`, `--language`, `--json` |
+| `locations` | `--name`, `--language`, `--json` |
+| `theatres` | `--film` (req), `--city`, `--region`, `--region-code`, `--country` (default Canada), `--latitude`/`--longitude`, `--postal`, `--accuracy` (km, default 5), `--name`, `--experiences`, `--language`, `--json`. **No date** — it answers "is showing this film", not "on this day". |
+| `showtimes` | `--location` (req, a `theatreId`), `--date` or `--dates d1,d2`, `--film`, `--experiences`, `--language`, `--json` |
+| `seats` | `--theatre` (req), `--showtime` (req, a `sessionId`), `--rows G,H`, `--middle`, `--all`, `--map`, `--json` |
 
-Run `python3 cineplex_showtimes.py <command> --help` for exact flags.
+`--language en|fr` sets the language of the *response* (titles, labels). It
+does not filter to French-language screenings.
 
 ## Canonical workflow (name → IDs → times → seats)
 
-The user usually gives names, not IDs. Resolve them first:
-
 ```bash
-cd <path-to-this-skill>/scripts
-
-# 1. Film name -> filmId
-python3 cineplex_showtimes.py movies --name "Odyssey" --json
-#    -> [{ "id": 37617, "name": "The Odyssey", ... }]
-
-# 2. Theatre name -> theatreId
-python3 cineplex_showtimes.py locations --name "Vaughan" --json
-#    -> [{ "theatreId": 7408, "name": "Cineplex Cinemas Vaughan", ... }]
-
-# 3. Screenings (one or many dates) -> each session's `sessionId`
-python3 cineplex_showtimes.py showtimes --location 7408 --film 37617 \
-  --dates 7/19/2026,7/20/2026 --experiences 70mm,imax --json
-#    -> [{ "sessionId": 535317, "time": "11:00 AM", "seatsRemaining": 5, ... }]
-
-# 4. Live seat availability for a session
-python3 cineplex_showtimes.py seats --theatre 7408 --showtime 535317 --json
-#    -> { "available": 179, "isSoldOut": false, "availableSeats": [...], ... }
+python3 cineplex_showtimes.py movies --name "Odyssey" --json       # -> [{"id": <FILM_ID>, ...}]
+python3 cineplex_showtimes.py locations --name "Vaughan" --json    # -> [{"theatreId": 7408, ...}]
+python3 cineplex_showtimes.py showtimes --location 7408 --film <FILM_ID> \
+  --dates <YYYY-MM-DD>,<YYYY-MM-DD> --experiences 70mm --json       # -> [{"sessionId": <SESSION_ID>, ...}]
+python3 cineplex_showtimes.py seats --theatre 7408 --showtime <SESSION_ID> --rows G,H --middle --json
 ```
 
-Dates are `M/D/YYYY` or `YYYY-MM-DD`. `--experiences` is comma-separated
-(`70mm`, `imax`, `ultraavx`, `dolby atmos`, `3d`, `vip`, `dbox`, ...).
+Always resolve names; never reuse an ID from an earlier conversation. Session
+IDs die when the showing starts.
 
-## Common tasks
+## Exit codes
 
-- **"Is the 7pm IMAX sold out?"** → `showtimes` gives `seatsRemaining` /
-  `isSoldOut` per session directly; for exact open seats, follow with `seats`.
-- **"Find 2 middle seats in row G or H."** →
-  `seats --theatre T --showtime S --rows G,H --middle --json`, then read the
-  `matched` array (only `status: "Available"` entries unless `--all`).
-- **"Show me the seat map."** → `seats --theatre T --showtime S --map`
-  (`.` = open, `#` = taken).
-- **"Which theatres near me have it in 70mm?"** →
-  `theatres --film <id> --latitude <lat> --longitude <lon> --experiences 70mm --json`.
+Identical with and without `--json`:
 
-## Scheduled jobs / monitoring
+| Code | Meaning |
+|---|---|
+| `0` | found something |
+| `1` | query worked, nothing found — no showtimes on those dates; `seats`: sold out, or no **open** seat matched `--rows`/`--middle` |
+| `2` | usage or lookup error — bad date, unknown experience, a row not in that auditorium, unknown theatre/film/showtime id, a showtime that has already started |
+| `3` | network or API error — including an empty or malformed answer (an empty seat map is never reported as sold out) |
 
-The user may want to *watch* for tickets or specific seats (e.g. "tell me when
-G/H middle seats open up for the opening-night IMAX"). Because every command is
-one-shot and JSON-clean, it composes into polling loops and cron/launchd jobs.
-See **`recipes.md`** for ready-to-use templates:
+Only `1` means "keep waiting" in a watch. `3` means try later; `2` means stop
+and fix the command. Messages go to stderr; `--json` stdout stays clean (`[]`
+on exit 1 — for `seats`, its usual object — and empty on 2/3).
 
-- a short-lived bash polling loop,
-- a recurring `cron` / macOS `launchd` job,
-- a Python monitor that diffs availability and fires a notification.
+## `--experiences`
 
-When setting up a recurring job, always confirm the cadence with the user and
-keep polling gentle (minutes, not seconds) — this hits Cineplex's real servers.
+Comma-separated; a session matches if it has **any** of them. Case, spaces and
+punctuation don't matter, and age limits are ignored, so `70MM`, `vip`
+(= `VIP 19+`/`VIP 18+`), `d-box`, `dolby atmos` all work. Short forms: `avx`,
+`atmos`, `laser`, `standard`.
+
+Labels Cineplex uses: Regular, Recliner, UltraAVX, Dolby Atmos, D-BOX, 3D,
+Laser Projection, VIP 19+, VIP 18+, IMAX, ScreenX, 70mm, 4DX, Clubhouse.
+One screening often carries several (`IMAX` + `70mm`, `UltraAVX` + `Dolby Atmos`).
+
+- **`showtimes`** filters on the session's own labels, so every label above
+  works. A token that is neither one of those labels nor on any session in
+  the response exits 2 rather than returning nothing; a label Cineplex adds
+  later works on any day it is actually playing.
+  To mean "IMAX **and** 70mm", filter on `70mm` and check `experience` in the output.
+- **`theatres`** can only filter server-side. It supports every label above
+  **except Dolby Atmos and Clubhouse** (exit 2 — use `showtimes --experiences`
+  per theatre instead).
 
 ## Gotchas
 
 - `seats --json` returns an **object**; the other four return a **JSON array**.
-- `matched` only appears in `seats --json` when `--rows`, `--middle`, or `--all`
-  is passed.
-- `locations`/`theatres` records use `theatreId`; `showtimes` session records
-  use `sessionId` (the vistaSessionId) — that's what `seats --showtime` wants.
-- IDs are stable but the catalogue changes; always re-resolve names to IDs
-  rather than hard-coding, especially in scheduled jobs.
-- If a call ever fails with an auth error, delete `.cineplex_key` and retry —
-  the tool re-scrapes a fresh key automatically.
+- `matched` appears in `seats --json` only when `--rows`, `--middle` or `--all`
+  is passed. `--all` includes taken seats in `matched`; the exit code still
+  counts only open ones.
+- `--middle` is the central third of each row, by seat count.
+- `seatsRemaining` in `showtimes` is enough for "is it sold out?"; use `seats`
+  only when rows or specific seats matter.
+- `distanceKm` in `locations`/`theatres` is measured from wherever the request
+  comes from (IP geolocation), not from `--city`. Don't report it as distance
+  from the user.
+- A stale API key is handled automatically: a 401 triggers one re-scrape and
+  retry. Only if that also fails do you get exit 3.
+
+## Reporting back
+
+Lead with the answer: "Yes — 8 seats left for the 6:45 PM VIP, all in the
+front rows AA and A", not a JSON dump. Quote the time, the format
+(`IMAX · 70mm`), the auditorium and the rows that are open. For "is it sold
+out", say how many seats are left. When a watch is set up, say what it checks,
+how often, how it stops, and that it never books. A cron/launchd job stops
+itself after the first hit (a sentinel file, see `recipes.md`) — tell the user
+to remove the job afterwards, or once the showing has started.
+
+## Scheduled jobs / monitoring
+
+Every command is one-shot with stable exit codes, so it composes into polling
+loops and cron/launchd jobs. See **`recipes.md`**. Always confirm the cadence
+with the user and keep polling gentle (minutes, not seconds) — these are
+Cineplex's live servers.

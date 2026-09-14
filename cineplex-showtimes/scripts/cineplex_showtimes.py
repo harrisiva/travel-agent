@@ -10,6 +10,13 @@ so this can be dropped into an AI skill as a tool.
   seats       Seat availability for one showtime (--rows / --middle / --all / --map).
   movies      All films in the catalogue (name -> filmId, with --name search).
   locations   All theatres, no film needed (with --name search).
+
+Exit codes (identical with --json):
+  0  found something
+  1  query worked, nothing found (no showtimes; seats sold out, or no open
+     seat matched --rows/--middle)
+  2  usage or lookup error (bad date, unknown experience/row, unknown id)
+  3  network or API error
 """
 from __future__ import annotations
 
@@ -27,6 +34,8 @@ from cineplex_api import (  # noqa: F401
     fetch_movies, fetch_all_theatres, summarize_seats, filter_seats,
     flatten_showtimes, flatten_theatres, flatten_movies,
 )
+
+EXIT_OK, EXIT_NONE, EXIT_USAGE, EXIT_NET = 0, 1, 2, 3
 
 
 # --------------------------------------------------------------------------- #
@@ -172,18 +181,39 @@ def _run_showtimes(args) -> int:
         dates = [d.strip() for d in args.dates.split(",") if d.strip()]
     else:
         dates = [args.date if args.date else date.today()]
+    # Reject every bad date up front, before spending a request on the good ones.
+    for d in dates:
+        api.format_api_date(d)
 
     session = api.new_session()
     results = [api.fetch_showtimes(
         location_id=args.location, date_value=d, film_id=args.film,
-        experiences=args.experiences, language=args.language, session=session)
+        language=args.language, session=session)
         for d in dates]
+    # Check tokens only now, against built-in labels plus every label in the
+    # responses: a format Cineplex adds later is accepted on days it plays.
+    api.check_experiences(args.experiences, results)
+    results = [api.filter_showtimes_by_experience(data, args.experiences, strict=False)
+               for data in results]
+    records = [rec for data in results for rec in api.flatten_showtimes(data)]
+
+    # An unknown locationId answers 204, exactly like a date with nothing on.
+    # Only when every date came back empty is it worth one call to tell them apart.
+    if not records:
+        known = {t["theatreId"] for t in api.flatten_theatres(
+            api.fetch_all_theatres(session=session))}
+        if str(args.location) not in {str(k) for k in known}:
+            raise api.UsageError(
+                f"no theatre with id {args.location}; resolve it with `locations --name`")
 
     if args.json:
-        _print_json([rec for data in results for rec in api.flatten_showtimes(data)])
+        _print_json(records)
     else:
-        print("\n\n".join(format_showtimes(data) for data in results))
-    return 0
+        print("\n\n".join(
+            format_showtimes(data) if data
+            else f"No showtimes on {api.format_api_date(d)}."
+            for d, data in zip(dates, results)))
+    return EXIT_OK if records else EXIT_NONE
 
 
 def _run_theatres(args) -> int:
@@ -193,15 +223,16 @@ def _run_theatres(args) -> int:
         latitude=args.latitude, longitude=args.longitude,
         postal_code=args.postal, accuracy_km=args.accuracy,
         experiences=args.experiences, language=args.language)
+    flat = api.flatten_theatres(data, name=args.name)
 
     # JSON is always the flat list; human output is grouped unless --name filters.
     if args.json:
-        _print_json(api.flatten_theatres(data, name=args.name))
+        _print_json(flat)
     elif args.name:
-        print(_format_flat_theatres(api.flatten_theatres(data, name=args.name)))
+        print(_format_flat_theatres(flat))
     else:
         print(format_theatres(data))
-    return 0
+    return EXIT_OK if flat else EXIT_NONE
 
 
 def _run_movies(args) -> int:
@@ -216,7 +247,7 @@ def _run_movies(args) -> int:
             [[m["id"], m["name"],
               f"{m['runtimeInMinutes']} min" if m["runtimeInMinutes"] else "",
               m["releaseDate"] or ""] for m in flat]))
-    return 0
+    return EXIT_OK if flat else EXIT_NONE
 
 
 def _run_locations(args) -> int:
@@ -226,18 +257,48 @@ def _run_locations(args) -> int:
         _print_json(flat)
     else:
         print(_format_flat_theatres(flat))
-    return 0
+    return EXIT_OK if flat else EXIT_NONE
+
+
+def seats_exit_code(summary, matched) -> int:
+    """0 if an open seat is there to be had, else 1.
+
+    With a filter (--rows/--middle), only an *open* matched seat counts, so
+    `--rows G,H --all` still exits 1 when G and H are full."""
+    if summary["isSoldOut"] or not summary["available"]:
+        return EXIT_NONE
+    if matched is not None and not any(m["status"] == "Available" for m in matched):
+        return EXIT_NONE
+    return EXIT_OK
 
 
 def _run_seats(args) -> int:
     session = api.new_session()
     layout = api.fetch_seat_layout(args.theatre, args.showtime, session=session)
     availability = api.fetch_seat_availability(args.theatre, args.showtime, session=session)
+    # A showtime that has started comes back with an empty availability map,
+    # which would otherwise read as "every seat taken".
+    if (availability or {}).get("isPostShowtime"):
+        raise api.UsageError(f"showtime {args.showtime} has already started or ended")
     summary = api.summarize_seats(layout, availability)
+    # Otherwise an empty layout or availability map is not "sold out" — every
+    # seat would be "Unknown" and a watch would keep waiting on a broken answer.
+    if not summary["totalSeats"]:
+        raise api.ApiError(f"showtime {args.showtime}: seat layout came back empty")
+    if not (availability or {}).get("seatAvailabilities"):
+        raise api.ApiError(f"showtime {args.showtime}: seat availability came back empty")
 
     # Compute a filtered seat list when the user asked for one. --all on its own
     # means "list every seat" (with statuses), so it also triggers the filter.
     rows = [r.strip() for r in args.rows.split(",") if r.strip()] if args.rows else None
+    if rows:
+        # A row that doesn't exist would match nothing forever — refuse it.
+        present = {str(r["label"]).upper() for r in summary["rows"]}
+        missing = [r for r in rows if r.upper() not in present]
+        if missing:
+            raise api.UsageError(
+                f"no row {', '.join(missing)} in this auditorium; rows are "
+                + ", ".join(r["label"] for r in summary["rows"]))
     matched = None
     if rows or args.middle or args.all:
         matched = api.filter_seats(layout, availability, rows=rows,
@@ -254,7 +315,7 @@ def _run_seats(args) -> int:
             print(_render_table(["Row", "Seat", "Status"],
                                 [[m["row"], m["seat"], m["status"]] for m in matched])
                   if matched else "  (none)")
-    return 0
+    return seats_exit_code(summary, matched)
 
 
 # --------------------------------------------------------------------------- #
@@ -269,7 +330,8 @@ def build_parser() -> argparse.ArgumentParser:
     st.add_argument("--date", default=None, help="M/D/YYYY or YYYY-MM-DD. Default: today")
     st.add_argument("--dates", default=None, help="Comma-separated dates (overrides --date)")
     st.add_argument("--film", default=None, help="filmId. Omit to list all films")
-    st.add_argument("--experiences", default=None, help="Comma-separated, e.g. 70mm,imax")
+    st.add_argument("--experiences", default=None,
+                    help="Comma-separated, ANY of (case-insensitive), e.g. imax,ultraavx,vip")
     st.add_argument("--language", default="en")
     st.add_argument("--json", action="store_true", help="Flat JSON session records")
     st.set_defaults(func=_run_showtimes)
@@ -285,7 +347,8 @@ def build_parser() -> argparse.ArgumentParser:
     th.add_argument("--postal", default=None, help="postalCode, e.g. N2T")
     th.add_argument("--accuracy", type=int, default=5, help="accuracyKm. Default: 5")
     th.add_argument("--name", default=None, help="Filter theatres by name substring, e.g. Vaughan")
-    th.add_argument("--experiences", default=None, help="Comma-separated, e.g. 70mm,imax")
+    th.add_argument("--experiences", default=None,
+                    help="Comma-separated, ANY of, e.g. imax,70mm (no Dolby Atmos/Clubhouse)")
     th.add_argument("--language", default="en")
     th.add_argument("--json", action="store_true", help="Flat JSON theatre records")
     th.set_defaults(func=_run_theatres)
@@ -328,16 +391,36 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if not getattr(args, "command", None):
         parser.print_help()
-        return 1
+        return EXIT_USAGE
 
     try:
         return args.func(args)
+    except api.UsageError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return EXIT_USAGE
     except requests.HTTPError as exc:
-        print(f"Request failed: {exc}", file=sys.stderr)
-        return 1
-    except requests.RequestException as exc:
+        return http_error_exit(exc)
+    except requests.RequestException as exc:  # includes bad JSON from the API
         print(f"Network error: {exc}", file=sys.stderr)
-        return 1
+        return EXIT_NET
+    except api.ApiError as exc:
+        print(f"API error: {exc}", file=sys.stderr)
+        return EXIT_NET
+    except Exception as exc:  # response shape drift etc. — never exit 1 ("keep waiting")
+        print(f"Unexpected error ({type(exc).__name__}): {exc}", file=sys.stderr)
+        return EXIT_NET
+
+
+def http_error_exit(exc) -> int:
+    """404 (unknown film/showtime id) and 400 (rejected input) are lookup
+    errors; everything else — 401 after the re-scrape, 429, 5xx — is the API."""
+    status = getattr(exc.response, "status_code", None)
+    if status in (400, 404):
+        body = (exc.response.text or "").strip()[:200]
+        print(f"Error: {status} from Cineplex: {body}", file=sys.stderr)
+        return EXIT_USAGE
+    print(f"API error: {exc}", file=sys.stderr)
+    return EXIT_NET
 
 
 if __name__ == "__main__":

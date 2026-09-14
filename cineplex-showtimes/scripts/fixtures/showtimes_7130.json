@@ -1,0 +1,340 @@
+[
+ {
+  "theatre": "Cineplex Cinemas Yonge-Dundas and VIP",
+  "theatreId": 7130,
+  "dates": [
+   {
+    "startDate": "2026-09-11T00:00:00",
+    "movies": [
+     {
+      "id": 38160,
+      "presentationType": "Film Presentation",
+      "name": "Practical Magic 2",
+      "filmUrl": "practical-magic-2",
+      "isEvent": false,
+      "runtimeInMinutes": 130,
+      "smallPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/38160_130_193.jpg",
+      "mediumPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/38160_320_470.jpg",
+      "largePosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/38160_768_1024.jpg",
+      "genres": [
+       "Comedy"
+      ],
+      "experiences": [
+       {
+        "experienceTypes": [
+         "VIP 19+"
+        ],
+        "order": 2,
+        "isCcEnabled": true,
+        "isDsEnabled": true,
+        "sessions": [
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=446546&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=446546&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=446546&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=446546&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=446546&a=0000000001&l=7130&m=practical-magic-2&ss=False",
+          "showtimeShareKey": "v:446546_t:7130_a:0000000001",
+          "vistaSessionId": 446546,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T18:45:00",
+          "showStartDateTimeUtc": "2026-09-11T22:45:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 8,
+          "isSoldOut": false,
+          "auditorium": "VIP 3 (19+)"
+         },
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=446547&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=446547&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=446547&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=446547&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=446547&a=0000000001&l=7130&m=practical-magic-2&ss=False",
+          "showtimeShareKey": "v:446547_t:7130_a:0000000001",
+          "vistaSessionId": 446547,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T21:45:00",
+          "showStartDateTimeUtc": "2026-09-12T01:45:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 31,
+          "isSoldOut": false,
+          "auditorium": "VIP 3 (19+)"
+         }
+        ]
+       },
+       {
+        "experienceTypes": [
+         "Regular"
+        ],
+        "order": 3,
+        "isCcEnabled": true,
+        "isDsEnabled": true,
+        "sessions": [
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=449296&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449296&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449296&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=449296&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=449296&a=0000000001&l=7130&m=practical-magic-2&ss=False",
+          "showtimeShareKey": "v:449296_t:7130_a:0000000001",
+          "vistaSessionId": 449296,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T13:50:00",
+          "showStartDateTimeUtc": "2026-09-11T17:50:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 280,
+          "isSoldOut": false,
+          "auditorium": "Aud #12"
+         },
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=446543&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=446543&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=446543&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=446543&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=446543&a=0000000001&l=7130&m=practical-magic-2&ss=False",
+          "showtimeShareKey": "v:446543_t:7130_a:0000000001",
+          "vistaSessionId": 446543,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T16:10:00",
+          "showStartDateTimeUtc": "2026-09-11T20:10:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 275,
+          "isSoldOut": false,
+          "auditorium": "Aud #3"
+         }
+        ]
+       }
+      ],
+      "brightcoveVideoId": "ref:Practical Magic 2 EN Trailer 2",
+      "localRating": "PG",
+      "ratingDescription": "Parental guidance advised.",
+      "warnings": [
+       "Violence",
+       "Coarse Language"
+      ],
+      "languageCode": "EN",
+      "language": "English",
+      "subtitleLanguage": "",
+      "marketLanguageCode": "EN",
+      "detailPageUrl": "https://www.cineplex.com/Movie/practical-magic-2",
+      "passesAllowed": false,
+      "hasPosterImage": true
+     },
+     {
+      "id": 37997,
+      "presentationType": "Film Presentation",
+      "name": "Spider-Man: Brand New Day",
+      "filmUrl": "spiderman-brand-new-day",
+      "isEvent": false,
+      "runtimeInMinutes": 145,
+      "smallPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37997_130_193.jpg",
+      "mediumPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37997_320_470.jpg",
+      "largePosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37997_768_1024.jpg",
+      "genres": [
+       "Action",
+       "Adventure"
+      ],
+      "experiences": [
+       {
+        "experienceTypes": [
+         "UltraAVX",
+         "3D",
+         "Dolby Atmos"
+        ],
+        "order": 3,
+        "isCcEnabled": true,
+        "isDsEnabled": true,
+        "sessions": [
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=449310&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449310&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449310&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=449310&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=449310&a=0000000001&l=7130&m=spiderman-brand-new-day&ss=False",
+          "showtimeShareKey": "v:449310_t:7130_a:0000000001",
+          "vistaSessionId": 449310,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T15:45:00",
+          "showStartDateTimeUtc": "2026-09-11T19:45:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 394,
+          "isSoldOut": false,
+          "auditorium": "AVX #7"
+         },
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=449312&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449312&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449312&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=449312&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=449312&a=0000000001&l=7130&m=spiderman-brand-new-day&ss=False",
+          "showtimeShareKey": "v:449312_t:7130_a:0000000001",
+          "vistaSessionId": 449312,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T22:15:00",
+          "showStartDateTimeUtc": "2026-09-12T02:15:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 397,
+          "isSoldOut": false,
+          "auditorium": "AVX #7"
+         }
+        ]
+       },
+       {
+        "experienceTypes": [
+         "UltraAVX",
+         "D-BOX",
+         "Dolby Atmos"
+        ],
+        "order": 4,
+        "isCcEnabled": true,
+        "isDsEnabled": true,
+        "sessions": [
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=449545&dbox=True",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449545&VISTAHOCategoryCode=0000000004&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449545&VISTAHOCategoryCode=0000000004&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=449545&VISTAHOCategoryCode=0000000004&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=449545&a=0000000004&l=7130&m=spiderman-brand-new-day&ss=False",
+          "showtimeShareKey": "v:449545_t:7130_a:0000000004",
+          "vistaSessionId": 449545,
+          "areaCode": "0000000004",
+          "showStartDateTime": "2026-09-11T12:30:00",
+          "showStartDateTimeUtc": "2026-09-11T16:30:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 392,
+          "isSoldOut": false,
+          "auditorium": "AVX #7"
+         },
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=449311&dbox=True",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449311&VISTAHOCategoryCode=0000000004&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449311&VISTAHOCategoryCode=0000000004&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=449311&VISTAHOCategoryCode=0000000004&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=449311&a=0000000004&l=7130&m=spiderman-brand-new-day&ss=False",
+          "showtimeShareKey": "v:449311_t:7130_a:0000000004",
+          "vistaSessionId": 449311,
+          "areaCode": "0000000004",
+          "showStartDateTime": "2026-09-11T19:00:00",
+          "showStartDateTimeUtc": "2026-09-11T23:00:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 383,
+          "isSoldOut": false,
+          "auditorium": "AVX #7"
+         }
+        ]
+       }
+      ],
+      "brightcoveVideoId": "ref:Spider-Man Brand New Day EN Trailer 5",
+      "localRating": "PG",
+      "ratingDescription": "Parental guidance advised.",
+      "warnings": [
+       "Violence",
+       "Coarse Language"
+      ],
+      "languageCode": "EN",
+      "language": "English",
+      "subtitleLanguage": "",
+      "marketLanguageCode": "EN",
+      "detailPageUrl": "https://www.cineplex.com/Movie/spiderman-brand-new-day",
+      "passesAllowed": true,
+      "hasPosterImage": true
+     },
+     {
+      "id": 37617,
+      "presentationType": "Film Presentation",
+      "name": "The Odyssey",
+      "filmUrl": "the-odyssey",
+      "isEvent": false,
+      "runtimeInMinutes": 172,
+      "smallPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37617_130_193.jpg",
+      "mediumPosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37617_320_470.jpg",
+      "largePosterImageUrl": "https://mediafiles.cineplex.com/Central/Film/Posters/37617_768_1024.jpg",
+      "genres": [
+       "Action"
+      ],
+      "experiences": [
+       {
+        "experienceTypes": [
+         "IMAX"
+        ],
+        "order": 3,
+        "isCcEnabled": true,
+        "isDsEnabled": true,
+        "sessions": [
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=449305&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449305&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449305&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=449305&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=449305&a=0000000001&l=7130&m=the-odyssey&ss=False",
+          "showtimeShareKey": "v:449305_t:7130_a:0000000001",
+          "vistaSessionId": 449305,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T12:30:00",
+          "showStartDateTimeUtc": "2026-09-11T16:30:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 314,
+          "isSoldOut": false,
+          "auditorium": "IMAX #6"
+         },
+         {
+          "seatMapUrl": "https://www.cineplex.com/en-Mobile/ticketing/preview?theatreId=7130&showtimeId=449307&dbox=False",
+          "ticketingUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449307&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "ticketingRedesignUrl": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/redirect-to-ticketing?VistaSessionId=449307&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "getTicketingUrlApi": "https://apis.cineplex.com/prod/ticketing/api/v1/routing/ticketing-url?VistaSessionId=449307&VISTAHOCategoryCode=0000000001&LocationId=7130&IsSeriesShowtime=False",
+          "deeplinkUrl": "https://apis.cineplex.com/prod/cpx/theatrical/deeplink?s=449307&a=0000000001&l=7130&m=the-odyssey&ss=False",
+          "showtimeShareKey": "v:449307_t:7130_a:0000000001",
+          "vistaSessionId": 449307,
+          "areaCode": "0000000001",
+          "showStartDateTime": "2026-09-11T18:50:00",
+          "showStartDateTimeUtc": "2026-09-11T22:50:00Z",
+          "isInThePast": false,
+          "isReservedSeating": true,
+          "isShowtimeEnabledOnline": true,
+          "seatsRemaining": 240,
+          "isSoldOut": false,
+          "auditorium": "IMAX #6"
+         }
+        ]
+       }
+      ],
+      "brightcoveVideoId": "ref:The Odyssey EN Trailer 3",
+      "localRating": "PG",
+      "ratingDescription": "Parental guidance advised.",
+      "warnings": [
+       "Violence",
+       "Not Recommended for Young Children",
+       "Coarse Language",
+       "Photosensitivity Warning"
+      ],
+      "languageCode": "EN",
+      "language": "English",
+      "subtitleLanguage": "",
+      "marketLanguageCode": "EN",
+      "detailPageUrl": "https://www.cineplex.com/Movie/the-odyssey",
+      "passesAllowed": true,
+      "hasPosterImage": true
+     }
+    ]
+   }
+  ]
+ }
+]

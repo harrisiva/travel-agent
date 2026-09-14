@@ -1,0 +1,320 @@
+---
+name: kayak-browse
+description: Compare rental cars and cheapest-flight-dates across HUNDREDS of providers at once through KAYAK's affiliate APIs, and search hotels — the one thing here no keyless skill in this repo covers. Use for a broad multi-provider rental-car comparison, finding a vehicle to sleep in for a road trip, checking whether shifting rental dates helps, a one-way rental, or hotels in a date range. Do NOT use this for a plain "price a rental car" or "what does this flight cost / cheapest date to fly" question — enterprise-rentals and google-flights answer those without any key; reach for this skill only when the user explicitly wants a cross-provider comparison, or wants hotels. REQUIRES a KAYAK affiliate API key, which KAYAK issues only to approved partners — without one every command exits 4 and answers nothing. Never verified against the live API. Read-only — it never books, holds or pays for anything.
+---
+
+# kayak-browse
+
+> **Status: requires an API key, and has never run against the live API.**
+>
+> **Key required.** KAYAK issues affiliate keys only to approved partners, by
+> email, after a business application. Without one, every command exits `4`
+> and this skill can answer nothing. There is no keyless mode and no demo
+> mode — see *Why there is no keyless path* at the end of this file.
+>
+> **Unverified.** Not one request has ever been sent to KAYAK from this code.
+> The 60 checks in the self-check run against fixtures written from KAYAK's
+> published RAML specification, so they prove the tool is consistent with the
+> spec — not that the spec was read correctly. Treat every behaviour here as
+> untested until someone runs it with a real key, and re-record the fixtures
+> against live responses as the first task when that happens.
+
+A read-only client for KAYAK's affiliate search APIs: cars, hotels, place
+lookup and cheapest-date flight insights. One search covers hundreds of
+providers, which is why this exists — the direct supplier sites (Avis, Budget)
+answer `403` behind bot protection, so an aggregator API is the only way in.
+
+**It cannot book anything.** There is no endpoint here that holds, reserves,
+pays for or cancels a car, a room or a seat, and it has no access to the user's
+KAYAK account or payment details.
+
+## Setup
+
+The only dependency is `requests`:
+
+```bash
+python3 -c "import requests" 2>/dev/null || python3 -m pip install -q requests
+```
+
+**This skill needs an API key**, which KAYAK emails to the partner on signup —
+unlike the other skills in this repo, it is not self-contained. Resolution
+order: `--api-key` → `$KAYAK_API_KEY` → `--key-file <path>` → a key stored by
+`login`.
+
+If the user has no key, say so plainly. Do not go looking for one, and do not
+present the situation as "no cars available".
+
+**Getting the key to the tool, best first:**
+
+1. **Claude Code:** `export KAYAK_API_KEY=…` in their shell. Nothing enters the
+   transcript.
+2. **claude.ai:** ask the user to attach the key as a `.txt` file, then
+   `python3 <skill>/scripts/kayak.py login --key-file <uploaded path>`. It is
+   validated with one cheap call and stored, so later commands need no flag.
+3. **Pasting into chat** works, but **tell the user first, in one sentence,
+   that the key will stay in the conversation transcript** and can be
+   re-requested from KAYAK if they would rather rotate it. Then
+   `login --key-file -` reading from stdin.
+
+Invoke from any directory by absolute path:
+
+```bash
+python3 <path-to-this-skill>/scripts/kayak.py <command> ...
+```
+
+## Choosing a command
+
+| The user wants | Command |
+|---|---|
+| "Does the key work?" — or any command just exited `4` | `check` |
+| An airport / city id from a name | `places` |
+| "Cheapest car at JFK, Dec 20–23" — one pickup, one date pair | `cars` |
+| "Any cheaper if I shift the dates?" — several date pairs | `sweep` |
+| "When in March is it cheapest to fly to Lisbon?" | `when` |
+| "Hotels in Austin those two nights" | `hotels` |
+
+Resolve names with `places` first; never hard-code a location id. `cars` and
+`sweep` are the same search — `sweep` runs it across a date window under a
+`--max-requests` ceiling. The cars endpoint allows 250 requests an hour, so
+start narrow.
+
+Add `--json` whenever you are going to parse the output.
+
+## Exit codes
+
+Identical under `--json`. **`1` is the only code that means "keep waiting".**
+
+| Code | Meaning |
+|---|---|
+| `0` | found something, and the search finished |
+| `1` | the search finished and nothing matched |
+| `2` | usage, lookup or budget error |
+| `3` | network or API error |
+| `4` | **API key missing, rejected or expired** |
+| `5` | the search had not finished — results are partial, and may be empty |
+
+`4` is never "nothing available". Sandbox keys expire three months after issue.
+On `4`, say: *"This skill needs a KAYAK affiliate API key, which KAYAK emails
+to the partner on signup"* — or, if a key was working before, that it has
+expired. Then offer the two ways to supply one. Never report an empty result
+for a command that exited `4`.
+
+`5` usually means the rows are real but the search had not finished — report
+them with that caveat and offer to re-run, never as a final answer. It can also
+mean zero rows: `hotels` without `--complete` exits `5` when the search reports
+itself incomplete (`isComplete: false`) and nothing has come back yet, which is
+not the same claim as a completed search that found nothing (`1`). Either way,
+`5` is never "nothing available" — it is "this hasn't finished".
+
+**`sweep` and days that were never checked.** A sweep in which no day could be
+checked exits `3` (at least one day failed on the network) or `5` (every day
+timed out), never `1`. When only *some* days failed, the exit is `1` and
+`meta.days_failed` says how many of `meta.days_scanned` were never checked, with
+the same count named in the human output. Do not call the range confirmed empty
+while `days_failed` is non-zero — say which days went unchecked and offer to
+re-run them.
+
+## Sandbox prices are fake. This is the most important section here.
+
+Every result carries `priceIsReal`. Against the sandbox host it is `false`, and
+the numbers are **mock data generated by KAYAK for development** — not quotes,
+not estimates, not correlated with what any car costs.
+
+**When `priceIsReal` is false you must not state, imply, round, convert, total,
+compare or rank any figure as money a user could pay.** That includes
+"roughly", "around", "about $X a day" and "in the ballpark of". There is no
+safe hedge: the number carries no information about reality, so any hedge
+attached to it is still a fabricated quote.
+
+**When the user asks "so how much is the car?" and sandbox is the only source:**
+
+> I can't give you a price. This is running against KAYAK's sandbox, where the
+> prices are mock data — generated for testing, with no relationship to real
+> rates. Quoting one would mean inventing a number for you.
+>
+> What this search does tell you is real: which agencies serve JFK on those
+> dates, the car classes they have, the mileage caps, the cancellation terms,
+> and which listings are opaque. For an actual price you'd need production API
+> access, or check kayak.com directly.
+
+Then give the structure — agencies, classes, terms — because that part is
+genuine and is what a sandbox is for. If the user pushes for "just a rough
+idea", repeat that the number is fabricated and point them at kayak.com. Do not
+soften it into a range.
+
+The tool enforces this: `cars`, `hotels` and `when` all hide the price column
+in sandbox mode, and `sweep` refuses outright with exit `2`. `--sandbox-ok`
+reveals the columns on `cars`, `hotels` and `when` for development.
+**Do not reach for `--sandbox-ok` to satisfy a user asking for a price —
+passing it does not make the number real.**
+
+## "Cheapest" is a word with a precondition
+
+Every result carries `status` and `complete`. **The words "cheapest", "best
+price" and "lowest" are permitted only when `complete` is `true`.** Otherwise
+say "cheapest of what had come back after N seconds" and offer to re-run.
+
+If you passed `--until second-phase` and it was reached, the exit is `0`: the
+major providers are in and you may present the rows as a working answer, still
+without the word "cheapest".
+
+**This applies to `hotels` too, and it is easy to assume otherwise.** The
+hotels endpoint is a GET, but it is not a finished answer: it returns whatever
+providers have reported so far and says which it was in `isComplete`. `meta`
+carries `complete` and `partial` exactly as `cars` does. Pass `--complete` to
+insist on a finished search — the CLI then polls the API's `202 Accepted` retry
+loop and exits `5` with the partial rows if the wall clock runs out first.
+Without it you get exit `0` and `meta.partial: true` **when rows came back**,
+which is a fine answer as long as you do not call the lowest rate in it "the
+cheapest". If nothing has come back yet, the exit is `5`, not `0` — an empty,
+still-searching response is not the same claim as a completed search that
+found nothing.
+
+**A "cheapest" claim also assumes the default `--sort price`.** Under
+`--sort distance` the rows come back in the API's own order, and the first row
+is the nearest, not the cheapest.
+
+## Other things that change the answer
+
+**Totals are for the whole rental.** KAYAK's own API defaults to per-day; this
+CLI overrides that to totals. Say "total for N days" when you quote one, since
+it will not match a per-day figure quoted elsewhere. `--per-day` switches back.
+
+**Opaque, peer-to-peer and delivery agencies.** The cheapest row is frequently
+one of these. **Never present one as the winner without saying what is
+hidden:** *opaque* — the agency's name is not revealed until booking is
+confirmed; *peer-to-peer* — the exact pickup point is revealed only after
+booking; *delivery* — the car is brought to the user. A user who books an
+opaque row expecting Hertz has been misled by the summary, not by KAYAK. They
+are labelled `[opaque]` / `[p2p]` in the table and in `agency_type`.
+
+**`--max-poll-seconds` defaults to 25**, which suits claude.ai, where a long
+bash call risks being cut off with nothing to show. In Claude Code use `90` for
+a more complete search.
+
+**`--limit` trims `--json` as well as the table**, so it is the lever for
+keeping a large response out of context. The default differs per command:
+`cars` and `hotels` default to **10**, `sweep` to **20**, `when` to **15**.
+Rows are ranked before they are trimmed — under `--sort price` the cheapest
+offer is in the first row even when the API returned it fortieth — and
+`meta.ranked_by` says which order you are looking at; `meta.kept` (`cars`) /
+`meta.matched` (`hotels`) still reports how many actually matched, and
+`meta.truncated` says whether you are seeing everything. `--full` swaps the
+trimmed projection for the API's own `results[]` rows, with the `agencies` /
+`providers` / `carLocations` maps on `meta.maps` — reach for it only when a
+field you need is missing from the projection.
+
+**`hotels` wants an EntityKey, not an id.** `--destination` takes
+`kplace:31097` (a city or region) or `khotel:2589314` (one property) — a type
+prefix and an identifier joined by a colon. Resolve it from `entity_key` in
+`places <name> --for hotels --json`, or compose it from the id that row carries.
+`--id <EntityKey>` addresses one hotel directly. Rates are **one room, two
+adults** (`meta.occupancy`); there is no party-size flag, so never present one
+as a per-person or family price.
+
+**`when` takes two months, not one.** `--from` and `--to` are both required and
+both `YYYY-MM`; the window is inclusive. The API's documented maximum is 2
+months for the default `--aggregation day` and 12 for `--aggregation month`,
+and a wider range exits `2` rather than being sent — the response cannot
+distinguish "range too wide" from "no prices". `--origin` / `--destination`
+take an IATA code or a numeric place id (use the place id for a metro area).
+`--round-trip` and `--non-stop` narrow the question; `--non-stop` also disables
+KAYAK's price prediction, so every row it returns is a price someone saw. Check
+`meta.origin_name` and `meta.destination_name` before reporting — a code the
+API resolved to a metro area answers a different question than the one asked.
+A row's `predicted: true` means a model's guess rather than a quoted fare: say
+"predicted" out loud whenever you use one.
+
+**Filters are applied after the fetch, and rejections are counted.** An empty
+result reports which filter emptied it — pass that on. "0 matched;
+`--min-passengers 7` dropped 41" tells the user what to relax, where "no cars
+found" is a dead end.
+
+## Reporting back
+
+**Lead with the answer in one sentence:** the option that best matches what the
+user actually asked for, its total for the whole rental, and the agency. Then
+three to five rows. Never dump the list — the default `--limit 10` is already
+more than a person wants to read.
+
+Each row in plain words: brand and class as a human would say it ("Toyota RAV4
+or similar — SUV, automatic, 5 seats, 3 bags"); never a SIPP code or a raw enum
+like `doors45`. Total for the trip, then the per-day figure, saying how many
+days. The agency, and the pickup point if it is not the terminal the user named
+— off-airport with a shuttle is a real cost in time.
+
+For the row you recommend, always state these four, because they are where a
+cheap row turns expensive:
+
+- **Mileage** — unlimited, or the cap. A 200 km/day cap is usually the wrong
+  recommendation for a road trip; say so rather than ranking on price alone.
+- **Cancellation** — free until N hours before pickup, or the fee. Say
+  "non-refundable" out loud.
+- **Credit card required** — debit-only travellers get turned away at the
+  counter.
+- **Driver fees** — anything in `fees` (young or senior driver), added into the
+  total, not buried.
+
+Flag the agency type *before* recommending, never after.
+
+If the user gave constraints (automatic, unlimited mileage, sleepable, free
+cancellation), say which rows meet all of them, and which constraint you
+relaxed and why. Silently dropping a constraint to surface a cheaper car is the
+failure mode here.
+
+Close with the booking link, and state plainly that this skill **cannot book
+anything** — the user finishes on KAYAK, and price and availability can change
+between this search and their checkout. Never say "booked", "reserved" or
+"I've got you a car"; say "here's the link to book it."
+
+## Longer workflows
+
+`recipes.md`, next to this file, has the watch loop, one-way and multi-city
+searches, working with `--json`, and how to exercise the empty-result path.
+
+## Verifying the install
+
+```bash
+python3 <path-to-this-skill>/scripts/test_kayak.py --offline   # no network, no key
+python3 <path-to-this-skill>/scripts/test_kayak.py             # adds live calls
+```
+
+Note that the fixtures are **synthetic**, built from KAYAK's published RAML
+spec rather than captured from the live API, because no key existed when this
+was written. They prove the parser handles the shapes we anticipated, not the
+ones we did not. Re-capturing them against a real key is the first thing worth
+doing once access exists.
+
+## Why there is no keyless path
+
+Asked and answered, so nobody re-runs the investigation:
+
+- **KAYAK's website is not an alternative.** `robots.txt` says
+  `Disallow: /cars/` for `User-agent: *`. KAYAK separately whitelists
+  `/i/api/search/v1/hotels/poll` by name — a poll endpoint of exactly the same
+  shape, for a different vertical — with no cars equivalent anywhere in the
+  file. That is a deliberate line, not an oversight.
+- **The allowed hotels endpoint is unreachable anyway.** Its session credential
+  comes from `/s/run/fpc/context` (`Disallow: /s/`) and its `searchId` from a
+  `/hotels/<query>` results page (`Disallow: /hotels/`). The two `Allow`s
+  cannot be closed from allowed paths alone.
+- **A browser does not change this.** Driving a real browser with Playwright
+  reaches the data, but `robots.txt` governs automated access rather than
+  transport; the request is the same request. It also cannot run on claude.ai.
+- **Sixteen other hosts were probed with an honest plain client at the time** —
+  aggregators, suppliers, regional operators — and every one was
+  robots-disallowed, WAF-blocked, or an empty JavaScript shell. That
+  investigation is why `enterprise-rentals` and `google-flights` exist as
+  separate skills: each found its own narrower keyless route (Enterprise's own
+  branch catalogue with live prices; Google Flights' embedded data payload)
+  rather than KAYAK's. Neither replaces what this skill is for — comparing
+  hundreds of providers' rental-car prices at once, or searching hotels — so
+  KAYAK's own breadth and its hotels vertical still have no keyless route.
+- **There is no official KAYAK AI integration.** No MCP server, no Claude
+  skill; `/.well-known/mcp.json` and `/.well-known/ai-plugin.json` both 404.
+  Apparent hits on `mcp.kayak.com` are wildcard DNS — a nonsense subdomain
+  answers 200 too.
+
+The affiliate API is the only sanctioned route to KAYAK's own data — its
+cross-provider comparison and its hotels search. That is why this skill takes
+a key, and why it is the one skill in this repo that does.

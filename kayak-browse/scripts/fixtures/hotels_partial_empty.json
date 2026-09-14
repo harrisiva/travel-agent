@@ -1,0 +1,25 @@
+{
+  "_comment": "SYNTHETIC — built from the RAML spec, not captured from a live API. Re-capture against production before trusting this suite.",
+  "_shape": "MultipleHotelSearchResponse with isComplete=false and zero rows so far: providers have not reported anything yet, which is a different claim from a completed search finding nothing. See B14 — this must exit 5, not 1.",
+  "isComplete": false,
+  "searchTime": 210,
+  "totalResults": 0,
+  "totalAvailableResults": 0,
+  "totalFilteredResults": 0,
+  "currencyCode": "USD",
+  "languageCode": "EN",
+  "destination": {
+    "id": 58075,
+    "key": "kplace:58075",
+    "type": 2,
+    "name": "Boston",
+    "fullName": "Boston, Massachusetts, United States",
+    "isSearchable": true,
+    "latitude": 42.360903491390246,
+    "longitude": -71.05889023544313,
+    "hasBoundary": true,
+    "radius": 0,
+    "maximumRadius": 0
+  },
+  "results": []
+}

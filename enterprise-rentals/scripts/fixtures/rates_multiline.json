@@ -1,0 +1,992 @@
+{
+ "_fixture_note": "REAL response, trimmed. Frankfurt Airport (1021832), cor=DE, locale=de_DE, 2026-10-15T10:00 -> 2026-11-14T10:00 (30 nights), age 25, EUR. Captured 2026-09-08. PAYLATER.rates[] has TWO lines: WEEKLY x4 plus EXTRA_DAILY x2. rates[0] alone is NOT the whole price. total_price_payment == sum(unit_amount_payment * unit_rate_type_quantity) here (EUR markets are tax-inclusive); in Canada the total is larger than that sum.",
+ "session": {
+  "gbo": {
+   "reservation": {
+    "car_classes": [
+     {
+      "code": "MBMR",
+      "name": "Kleinstwagen",
+      "make_model_or_similar_text": "Toyota Aygo",
+      "two_or_four_door_text": "2",
+      "features_shorts": [
+       {
+        "code": "12",
+        "description": "Airbags"
+       },
+       {
+        "code": "22",
+        "description": "AM-/FM-Stereo-Radio"
+       },
+       {
+        "code": "26",
+        "description": "Schaltgetriebe"
+       },
+       {
+        "code": "29",
+        "description": "Klimaanlage"
+       },
+       {
+        "code": "169",
+        "description": "Benzinfahrzeug"
+       }
+      ],
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "26",
+        "filter_description": "Schaltgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Benzinfahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "100"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "4"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "null"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 0,
+      "large_luggage_capacity": 1,
+      "luggage_capacity": 1,
+      "people_capacity": 4,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "100",
+       "name": "Mietwagen",
+       "weight": "100"
+      },
+      "sub_category": {
+       "code": "112",
+       "name": "Kleinstwagen",
+       "name_en": "Kleinstwagen",
+       "weight": "109"
+      },
+      "mileage_info": {
+       "total_free_miles": 4290,
+       "excess_mileage_rate_view": {
+        "code": "EUR",
+        "amount": "0.54",
+        "symbol": "€",
+        "format": "0,54 €",
+        "formatted_amount": "0,54",
+        "decimal_separator": ","
+       },
+       "excess_mileage_rate_payment": {
+        "code": "EUR",
+        "amount": "0.54",
+        "symbol": "€",
+        "format": "0,54 €",
+        "formatted_amount": "0,54",
+        "decimal_separator": ","
+       },
+       "distance_unit": "KM",
+       "distance_unit_measurement": "Kilometer",
+       "distance_unit_measurement_code": "KM",
+       "unlimited_mileage": false
+      },
+      "fuel_efficiency": "50.1",
+      "fuel_consumption": "5.78",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "PREPAY": {
+        "charge_type": "PREPAY",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "1500.66",
+         "symbol": "€",
+         "format": "1.500,66 €",
+         "formatted_amount": "1.500,66",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "1500.66",
+         "symbol": "€",
+         "format": "1.500,66 €",
+         "formatted_amount": "1.500,66",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "350.12",
+           "symbol": "€",
+           "format": "350,12 €",
+           "formatted_amount": "350,12",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "350.12",
+           "symbol": "€",
+           "format": "350,12 €",
+           "formatted_amount": "350,12",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "WEEKLY",
+          "unit_rate_type_quantity": 4.0
+         },
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "50.09",
+           "symbol": "€",
+           "format": "50,09 €",
+           "formatted_amount": "50,09",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "50.09",
+           "symbol": "€",
+           "format": "50,09 €",
+           "formatted_amount": "50,09",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "EXTRA_DAILY",
+          "unit_rate_type_quantity": 2.0
+         }
+        ],
+        "product_code": "ED28DE"
+       },
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "900",
+         "symbol": "Pts",
+         "format": "900",
+         "formatted_amount": "900",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "900",
+         "symbol": "Pts",
+         "format": "900",
+         "formatted_amount": "900",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "900",
+           "symbol": "Pts",
+           "format": "900",
+           "formatted_amount": "900",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "900",
+           "symbol": "Pts",
+           "format": "900",
+           "formatted_amount": "900",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "1680.72",
+         "symbol": "€",
+         "format": "1.680,72 €",
+         "formatted_amount": "1.680,72",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "1680.72",
+         "symbol": "€",
+         "format": "1.680,72 €",
+         "formatted_amount": "1.680,72",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "392.13",
+           "symbol": "€",
+           "format": "392,13 €",
+           "formatted_amount": "392,13",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "392.13",
+           "symbol": "€",
+           "format": "392,13 €",
+           "formatted_amount": "392,13",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "WEEKLY",
+          "unit_rate_type_quantity": 4.0
+         },
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "56.10",
+           "symbol": "€",
+           "format": "56,10 €",
+           "formatted_amount": "56,10",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "56.10",
+           "symbol": "€",
+           "format": "56,10 €",
+           "formatted_amount": "56,10",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "EXTRA_DAILY",
+          "unit_rate_type_quantity": 2.0
+         }
+        ],
+        "product_code": "ED28DE"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "900",
+      "loyalty_max_redemption_days": 0,
+      "price_differences": [
+       {
+        "difference_type": "PREPAY",
+        "difference_amount_view": {
+         "code": "EUR",
+         "amount": "-180.06",
+         "symbol": "€",
+         "format": "-180,06 €",
+         "formatted_amount": "-180,06",
+         "decimal_separator": ","
+        },
+        "difference_amount_payment": {
+         "code": "EUR",
+         "amount": "-180.06",
+         "symbol": "€",
+         "format": "-180,06 €",
+         "formatted_amount": "-180,06",
+         "decimal_separator": ","
+        }
+       }
+      ],
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "IFMR",
+      "name": "Mittelklasse SUV",
+      "make_model_or_similar_text": "Nissan Qashqai",
+      "features_shorts": [
+       {
+        "code": "12",
+        "description": "Airbags"
+       },
+       {
+        "code": "22",
+        "description": "AM-/FM-Stereo-Radio"
+       },
+       {
+        "code": "26",
+        "description": "Schaltgetriebe"
+       },
+       {
+        "code": "29",
+        "description": "Klimaanlage"
+       },
+       {
+        "code": "169",
+        "description": "Benzinfahrzeug"
+       }
+      ],
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "26",
+        "filter_description": "Schaltgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Benzinfahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "300"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "null"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 3,
+      "large_luggage_capacity": 2,
+      "luggage_capacity": 3,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "300",
+       "name": "SUVs",
+       "weight": "200"
+      },
+      "sub_category": {
+       "code": "306",
+       "name": "Mittelklasse-SUV",
+       "name_en": "Mittelklasse SUV",
+       "weight": "120"
+      },
+      "mileage_info": {
+       "total_free_miles": 4290,
+       "excess_mileage_rate_view": {
+        "code": "EUR",
+        "amount": "0.54",
+        "symbol": "€",
+        "format": "0,54 €",
+        "formatted_amount": "0,54",
+        "decimal_separator": ","
+       },
+       "excess_mileage_rate_payment": {
+        "code": "EUR",
+        "amount": "0.54",
+        "symbol": "€",
+        "format": "0,54 €",
+        "formatted_amount": "0,54",
+        "decimal_separator": ","
+       },
+       "distance_unit": "KM",
+       "distance_unit_measurement": "Kilometer",
+       "distance_unit_measurement_code": "KM",
+       "unlimited_mileage": false
+      },
+      "vehicle_attribute": "top",
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "PREPAY": {
+        "charge_type": "PREPAY",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "1337.28",
+         "symbol": "€",
+         "format": "1.337,28 €",
+         "formatted_amount": "1.337,28",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "1337.28",
+         "symbol": "€",
+         "format": "1.337,28 €",
+         "formatted_amount": "1.337,28",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "312.00",
+           "symbol": "€",
+           "format": "312,00 €",
+           "formatted_amount": "312,00",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "312.00",
+           "symbol": "€",
+           "format": "312,00 €",
+           "formatted_amount": "312,00",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "WEEKLY",
+          "unit_rate_type_quantity": 4.0
+         },
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "44.64",
+           "symbol": "€",
+           "format": "44,64 €",
+           "formatted_amount": "44,64",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "44.64",
+           "symbol": "€",
+           "format": "44,64 €",
+           "formatted_amount": "44,64",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "EXTRA_DAILY",
+          "unit_rate_type_quantity": 2.0
+         }
+        ],
+        "product_code": "ED28DE"
+       },
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "800",
+         "symbol": "Pts",
+         "format": "800",
+         "formatted_amount": "800",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "800",
+         "symbol": "Pts",
+         "format": "800",
+         "formatted_amount": "800",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "800",
+           "symbol": "Pts",
+           "format": "800",
+           "formatted_amount": "800",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "800",
+           "symbol": "Pts",
+           "format": "800",
+           "formatted_amount": "800",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "1497.76",
+         "symbol": "€",
+         "format": "1.497,76 €",
+         "formatted_amount": "1.497,76",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "1497.76",
+         "symbol": "€",
+         "format": "1.497,76 €",
+         "formatted_amount": "1.497,76",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "349.44",
+           "symbol": "€",
+           "format": "349,44 €",
+           "formatted_amount": "349,44",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "349.44",
+           "symbol": "€",
+           "format": "349,44 €",
+           "formatted_amount": "349,44",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "WEEKLY",
+          "unit_rate_type_quantity": 4.0
+         },
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "50.00",
+           "symbol": "€",
+           "format": "50,00 €",
+           "formatted_amount": "50,00",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "50.00",
+           "symbol": "€",
+           "format": "50,00 €",
+           "formatted_amount": "50,00",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "EXTRA_DAILY",
+          "unit_rate_type_quantity": 2.0
+         }
+        ],
+        "product_code": "ED28DE"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "800",
+      "loyalty_max_redemption_days": 0,
+      "price_differences": [
+       {
+        "difference_type": "PREPAY",
+        "difference_amount_view": {
+         "code": "EUR",
+         "amount": "-160.48",
+         "symbol": "€",
+         "format": "-160,48 €",
+         "formatted_amount": "-160,48",
+         "decimal_separator": ","
+        },
+        "difference_amount_payment": {
+         "code": "EUR",
+         "amount": "-160.48",
+         "symbol": "€",
+         "format": "-160,48 €",
+         "formatted_amount": "-160,48",
+         "decimal_separator": ","
+        }
+       }
+      ],
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     },
+     {
+      "code": "SVMR",
+      "name": "Standard Minivan",
+      "make_model_or_similar_text": "Ford S-Max",
+      "features_shorts": [
+       {
+        "code": "12",
+        "description": "Airbags"
+       },
+       {
+        "code": "22",
+        "description": "AM-/FM-Stereo-Radio"
+       },
+       {
+        "code": "26",
+        "description": "Schaltgetriebe"
+       },
+       {
+        "code": "29",
+        "description": "Klimaanlage"
+       },
+       {
+        "code": "152",
+        "description": "Klappbare Rücksitze"
+       },
+       {
+        "code": "162",
+        "description": "Die Gepäckraumkapazität variiert je nach der Anzahl der Personen."
+       },
+       {
+        "code": "169",
+        "description": "Benzinfahrzeug"
+       }
+      ],
+      "filters": {
+       "TRANSMISSION": {
+        "filter_name": "TRANSMISSION",
+        "filter_code": "26",
+        "filter_description": "Schaltgetriebe"
+       },
+       "FUEL": {
+        "filter_name": "FUEL",
+        "filter_code": "169",
+        "filter_description": "Benzinfahrzeug"
+       },
+       "CLASS": {
+        "filter_name": "CLASS",
+        "filter_code": "400"
+       },
+       "PASSENGERS": {
+        "filter_name": "PASSENGERS",
+        "filter_code": "5"
+       },
+       "DRIVE": {
+        "filter_name": "DRIVE",
+        "filter_code": "null"
+       }
+      },
+      "guaranteed_vehicle": false,
+      "guaranteed_res_credit_card_required": false,
+      "small_luggage_capacity": 2,
+      "large_luggage_capacity": 4,
+      "luggage_capacity": 5,
+      "people_capacity": 5,
+      "speciality_vehicle": false,
+      "terms_and_conditions_required": false,
+      "category": {
+       "code": "400",
+       "name": "Kleinbusse",
+       "weight": "500"
+      },
+      "sub_category": {
+       "code": "403",
+       "name": "Kleinbusse",
+       "name_en": "Standard Minivan",
+       "weight": "120"
+      },
+      "mileage_info": {
+       "total_free_miles": 4286,
+       "excess_mileage_rate_view": {
+        "code": "EUR",
+        "amount": "0.36",
+        "symbol": "€",
+        "format": "0,36 €",
+        "formatted_amount": "0,36",
+        "decimal_separator": ","
+       },
+       "excess_mileage_rate_payment": {
+        "code": "EUR",
+        "amount": "0.36",
+        "symbol": "€",
+        "format": "0,36 €",
+        "formatted_amount": "0,36",
+        "decimal_separator": ","
+       },
+       "distance_unit": "KM",
+       "distance_unit_measurement": "Kilometer",
+       "distance_unit_measurement_code": "KM",
+       "unlimited_mileage": false
+      },
+      "status": "AVAILABLE_AT_RETAIL_RATE",
+      "charges": {
+       "PREPAY": {
+        "charge_type": "PREPAY",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "1547.30",
+         "symbol": "€",
+         "format": "1.547,30 €",
+         "formatted_amount": "1.547,30",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "1547.30",
+         "symbol": "€",
+         "format": "1.547,30 €",
+         "formatted_amount": "1.547,30",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "361.00",
+           "symbol": "€",
+           "format": "361,00 €",
+           "formatted_amount": "361,00",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "361.00",
+           "symbol": "€",
+           "format": "361,00 €",
+           "formatted_amount": "361,00",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "WEEKLY",
+          "unit_rate_type_quantity": 4.0
+         },
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "51.65",
+           "symbol": "€",
+           "format": "51,65 €",
+           "formatted_amount": "51,65",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "51.65",
+           "symbol": "€",
+           "format": "51,65 €",
+           "formatted_amount": "51,65",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "EXTRA_DAILY",
+          "unit_rate_type_quantity": 2.0
+         }
+        ],
+        "product_code": "ED28DE"
+       },
+       "REDEMPTION": {
+        "charge_type": "REDEMPTION",
+        "total_price_view": {
+         "code": "Pts",
+         "amount": "950",
+         "symbol": "Pts",
+         "format": "950",
+         "formatted_amount": "950",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "Pts",
+         "amount": "950",
+         "symbol": "Pts",
+         "format": "950",
+         "formatted_amount": "950",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "Pts",
+           "amount": "950",
+           "symbol": "Pts",
+           "format": "950",
+           "formatted_amount": "950",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "Pts",
+           "amount": "950",
+           "symbol": "Pts",
+           "format": "950",
+           "formatted_amount": "950",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "DAILY"
+         }
+        ],
+        "max_days": 0
+       },
+       "PAYLATER": {
+        "charge_type": "PAYLATER",
+        "total_price_view": {
+         "code": "EUR",
+         "amount": "1732.98",
+         "symbol": "€",
+         "format": "1.732,98 €",
+         "formatted_amount": "1.732,98",
+         "decimal_separator": ","
+        },
+        "total_price_payment": {
+         "code": "EUR",
+         "amount": "1732.98",
+         "symbol": "€",
+         "format": "1.732,98 €",
+         "formatted_amount": "1.732,98",
+         "decimal_separator": ","
+        },
+        "rates": [
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "404.32",
+           "symbol": "€",
+           "format": "404,32 €",
+           "formatted_amount": "404,32",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "404.32",
+           "symbol": "€",
+           "format": "404,32 €",
+           "formatted_amount": "404,32",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "WEEKLY",
+          "unit_rate_type_quantity": 4.0
+         },
+         {
+          "unit_amount_view": {
+           "code": "EUR",
+           "amount": "57.85",
+           "symbol": "€",
+           "format": "57,85 €",
+           "formatted_amount": "57,85",
+           "decimal_separator": ","
+          },
+          "unit_amount_payment": {
+           "code": "EUR",
+           "amount": "57.85",
+           "symbol": "€",
+           "format": "57,85 €",
+           "formatted_amount": "57,85",
+           "decimal_separator": ","
+          },
+          "unit_rate_type": "EXTRA_DAILY",
+          "unit_rate_type_quantity": 2.0
+         }
+        ],
+        "product_code": "ED28DE"
+       }
+      },
+      "previously_selected": false,
+      "redemption_points": "950",
+      "loyalty_max_redemption_days": 0,
+      "price_differences": [
+       {
+        "difference_type": "PREPAY",
+        "difference_amount_view": {
+         "code": "EUR",
+         "amount": "-185.68",
+         "symbol": "€",
+         "format": "-185,68 €",
+         "formatted_amount": "-185,68",
+         "decimal_separator": ","
+        },
+        "difference_amount_payment": {
+         "code": "EUR",
+         "amount": "-185.68",
+         "symbol": "€",
+         "format": "-185,68 €",
+         "formatted_amount": "-185,68",
+         "decimal_separator": ","
+        }
+       }
+      ],
+      "preferred_vehicle": false,
+      "eplus_max_redemption_days": 0,
+      "is_contract_applicable": false
+     }
+    ],
+    "car_classes_filters": [
+     {
+      "filter_description": "Fahrzeugklasse",
+      "filter_code": "CLASS",
+      "filter_values": [
+       {
+        "code": "400",
+        "description": "Kleinbusse"
+       },
+       {
+        "code": "500",
+        "description": "Transporter"
+       },
+       {
+        "code": "300",
+        "description": "SUVs"
+       },
+       {
+        "code": "100",
+        "description": "Mietwagen"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "Kraftstoff",
+      "filter_code": "FUEL",
+      "filter_values": [
+       {
+        "code": "169",
+        "description": "Benzinfahrzeug"
+       },
+       {
+        "code": "168",
+        "description": "Hybridfahrzeug"
+       },
+       {
+        "code": "102",
+        "description": "Dieselfahrzeug"
+       },
+       {
+        "code": "170",
+        "description": "Elektrofahrzeug"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "Drive",
+      "filter_code": "DRIVE",
+      "filter_values": [
+       {
+        "code": "59",
+        "description": "Vierrad- oder Allradantrieb"
+       },
+       {
+        "code": "null",
+        "description": "null"
+       }
+      ],
+      "last_modified": "2023-05-31T12:48:37 +0000"
+     },
+     {
+      "filter_description": "Passagiere",
+      "filter_code": "PASSENGERS",
+      "filter_values": [
+       {
+        "code": "4",
+        "description": "4"
+       },
+       {
+        "code": "7",
+        "description": "7"
+       },
+       {
+        "code": "5",
+        "description": "5"
+       },
+       {
+        "code": "3",
+        "description": "3"
+       },
+       {
+        "code": "9",
+        "description": "9"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     },
+     {
+      "filter_description": "Übertragung",
+      "filter_code": "TRANSMISSION",
+      "filter_values": [
+       {
+        "code": "25",
+        "description": "Automatikgetriebe"
+       },
+       {
+        "code": "26",
+        "description": "Schaltgetriebe"
+       }
+      ],
+      "last_modified": "2023-04-11T18:50:20 +0000"
+     }
+    ]
+   }
+  }
+ }
+}

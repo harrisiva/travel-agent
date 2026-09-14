@@ -1,0 +1,25 @@
+{
+  "_comment": "SYNTHETIC \u2014 built from the RAML spec, not captured from a live API. Re-capture against production before trusting this suite.",
+  "results": [
+    {
+      "placeId": 25588,
+      "primaryPlaceType": "airport",
+      "name": "Toronto Pearson Intl",
+      "fullName": "Toronto Pearson Intl Airport, Mississauga, Ontario, Canada (YYZ)",
+      "iataCode": "YYZ",
+      "cityId": 30202,
+      "cityName": "Mississauga",
+      "countryName": "Canada",
+      "regionName": "Ontario"
+    },
+    {
+      "placeId": 30202,
+      "primaryPlaceType": "city",
+      "name": "Toronto",
+      "fullName": "Toronto, Ontario, Canada",
+      "cityId": 30202,
+      "cityName": "Toronto",
+      "countryName": "Canada"
+    }
+  ]
+}

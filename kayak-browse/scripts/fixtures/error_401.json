@@ -1,0 +1,9 @@
+{
+  "_comment": "SYNTHETIC \u2014 built from the RAML spec, not captured from a live API. Re-capture against production before trusting this suite.",
+  "errorList": [
+    {
+      "errorCode": "INVALID_API_KEY",
+      "message": "The supplied apiKey is not valid or has expired"
+    }
+  ]
+}
